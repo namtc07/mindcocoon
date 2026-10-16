@@ -2,7 +2,8 @@
 
 import { Lock, Settings2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { BackupNudge } from "@/components/modules/account/backup-nudge";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { useVault } from "@/hooks/use-vault";
@@ -13,6 +14,24 @@ import { RecoveryCodeCard } from "./recovery-code-card";
 import { UnlockPanel } from "./unlock-panel";
 import { VaultSettings } from "./vault-settings";
 
+const NUDGE_FIVE_KEY = "mc:nudge-5";
+
+function readNudgeFive() {
+  try {
+    return localStorage.getItem(NUDGE_FIVE_KEY) !== null;
+  } catch {
+    return true;
+  }
+}
+
+function markNudgeFive() {
+  try {
+    localStorage.setItem(NUDGE_FIVE_KEY, "1");
+  } catch {
+    // ignore
+  }
+}
+
 export function VaultView() {
   const { t, locale, href } = useI18n();
   const vault = useVault();
@@ -20,6 +39,15 @@ export function VaultView() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
   const open = vault.entries.find((e) => e.id === openId) ?? null;
+  const [nudgeAfterPasscode, setNudgeAfterPasscode] = useState(false);
+  const [nudgeFiveSeen] = useState(readNudgeFive);
+  const nudgeFive = !nudgeFiveSeen && vault.entries.length >= 5;
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
+  const showNudge = !nudgeDismissed && (nudgeAfterPasscode || nudgeFive);
+
+  useEffect(() => {
+    if (nudgeFive) markNudgeFive();
+  }, [nudgeFive]);
 
   if (vault.status === "unsupported") return <p className="text-muted-foreground">{t.vault.unsupported}</p>;
   if (vault.status === "idle" || vault.status === "loading") return <div className="min-h-[50vh]" aria-busy />;
@@ -47,6 +75,8 @@ export function VaultView() {
               </Button>
             </div>
           </header>
+
+          {showNudge && <BackupNudge onDismiss={() => setNudgeDismissed(true)} />}
 
           {vault.entries.length === 0 ? (
             <div className="space-y-4 py-10">
@@ -88,6 +118,7 @@ export function VaultView() {
         vault={vault}
         onOpenChange={setSettingsOpen}
         onRecoveryCode={setRecoveryCode}
+        onPasscodeSet={() => setNudgeAfterPasscode(true)}
       />
       <RecoveryCodeCard code={recoveryCode} onClose={() => setRecoveryCode(null)} />
     </div>

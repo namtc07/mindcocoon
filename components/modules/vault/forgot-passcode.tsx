@@ -1,23 +1,28 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useSyncExternalStore, type FormEvent } from "react";
+import { SignInDialog } from "@/components/modules/account/sign-in-dialog";
 import { toast } from "sonner";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/use-auth";
 import { useNow } from "@/hooks/use-now";
+import { getAgeAnswer, subscribeAge } from "@/lib/auth/age";
+import { fetchServerSecret } from "@/lib/backup/active";
 import { formatTime } from "@/lib/dates";
 import {
   completePasscodeReset,
   replacePasscode,
   requestPasscodeReset,
   unlockWithRecoveryCode,
+  unlockWithServerSecret,
 } from "@/lib/vault/session";
 import { PasscodeForm } from "./passcode-form";
 
 /**
- * Ways back in, fastest first: recovery code (instant), then a reset on this
- * device that waits an hour. Signing in to reset arrives with accounts (Task 17).
+ * Ways back in: recovery code (instant), the account's server half (instant, only
+ * on a device that was signed in while unlocked), or a reset here after one hour.
  */
 export function ForgotPasscode({ resetReadyAt, onBack }: { resetReadyAt: number | null; onBack: () => void }) {
   const { t, locale } = useI18n();
@@ -25,6 +30,20 @@ export function ForgotPasscode({ resetReadyAt, onBack }: { resetReadyAt: number 
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState<string | null>(null);
   const [chooseNew, setChooseNew] = useState(false);
+  const auth = useAuth();
+  const age = useSyncExternalStore(subscribeAge, getAgeAnswer, () => null);
+  const [signInOpen, setSignInOpen] = useState(false);
+  const [accountError, setAccountError] = useState<string | null>(null);
+  const accountAvailable = (auth.status === "signed-in" || auth.status === "signed-out") && age !== "no";
+
+  async function resetWithAccount() {
+    if (auth.status !== "signed-in" || !auth.user) return setSignInOpen(true);
+    setAccountError(null);
+    const secret = await fetchServerSecret(auth.user.id).catch(() => null);
+    if (secret && (await unlockWithServerSecret(secret))) setChooseNew(true);
+    else setAccountError(t.backup.resetUnavailable);
+  }
+
   const resetReady = resetReadyAt !== null && now !== null && now.getTime() >= resetReadyAt;
 
   async function submitCode(event: FormEvent) {
@@ -76,6 +95,20 @@ export function ForgotPasscode({ resetReadyAt, onBack }: { resetReadyAt: number 
           {t.vault.continue}
         </Button>
       </form>
+
+      {accountAvailable && (
+        <div className="space-y-3 border-t border-border pt-8">
+          <h3 className="font-medium">{t.backup.resetWithAccount}</h3>
+          <p className="text-sm text-muted-foreground">{t.backup.resetWithAccountHint}</p>
+          <Button variant="outline" onClick={() => void resetWithAccount()}>
+            {auth.status === "signed-in" ? t.backup.resetWithAccount : t.account.signInToBackup}
+          </Button>
+          <p role="alert" className="min-h-5 text-sm text-destructive">
+            {accountError}
+          </p>
+          <SignInDialog open={signInOpen} onOpenChange={setSignInOpen} />
+        </div>
+      )}
 
       <div className="space-y-3 border-t border-border pt-8">
         <h3 className="font-medium">{t.vault.resetOnDevice}</h3>

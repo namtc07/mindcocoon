@@ -24,6 +24,7 @@ export function createLocalAdapter(driver: KVDriver): StorageAdapter {
         const logs = await readList<MoodLog>(KEYS.moods);
         await driver.set(KEYS.moods, [...logs, log]);
       },
+      replaceAll: (logs) => driver.set(KEYS.moods, logs),
       async remove(id) {
         const logs = await readList<MoodLog>(KEYS.moods);
         await driver.set(

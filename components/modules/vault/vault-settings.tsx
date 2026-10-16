@@ -27,9 +27,10 @@ interface VaultSettingsProps {
   vault: VaultState;
   onOpenChange: (open: boolean) => void;
   onRecoveryCode: (code: string) => void;
+  onPasscodeSet?: () => void;
 }
 
-export function VaultSettings({ open, vault, onOpenChange, onRecoveryCode }: VaultSettingsProps) {
+export function VaultSettings({ open, vault, onOpenChange, onRecoveryCode, onPasscodeSet }: VaultSettingsProps) {
   const { t } = useI18n();
   const [editing, setEditing] = useState(false);
 
@@ -39,6 +40,7 @@ export function VaultSettings({ open, vault, onOpenChange, onRecoveryCode }: Vau
     setEditing(false);
     onOpenChange(false);
     if (recoveryCode) onRecoveryCode(recoveryCode);
+    onPasscodeSet?.();
   }
 
   return (

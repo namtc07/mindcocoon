@@ -6,6 +6,7 @@ import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
+import { useBackup } from "@/hooks/use-backup";
 import { getAgeAnswer, subscribeAge } from "@/lib/auth/age";
 import { deleteAccount, signOut } from "@/lib/auth/store";
 import { SignInDialog } from "./sign-in-dialog";
@@ -13,6 +14,7 @@ import { SignInDialog } from "./sign-in-dialog";
 export function AccountSection() {
   const { t } = useI18n();
   const auth = useAuth();
+  const backup = useBackup();
   const age = useSyncExternalStore(subscribeAge, getAgeAnswer, () => null);
   const [signInOpen, setSignInOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -36,6 +38,18 @@ export function AccountSection() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-foreground">{t.account.signedInAs.replace("{email}", auth.user?.email ?? "")}</p>
+      {backup.active && (
+        <p className="text-sm text-muted-foreground" aria-live="polite">
+          {
+            {
+              idle: t.backup.statusIdle,
+              pending: t.backup.statusPending,
+              synced: t.backup.statusSynced,
+              error: t.backup.statusError,
+            }[backup.status]
+          }
+        </p>
+      )}
       <div className="flex flex-wrap gap-3">
         <Button variant="outline" onClick={() => void signOut()}>
           {t.account.signOut}

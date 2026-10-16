@@ -4,6 +4,7 @@ import { Settings2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { BackupController } from "@/components/modules/account/backup-controller";
 import { FirstRunNotice } from "@/components/modules/onboarding/first-run-notice";
 import { PwaBootstrap } from "@/components/modules/pwa/pwa-bootstrap";
 import { stripLocale, useI18n } from "@/components/providers/i18n-provider";
@@ -81,6 +82,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <MiniAudioBar />
       <FirstRunNotice />
       <PwaBootstrap />
+      <BackupController />
 
       {!immersive && (
         <nav

@@ -9,6 +9,8 @@ import type { JournalEntry, Keyring, MoodLog } from "@/types";
 export interface MoodRepository {
   list(): Promise<MoodLog[]>;
   add(log: MoodLog): Promise<void>;
+  /** Replaces every log at once — used when restoring a backup. */
+  replaceAll(logs: MoodLog[]): Promise<void>;
   remove(id: string): Promise<void>;
   clear(): Promise<void>;
 }
