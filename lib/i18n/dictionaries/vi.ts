@@ -14,6 +14,23 @@ export const vi: Dictionary = {
     settings: "Cài đặt",
     primary: "Điều hướng chính",
   },
+  mood: {
+    states: {
+      peaceful: { label: "Bình yên", description: "Lắng lại, yên bên trong" },
+      hopeful: { label: "Hy vọng", description: "Có chút ánh sáng phía trước" },
+      numb: { label: "Trống rỗng", description: "Phẳng lặng, xa cách mọi thứ" },
+      heavy: { label: "Nặng nề", description: "Trĩu xuống, mệt mỏi" },
+      anxious: { label: "Lo âu", description: "Bồn chồn, bất an" },
+    },
+    tags: {
+      work: "Công việc",
+      relationship: "Mối quan hệ",
+      solitude: "Một mình",
+      family: "Gia đình",
+      health: "Sức khỏe",
+      study: "Học tập",
+    },
+  },
   common: {
     close: "Đóng",
     cancel: "Hủy",

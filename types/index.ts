@@ -11,7 +11,9 @@ export interface MoodLog {
   userId?: string;
   mood: MoodType;
   tags: string[];
+  /** Plain text, or an encrypted envelope when isNoteEncrypted. */
   note?: string;
+  isNoteEncrypted?: boolean;
   createdAt: string;
 }
 

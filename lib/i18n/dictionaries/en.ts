@@ -13,6 +13,23 @@ export const en = {
     settings: "Settings",
     primary: "Main",
   },
+  mood: {
+    states: {
+      peaceful: { label: "Peaceful", description: "Settled, quiet inside" },
+      hopeful: { label: "Hopeful", description: "A little light ahead" },
+      numb: { label: "Numb", description: "Flat, far away from it all" },
+      heavy: { label: "Heavy", description: "Weighed down, tired" },
+      anxious: { label: "Anxious", description: "Restless, on edge" },
+    },
+    tags: {
+      work: "Work",
+      relationship: "Relationship",
+      solitude: "Solitude",
+      family: "Family",
+      health: "Health",
+      study: "Study",
+    },
+  },
   common: {
     close: "Close",
     cancel: "Cancel",
