@@ -46,16 +46,29 @@ export interface DecryptedJournalEntry extends Omit<JournalEntry, "content"> {
   body: string;
 }
 
-export type VaultLockMode = "device" | "passcode";
+/** Data-key wrap derived from a secret with PBKDF2. */
+export interface KdfWrap {
+  salt: string;
+  iterations: number;
+  wrapped: string;
+}
 
-/** Stored alongside the vault so the app knows how to derive the key. */
-export interface VaultMeta {
-  mode: VaultLockMode;
-  /** base64 PBKDF2 salt (passcode mode only). */
-  salt?: string;
-  iterations?: number;
-  /** Encrypted known string used to verify a passcode without decrypting entries. */
-  verifier?: string;
-  /** Minutes of inactivity / hidden tab before the vault locks again. */
+/** Device-local key material for the vault (see lib/vault/keyring.ts). */
+export interface Keyring {
+  version: 1;
+  /** DEK wrapped by the device key — present only when there is no passcode. */
+  device?: string;
+  passcode?: KdfWrap;
+  recovery?: KdfWrap;
+  /** DEK wrapped by the server secret — LOCAL ONLY, never uploaded. */
+  server?: string;
+  /** DEK wrapped by the device key while a passcode is set (1-hour reset path). */
+  deviceReset?: string;
+  resetRequestedAt?: number;
   autoLockMinutes: number;
+}
+
+export interface UnlockedDek {
+  key: CryptoKey;
+  raw: Uint8Array<ArrayBuffer>;
 }

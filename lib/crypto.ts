@@ -1,23 +1,21 @@
+import { generateMnemonic, validateMnemonic } from "@scure/bip39";
+import { wordlist } from "@scure/bip39/wordlists/english.js";
+
 /**
- * Client-side encryption for the Private Vault (Web Crypto, AES-GCM 256).
- *
- * - Device mode: a random, non-extractable key stored in IndexedDB.
- * - Passcode mode: key derived with PBKDF2-SHA256; nothing about the passcode is stored.
- *
+ * Client-side encryption primitives (Web Crypto, AES-GCM 256, PBKDF2-SHA256).
  * Envelope format: `v1.<base64 iv>.<base64 ciphertext>`.
  */
 
 export const PBKDF2_ITERATIONS = 310_000;
 const ENVELOPE_VERSION = "v1";
-const VERIFIER_PLAINTEXT = "mindcocoon:vault:ok";
 
-function toBase64(bytes: Uint8Array): string {
+export function toBase64(bytes: Uint8Array): string {
   let binary = "";
   for (const b of bytes) binary += String.fromCharCode(b);
   return btoa(binary);
 }
 
-function fromBase64(value: string): Uint8Array<ArrayBuffer> {
+export function fromBase64(value: string): Uint8Array<ArrayBuffer> {
   const binary = atob(value);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
@@ -28,6 +26,11 @@ export function isCryptoAvailable(): boolean {
   return typeof crypto !== "undefined" && typeof crypto.subtle !== "undefined";
 }
 
+export function randomBytes(length: number): Uint8Array<ArrayBuffer> {
+  return crypto.getRandomValues(new Uint8Array(length));
+}
+
+/** Random, non-extractable key kept in IndexedDB to wrap the data key on this device. */
 export function generateDeviceKey(): Promise<CryptoKey> {
   return crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, [
     "encrypt",
@@ -35,18 +38,23 @@ export function generateDeviceKey(): Promise<CryptoKey> {
   ]);
 }
 
-export function generateSalt(): string {
-  return toBase64(crypto.getRandomValues(new Uint8Array(16)));
+/** Imports raw data-key bytes as a non-extractable AES-GCM key. */
+export function importDek(raw: Uint8Array<ArrayBuffer>): Promise<CryptoKey> {
+  return crypto.subtle.importKey("raw", raw, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
 }
 
-export async function deriveKeyFromPasscode(
-  passcode: string,
+export function generateSalt(): string {
+  return toBase64(randomBytes(16));
+}
+
+export async function deriveKeyFromSecret(
+  secret: string,
   salt: string,
-  iterations = PBKDF2_ITERATIONS,
+  iterations: number,
 ): Promise<CryptoKey> {
   const material = await crypto.subtle.importKey(
     "raw",
-    new TextEncoder().encode(passcode),
+    new TextEncoder().encode(secret),
     "PBKDF2",
     false,
     ["deriveKey"],
@@ -60,17 +68,13 @@ export async function deriveKeyFromPasscode(
   );
 }
 
-export async function encryptString(key: CryptoKey, plaintext: string): Promise<string> {
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
-    key,
-    new TextEncoder().encode(plaintext),
-  );
+export async function encryptBytes(key: CryptoKey, bytes: Uint8Array<ArrayBuffer>): Promise<string> {
+  const iv = randomBytes(12);
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, bytes);
   return [ENVELOPE_VERSION, toBase64(iv), toBase64(new Uint8Array(ciphertext))].join(".");
 }
 
-export async function decryptString(key: CryptoKey, envelope: string): Promise<string> {
+export async function decryptBytes(key: CryptoKey, envelope: string): Promise<Uint8Array<ArrayBuffer>> {
   const [version, iv, data] = envelope.split(".");
   if (version !== ENVELOPE_VERSION || !iv || !data) {
     throw new Error("Unrecognized encrypted envelope");
@@ -80,18 +84,34 @@ export async function decryptString(key: CryptoKey, envelope: string): Promise<s
     key,
     fromBase64(data),
   );
-  return new TextDecoder().decode(plaintext);
+  return new Uint8Array(plaintext);
 }
 
-export function createVerifier(key: CryptoKey): Promise<string> {
-  return encryptString(key, VERIFIER_PLAINTEXT);
+export function encryptString(key: CryptoKey, plaintext: string): Promise<string> {
+  return encryptBytes(key, new TextEncoder().encode(plaintext));
 }
 
-/** Resolves true only if `key` can decrypt the verifier (i.e. the passcode is right). */
-export async function checkVerifier(key: CryptoKey, verifier: string): Promise<boolean> {
-  try {
-    return (await decryptString(key, verifier)) === VERIFIER_PLAINTEXT;
-  } catch {
-    return false;
-  }
+export async function decryptString(key: CryptoKey, envelope: string): Promise<string> {
+  return new TextDecoder().decode(await decryptBytes(key, envelope));
+}
+
+export function isEnvelope(value: string): boolean {
+  return value.startsWith(`${ENVELOPE_VERSION}.`);
+}
+
+// --- Recovery codes (12 BIP39 English words, 128 bits) ---------------------
+
+export function generateRecoveryCode(): string {
+  return generateMnemonic(wordlist, 128);
+}
+
+export function normalizeRecoveryCode(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/[\s\-_,.]+/g, " ")
+    .trim();
+}
+
+export function isValidRecoveryCode(input: string): boolean {
+  return validateMnemonic(normalizeRecoveryCode(input), wordlist);
 }

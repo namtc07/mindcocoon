@@ -1,11 +1,11 @@
-import type { JournalEntry, MoodLog, VaultMeta } from "@/types";
+import type { JournalEntry, Keyring, MoodLog } from "@/types";
 import type { KVDriver } from "./driver";
 import type { StorageAdapter } from "./repositories";
 
 const KEYS = {
   moods: "moods:v1",
   journal: "journal:v1",
-  vaultMeta: "vault:meta",
+  keyring: "vault:keyring",
   deviceKey: "vault:device-key",
 } as const;
 
@@ -58,13 +58,12 @@ export function createLocalAdapter(driver: KVDriver): StorageAdapter {
     },
 
     vaultKeys: {
-      getMeta: () => driver.get<VaultMeta>(KEYS.vaultMeta),
-      setMeta: (meta) => driver.set(KEYS.vaultMeta, meta),
+      getKeyring: () => driver.get<Keyring>(KEYS.keyring),
+      setKeyring: (keyring) => driver.set(KEYS.keyring, keyring),
       getDeviceKey: () => driver.get<CryptoKey>(KEYS.deviceKey),
       setDeviceKey: (key) => driver.set(KEYS.deviceKey, key),
-      deleteDeviceKey: () => driver.del(KEYS.deviceKey),
       async clear() {
-        await driver.del(KEYS.vaultMeta);
+        await driver.del(KEYS.keyring);
         await driver.del(KEYS.deviceKey);
       },
     },

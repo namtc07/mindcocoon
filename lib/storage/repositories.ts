@@ -1,9 +1,9 @@
-import type { JournalEntry, MoodLog, VaultMeta } from "@/types";
+import type { JournalEntry, Keyring, MoodLog } from "@/types";
 
 /**
  * Repository contracts. The local implementation lives in ./local.ts.
  * A Supabase implementation only needs to satisfy these same interfaces
- * (see docs/ARCHITECTURE.md and supabase/migrations/0001_init.sql).
+ * (see CLAUDE.md and supabase/migrations/0001_init.sql).
  */
 
 export interface MoodRepository {
@@ -25,11 +25,10 @@ export interface JournalRepository {
 
 /** Device-only vault material. Never synced: keys stay on the device. */
 export interface VaultKeyRepository {
-  getMeta(): Promise<VaultMeta | undefined>;
-  setMeta(meta: VaultMeta): Promise<void>;
+  getKeyring(): Promise<Keyring | undefined>;
+  setKeyring(keyring: Keyring): Promise<void>;
   getDeviceKey(): Promise<CryptoKey | undefined>;
   setDeviceKey(key: CryptoKey): Promise<void>;
-  deleteDeviceKey(): Promise<void>;
   clear(): Promise<void>;
 }
 
