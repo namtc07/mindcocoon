@@ -230,6 +230,9 @@ export const vi: Dictionary = {
     firstRunBody: "Một nơi riêng tư để trút lòng, hít thở và nghỉ ngơi. Mọi thứ bạn viết đều ở lại trên máy này, trừ khi bạn chọn sao lưu.",
     firstRunOk: "Mình hiểu rồi",
   },
+  ads: {
+    label: "Quảng cáo",
+  },
   pwa: {
     installTitle: "Giữ MindCocoon trên màn hình chính",
     installBody: "Bấm nút Chia sẻ, rồi chọn Thêm vào Màn hình chính. App mở nhanh hơn lúc đêm, và Safari giữ nhật ký của bạn an toàn hơn.",
