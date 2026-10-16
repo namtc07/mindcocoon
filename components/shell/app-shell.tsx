@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { stripLocale, useI18n } from "@/components/providers/i18n-provider";
 import { cn } from "@/lib/utils";
+import { MiniAudioBar } from "./mini-audio-bar";
 import { NAV_ITEMS, isActive } from "./nav-items";
 
 /** Desktop left rail, mobile header + bottom tab bar. Vent is full-screen and hides it. */
@@ -74,6 +75,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       >
         <div className={cn(!immersive && "mx-auto w-full max-w-[680px] md:mx-0")}>{children}</div>
       </main>
+
+      <MiniAudioBar />
 
       {!immersive && (
         <nav

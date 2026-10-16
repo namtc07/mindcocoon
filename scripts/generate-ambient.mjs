@@ -4,28 +4,16 @@
  * Pure synthesis (filtered noise + simple partials) — replace with licensed
  * recordings before launch by changing `src` in lib/sounds.ts.
  *
- *   node scripts/generate-ambient.mjs
+ *   node scripts/generate-ambient.mjs   (needs ffmpeg)
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { SR, rng, seamless, writeM4a } from "./wav.mjs";
 
-const SR = 22050;
 const DURATION = 30; // seconds per loop
 const FADE = 2; // seconds of crossfade used to make the loop seamless
 const OUT_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "public", "audio");
-
-// Deterministic PRNG so regenerated files are identical.
-function rng(seed) {
-  let s = seed >>> 0;
-  return () => {
-    s = (s + 0x6d2b79f5) >>> 0;
-    let t = s;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 const onePoleLP = (fc) => {
   const a = 1 - Math.exp((-2 * Math.PI * fc) / SR);
@@ -217,40 +205,11 @@ function render(name, seed) {
   for (let i = 0; i < SR; i++) gen(-1 + i / SR);
   const raw = new Float32Array(n + f);
   for (let i = 0; i < n + f; i++) raw[i] = gen(i / SR);
-  // Equal-power crossfade of the overflow back into the start → seamless loop.
-  const out = raw.slice(0, n);
-  for (let i = 0; i < f; i++) {
-    const x = i / f;
-    out[i] = raw[i] * Math.sqrt(x) + raw[n + i] * Math.sqrt(1 - x);
-  }
-  let peak = 0;
-  for (const v of out) peak = Math.max(peak, Math.abs(v));
-  const gain = 0.7 / (peak || 1);
-  return out.map((v) => v * gain);
-}
-
-function toWav(samples) {
-  const buffer = Buffer.alloc(44 + samples.length * 2);
-  buffer.write("RIFF", 0);
-  buffer.writeUInt32LE(36 + samples.length * 2, 4);
-  buffer.write("WAVE", 8);
-  buffer.write("fmt ", 12);
-  buffer.writeUInt32LE(16, 16);
-  buffer.writeUInt16LE(1, 20); // PCM
-  buffer.writeUInt16LE(1, 22); // mono
-  buffer.writeUInt32LE(SR, 24);
-  buffer.writeUInt32LE(SR * 2, 28);
-  buffer.writeUInt16LE(2, 32);
-  buffer.writeUInt16LE(16, 34);
-  buffer.write("data", 36);
-  buffer.writeUInt32LE(samples.length * 2, 40);
-  samples.forEach((v, i) => buffer.writeInt16LE(Math.round(Math.max(-1, Math.min(1, v)) * 32767), 44 + i * 2));
-  return buffer;
+  return seamless(raw, n, f);
 }
 
 mkdirSync(OUT_DIR, { recursive: true });
 Object.keys(generators).forEach((name, i) => {
-  const file = join(OUT_DIR, `${name}.wav`);
-  writeFileSync(file, toWav(render(name, 1000 + i)));
-  console.log(`✓ ${name}.wav`);
+  writeM4a(render(name, 1000 + i), join(OUT_DIR, `${name}.m4a`));
+  console.log(`✓ ${name}.m4a`);
 });

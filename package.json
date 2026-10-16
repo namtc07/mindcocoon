@@ -11,7 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "gen:audio": "node scripts/generate-ambient.mjs"
+    "gen:audio": "node scripts/generate-ambient.mjs && node scripts/generate-music.mjs"
   },
   "dependencies": {
     "@scure/bip39": "^2.4.0",

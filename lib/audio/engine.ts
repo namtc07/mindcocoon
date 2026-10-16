@@ -2,9 +2,11 @@ import { SOUND_TRACKS, TRACK_BY_ID } from "@/lib/sounds";
 
 /**
  * Ambient mixer. Module-level so playback survives route changes; one
- * HTMLAudioElement per track (works in background tabs and with the OS
- * media controls via the Media Session API).
+ * HTMLAudioElement per track (keeps playing in background tabs and shows in the
+ * OS media controls via the Media Session API).
  */
+
+export type SleepMinutes = 10 | 20 | 30 | 60;
 
 export interface AudioState {
   /** Tracks currently playing. */
@@ -14,18 +16,25 @@ export interface AudioState {
   volumes: Record<string, number>;
   master: number;
   loop: boolean;
+  /** Epoch ms when the sleep timer stops everything, or null. */
+  sleepEndsAt: number | null;
 }
 
 const PREFS_KEY = "mindcocoon:audio";
+const FADE_MS = 60_000;
+const TICK_MS = 1_000;
 const DEFAULT_STATE: AudioState = {
   playing: [],
   held: [],
   volumes: Object.fromEntries(SOUND_TRACKS.map((t) => [t.id, 0.6])),
   master: 0.8,
   loop: true,
+  sleepEndsAt: null,
 };
 
 let state: AudioState | null = null;
+let fade = 1;
+let sleepTimer: ReturnType<typeof setInterval> | null = null;
 const elements = new Map<string, HTMLAudioElement>();
 const listeners = new Set<() => void>();
 
@@ -44,7 +53,7 @@ function loadState(): AudioState {
       };
     }
   } catch {
-    // Ignore unreadable prefs.
+    // Unreadable prefs: use defaults.
   }
   return state;
 }
@@ -63,11 +72,22 @@ function setState(patch: Partial<AudioState>) {
 
 export function subscribeAudio(listener: () => void) {
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
 export const getAudioState = () => loadState();
 export const getAudioServerState = () => DEFAULT_STATE;
+
+function applyVolume(id: string, el: HTMLAudioElement) {
+  const s = loadState();
+  el.volume = Math.min(1, Math.max(0, (s.volumes[id] ?? 0.6) * s.master * fade));
+}
+
+function applyAllVolumes() {
+  elements.forEach((el, id) => applyVolume(id, el));
+}
 
 function element(id: string): HTMLAudioElement {
   let el = elements.get(id);
@@ -80,9 +100,8 @@ function element(id: string): HTMLAudioElement {
     });
     elements.set(id, el);
   }
-  const s = loadState();
-  el.loop = s.loop;
-  el.volume = (s.volumes[id] ?? 0.6) * s.master;
+  el.loop = loadState().loop;
+  applyVolume(id, el);
   return el;
 }
 
@@ -120,7 +139,7 @@ export async function resumeAll() {
   await Promise.allSettled(held.map((id) => playTrack(id)));
 }
 
-/** Stops and forgets the current mix. */
+/** Stops and forgets the current mix (and any sleep timer). */
 export function stopAll() {
   const { playing } = loadState();
   playing.forEach((id) => {
@@ -130,22 +149,20 @@ export function stopAll() {
       el.currentTime = 0;
     }
   });
-  setState({ playing: [], held: [] });
+  clearSleep();
+  setState({ playing: [], held: [], sleepEndsAt: null });
 }
 
 export function setTrackVolume(id: string, volume: number) {
   const s = loadState();
   setState({ volumes: { ...s.volumes, [id]: volume } });
   const el = elements.get(id);
-  if (el) el.volume = volume * s.master;
+  if (el) applyVolume(id, el);
 }
 
 export function setMasterVolume(master: number) {
   setState({ master });
-  const s = loadState();
-  elements.forEach((el, id) => {
-    el.volume = (s.volumes[id] ?? 0.6) * master;
-  });
+  applyAllVolumes();
 }
 
 export function setLoop(loop: boolean) {
@@ -153,6 +170,40 @@ export function setLoop(loop: boolean) {
   elements.forEach((el) => {
     el.loop = loop;
   });
+}
+
+// --- Sleep timer ---------------------------------------------------------------
+
+function clearSleep() {
+  if (sleepTimer) clearInterval(sleepTimer);
+  sleepTimer = null;
+  if (fade !== 1) {
+    fade = 1;
+    applyAllVolumes();
+  }
+}
+
+function tickSleep() {
+  const { sleepEndsAt } = loadState();
+  if (sleepEndsAt === null) return;
+  const remaining = sleepEndsAt - Date.now();
+  if (remaining <= 0) {
+    stopAll();
+    return;
+  }
+  fade = Math.min(1, remaining / FADE_MS);
+  applyAllVolumes();
+}
+
+/** Fades everything out over the last minute, then stops. Null cancels. */
+export function setSleepTimer(minutes: SleepMinutes | null) {
+  clearSleep();
+  if (minutes === null) {
+    setState({ sleepEndsAt: null });
+    return;
+  }
+  setState({ sleepEndsAt: Date.now() + minutes * 60_000 });
+  sleepTimer = setInterval(tickSleep, TICK_MS);
 }
 
 function syncMediaSession() {
@@ -173,4 +224,15 @@ function syncMediaSession() {
   navigator.mediaSession.setActionHandler("play", () => void resumeAll());
   navigator.mediaSession.setActionHandler("pause", pauseAll);
   navigator.mediaSession.setActionHandler("stop", stopAll);
+}
+
+export function __getElementForTests(id: string) {
+  return elements.get(id);
+}
+
+export function __resetAudioForTests() {
+  clearSleep();
+  elements.clear();
+  state = null;
+  fade = 1;
 }

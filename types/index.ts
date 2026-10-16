@@ -35,6 +35,8 @@ export interface SoundTrack {
   category: string;
   src: string;
   isPremium: boolean;
+  /** Moods this track suits ("Tonight's music"). */
+  moods?: MoodType[];
 }
 
 /** Decrypted shape of an encrypted JournalEntry, only ever held in memory. */
