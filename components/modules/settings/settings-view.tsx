@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { AccountSection } from "@/components/modules/account/account-section";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { useAuth } from "@/hooks/use-auth";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { isAnalyticsEnabled, setAnalyticsEnabled, subscribeAnalyticsPref } from "@/lib/analytics";
 import { downloadExport, eraseEverything } from "@/lib/data";
@@ -49,6 +51,7 @@ export function SettingsView({ onErased = () => window.location.reload() }: { on
   const { t, locale, setLocale, href } = useI18n();
   const { theme, setTheme } = useTheme();
   const hydrated = useHydrated();
+  const auth = useAuth();
   const analytics = useSyncExternalStore(subscribeAnalyticsPref, isAnalyticsEnabled, () => true);
   const [erasing, setErasing] = useState(false);
   const [confirmText, setConfirmText] = useState("");
@@ -85,6 +88,12 @@ export function SettingsView({ onErased = () => window.location.reload() }: { on
             {t.settings.vaultLink}
           </Link>
         </Section>
+
+        {auth.status !== "disabled" && auth.status !== "loading" && (
+          <Section title={t.settings.account}>
+            <AccountSection />
+          </Section>
+        )}
 
         <Section title={t.settings.privacy}>
           <label className="flex items-start gap-3">
