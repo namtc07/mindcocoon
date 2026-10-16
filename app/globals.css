@@ -135,3 +135,11 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Shared by the vent editor and the dissolve overlay so released text doesn't jump. */
+@utility vent-type {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  line-height: 1.75;
+  color: var(--foreground);
+}
