@@ -103,7 +103,7 @@ const generators = {
     const sway = drift(rand, 0.2);
     let drop = 0, dropDecay = 0;
     const dropLp = onePoleHP(1800);
-    return (t) => {
+    return () => {
       if (rand() < 14 / SR) { drop = 0.25 + rand() * 0.5; dropDecay = Math.exp(-1 / (SR * (0.004 + rand() * 0.01))); }
       drop *= dropDecay;
       const bed = lp(hp(white()), 5200) * (0.55 + 0.25 * sway());

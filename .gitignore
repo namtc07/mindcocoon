@@ -42,3 +42,8 @@ next-env.d.ts
 
 # brainstorming mockups
 .superpowers/
+
+# testing
+/test-results
+/playwright-report
+/blob-report
