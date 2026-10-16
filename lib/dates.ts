@@ -34,14 +34,14 @@ export function partOfDay(date: Date): "morning" | "afternoon" | "evening" | "ni
   return "night";
 }
 
-const timeFormatter = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
-const dayFormatter = new Intl.DateTimeFormat(undefined, {
-  weekday: "long",
-  month: "long",
-  day: "numeric",
-});
-const shortDayFormatter = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" });
+export const formatTime = (iso: string, locale: string) =>
+  new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).format(new Date(iso));
 
-export const formatTime = (iso: string) => timeFormatter.format(new Date(iso));
-export const formatDay = (date: Date) => dayFormatter.format(date);
-export const formatShortDay = (date: Date) => shortDayFormatter.format(date);
+export const formatDay = (date: Date, locale: string) =>
+  new Intl.DateTimeFormat(locale, { weekday: "long", month: "long", day: "numeric" }).format(date);
+
+export const formatShortDay = (date: Date, locale: string) =>
+  new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" }).format(date);
+
+export const formatWeekdayInitial = (date: Date, locale: string) =>
+  new Intl.DateTimeFormat(locale, { weekday: "narrow" }).format(date);

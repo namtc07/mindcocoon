@@ -1,22 +1,24 @@
 import { BookLock, Feather, Leaf, Settings2, Sunrise, Waves, type LucideIcon } from "lucide-react";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 
 export interface NavItem {
   href: string;
-  label: string;
+  labelKey: keyof Dictionary["nav"];
   icon: LucideIcon;
   /** Shown in the mobile tab bar (settings lives in the mobile header instead). */
   inTabBar: boolean;
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "Today", icon: Sunrise, inTabBar: true },
-  { href: "/vent", label: "Vent", icon: Feather, inTabBar: true },
-  { href: "/mood", label: "Mood", icon: Waves, inTabBar: true },
-  { href: "/sanctuary", label: "Sanctuary", icon: Leaf, inTabBar: true },
-  { href: "/vault", label: "Vault", icon: BookLock, inTabBar: true },
-  { href: "/settings", label: "Settings", icon: Settings2, inTabBar: false },
+  { href: "/", labelKey: "today", icon: Sunrise, inTabBar: true },
+  { href: "/vent", labelKey: "vent", icon: Feather, inTabBar: true },
+  { href: "/mood", labelKey: "mood", icon: Waves, inTabBar: true },
+  { href: "/sanctuary", labelKey: "sanctuary", icon: Leaf, inTabBar: true },
+  { href: "/vault", labelKey: "vault", icon: BookLock, inTabBar: true },
+  { href: "/settings", labelKey: "settings", icon: Settings2, inTabBar: false },
 ];
 
-export function isActive(pathname: string, href: string) {
-  return href === "/" ? pathname === "/" : pathname.startsWith(href);
+/** `path` is locale-free, e.g. "/vent". */
+export function isActive(path: string, href: string) {
+  return href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
 }

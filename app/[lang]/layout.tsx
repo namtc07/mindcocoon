@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk, Newsreader } from "next/font/google";
 import { notFound } from "next/navigation";
 import { I18nProvider } from "@/components/providers/i18n-provider";
+import { AppShell } from "@/components/shell/app-shell";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { LOCALES, isLocale } from "@/lib/i18n/config";
@@ -48,7 +49,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
       <body className="min-h-full">
         <ThemeProvider>
           <I18nProvider locale={lang} dictionary={getDictionary(lang)}>
-            {children}
+            <AppShell>{children}</AppShell>
             <Toaster position="top-center" />
           </I18nProvider>
         </ThemeProvider>
