@@ -70,3 +70,22 @@ export async function requestPersistentStorage(): Promise<boolean> {
   write(PERSIST_KEY, granted ? "1" : "0");
   return granted;
 }
+
+// --- Install hint visibility (shown inline on Today, never as an overlay) ---------
+
+let hintVisible = false;
+const hintListeners = new Set<() => void>();
+
+export function setInstallHintVisible(visible: boolean) {
+  hintVisible = visible;
+  hintListeners.forEach((l) => l());
+}
+
+export const getInstallHintVisible = () => hintVisible;
+
+export function subscribeInstallHint(listener: () => void) {
+  hintListeners.add(listener);
+  return () => {
+    hintListeners.delete(listener);
+  };
+}

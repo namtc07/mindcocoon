@@ -3,6 +3,7 @@
 import { Feather, Music2, Wind, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { AdBanner } from "@/components/modules/ads/ad-banner";
+import { InstallHint } from "@/components/modules/pwa/install-hint";
 import { HeavyNudge } from "@/components/modules/safety/heavy-nudge";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { useNow } from "@/hooks/use-now";
@@ -58,6 +59,7 @@ export function TodayView() {
         />
       </nav>
 
+      <InstallHint />
       <AdBanner placement="today" />
     </div>
   );
