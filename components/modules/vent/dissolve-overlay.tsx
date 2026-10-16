@@ -31,11 +31,6 @@ const STAGGER_MS = 1300;
 const REDUCED_MS = 600;
 const CHAR_LIMIT = 600;
 
-/**
- * Splits text into fragments (characters for short text, words for long text)
- * and assigns each a random drift. Fragments near the end leave first, so the
- * text appears to burn away from the bottom up.
- */
 /** User-perceived characters, so Vietnamese diacritics stay attached to their letter. */
 function graphemes(text: string): string[] {
   if (typeof Intl !== "undefined" && "Segmenter" in Intl) {
@@ -45,6 +40,11 @@ function graphemes(text: string): string[] {
   return Array.from(text);
 }
 
+/**
+ * Splits text into fragments (characters for short text, words for long text)
+ * and assigns each a random drift. Fragments near the end leave first, so the
+ * text appears to burn away from the bottom up.
+ */
 export function planDissolve(text: string, random: () => number = Math.random): DissolvePlan {
   const normalized = text.normalize("NFC");
   const parts = normalized.length <= CHAR_LIMIT ? graphemes(normalized) : normalized.split(/(\s+)/);

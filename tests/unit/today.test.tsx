@@ -30,4 +30,26 @@ describe("Today", () => {
     renderWithProviders(<TodayView />, "vi");
     expect(await screen.findByRole("link", { name: "Viết về điều này" })).toBeInTheDocument();
   });
+
+  it("gently suggests talking to someone after a heavy week", async () => {
+    localStorage.removeItem("mc:heavy-nudge");
+    for (let i = 0; i < 7; i++) {
+      await getStorage().moods.add({
+        id: `h${i}`,
+        mood: "heavy",
+        tags: [],
+        createdAt: new Date(Date.now() - i * 86_400_000).toISOString(),
+      });
+    }
+    renderWithProviders(<TodayView />);
+    expect(await screen.findByText(/these last days seem heavy/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /see who you can talk to/i })).toHaveAttribute("href", "/en/help");
+    expect(localStorage.getItem("mc:heavy-nudge")).not.toBeNull();
+  });
+
+  it("stays quiet without a heavy week", async () => {
+    renderWithProviders(<TodayView />);
+    await screen.findByRole("radiogroup");
+    expect(screen.queryByText(/these last days seem heavy/i)).not.toBeInTheDocument();
+  });
 });

@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { createStore, entries } from "idb-keyval";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { VentView } from "@/components/modules/vent/vent-view";
+import { __resetGentleCardForTests } from "@/components/modules/safety/gentle-card";
 import { getStorage } from "@/lib/storage";
 import { __setIterationsForTests } from "@/lib/vault/keyring";
 import { __resetVaultForTests, getVaultState } from "@/lib/vault/session";
@@ -24,6 +25,7 @@ async function dumpEverything() {
 beforeEach(async () => {
   __setIterationsForTests(1_000);
   __resetVaultForTests();
+  __resetGentleCardForTests();
   await getStorage().journal.clear();
 });
 
@@ -65,5 +67,31 @@ describe("Vent", () => {
     expect(JSON.stringify(stored)).not.toContain("secret words");
     expect(getVaultState().entries[0]).toMatchObject({ title: "t", body: SECRET });
     expect(await screen.findByRole("textbox", { name: /write/i })).toHaveValue("");
+  });
+
+  it("offers support before releasing heavy words, then lets go", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<VentView />);
+    await user.type(await screen.findByRole("textbox", { name: /write/i }), "I want to kill myself");
+    await user.click(screen.getByRole("button", { name: /release into the void/i }));
+
+    expect(await screen.findByText(/sounds really heavy/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /call a support line/i })).toHaveAttribute("href", "/en/help");
+    await user.click(screen.getByRole("button", { name: /continue releasing/i }));
+    expect(await screen.findByText("Let go.", {}, { timeout: 3000 })).toBeInTheDocument();
+  });
+
+  it("shows the support card only once per session", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<VentView />);
+    const editor = await screen.findByRole("textbox", { name: /write/i });
+    await user.type(editor, "I want to die");
+    await user.click(screen.getByRole("button", { name: /release into the void/i }));
+    await user.click(await screen.findByRole("button", { name: /continue releasing/i }));
+    await user.click(await screen.findByRole("button", { name: /write again/i }, { timeout: 3000 }));
+
+    await user.type(await screen.findByRole("textbox", { name: /write/i }), "I want to die");
+    await user.click(screen.getByRole("button", { name: /release into the void/i }));
+    expect(screen.queryByText(/sounds really heavy/i)).not.toBeInTheDocument();
   });
 });

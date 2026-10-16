@@ -4,10 +4,13 @@ import { ArrowLeft, BookLock } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useState } from "react";
+import { GentleCard, claimGentleCard } from "@/components/modules/safety/gentle-card";
+import { HelpLink } from "@/components/modules/safety/help-link";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { useNow } from "@/hooks/use-now";
 import { promptForDay } from "@/lib/prompts";
+import { checkText } from "@/lib/safety/detect";
 import { AfterRelease } from "./after-release";
 import { DissolveOverlay, planDissolve, type DissolvePlan } from "./dissolve-overlay";
 import { SaveDialog } from "./save-dialog";
@@ -39,6 +42,7 @@ export function VentView() {
   const [plan, setPlan] = useState<DissolvePlan | null>(null);
   const [editorKey, setEditorKey] = useState(0);
   const [saveOpen, setSaveOpen] = useState(false);
+  const [pending, setPending] = useState<"release" | "save" | null>(null);
   const empty = text.trim().length === 0;
 
   const clearEditor = useCallback(() => {
@@ -46,11 +50,28 @@ export function VentView() {
     setEditorKey((k) => k + 1);
   }, []);
 
-  function release() {
-    if (empty) return;
+  function doRelease() {
     setPlan(planDissolve(text));
     clearEditor();
     setPhase("dissolving");
+  }
+
+  /** Runs the on-device risk check first; the gentle card shows at most once per session. */
+  function attempt(action: "release" | "save") {
+    if (empty) return;
+    if (checkText(text).flagged && claimGentleCard()) {
+      setPending(action);
+      return;
+    }
+    if (action === "release") doRelease();
+    else setSaveOpen(true);
+  }
+
+  function continuePending() {
+    const action = pending;
+    setPending(null);
+    if (action === "release") doRelease();
+    else if (action === "save") setSaveOpen(true);
   }
 
   const finishDissolve = useCallback(() => {
@@ -106,13 +127,13 @@ export function VentView() {
               <div className="sticky bottom-0 mt-8 flex flex-wrap items-center gap-3 bg-background/90 py-4 backdrop-blur">
                 <Button
                   size="lg"
-                  onClick={release}
+                  onClick={() => attempt("release")}
                   disabled={empty}
                   className="rounded-full bg-ember px-5 text-primary-foreground hover:bg-ember/90"
                 >
                   {t.vent.release}
                 </Button>
-                <Button size="lg" variant="ghost" onClick={() => setSaveOpen(true)} disabled={empty} className="rounded-full">
+                <Button size="lg" variant="ghost" onClick={() => attempt("save")} disabled={empty} className="rounded-full">
                   {t.vent.saveToVault}
                 </Button>
               </div>
@@ -121,11 +142,16 @@ export function VentView() {
         </div>
 
         <footer className="pt-6 text-center text-sm">
-          <Link href={href("/help")} className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
-            {t.vent.helpLink}
-          </Link>
+          <HelpLink />
         </footer>
       </div>
+
+      <GentleCard
+        open={pending !== null}
+        continueLabel={pending === "save" ? t.safety.continueSave : t.safety.continueRelease}
+        onContinue={continuePending}
+        onClose={() => setPending(null)}
+      />
 
       <SaveDialog
         open={saveOpen}

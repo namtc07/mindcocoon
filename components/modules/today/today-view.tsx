@@ -3,6 +3,7 @@
 import { Feather, Music2, Wind, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { AdBanner } from "@/components/modules/ads/ad-banner";
+import { HeavyNudge } from "@/components/modules/safety/heavy-nudge";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { useNow } from "@/hooks/use-now";
 import { formatDay, partOfDay } from "@/lib/dates";
@@ -37,6 +38,7 @@ export function TodayView() {
         <h1 className="mt-1 text-lg text-foreground/90">{t.today.greeting[partOfDay(now)]}</h1>
       </header>
 
+      <HeavyNudge now={now} />
       <ReflectionPrompt now={now} />
       <QuickCheckin />
 
