@@ -1,0 +1,72 @@
+# MindCocoon v1 — execution ledger
+
+Rulings made during implementation (each with its cost if wrong) and deferred review minors.
+
+- Setup: Ruling: work on branch feat/mindcocoon-v1 in the main checkout (no separate worktree) — pre-plan scaffold was uncommitted in this checkout and the repo is brand new; committed it as baseline 'chore: pre-plan scaffold' — cost if wrong: none (branch isolates main).
+- Setup: Ruling: pre-plan scaffold modules (lib/crypto, lib/storage, lib/audio-engine, lib/dates, lib/prompts) were written before tests; tasks that reuse them add tests that must fail on the new behavior first, and existing helpers get characterization tests in the task that touches them — cost if wrong: an untested helper path ships.
+- - T15→T16/T18: getSupabase() null-safe — consistent. Ruling: env var is NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (plan updated) — cost if wrong: rename.
+- Task 1: Ruling: dropped @vitejs/plugin-react (unresolvable optional-peer conflict @babel/core 7 vs 8 via shadcn); Vitest transforms TSX itself using tsconfig jsx=react-jsx — cost if wrong: add plugin later with overrides.
+- Task 1: Ruling: bumped @types/node ^20 → ^24 (vitest 5 peer; Vercel default runtime is Node 24) — cost if wrong: none.
+- Task 3: Ruling: deleted old lib/vault.ts + hooks/use-vault.ts in Task 3 (plan: Task 4) — they no longer compile against the new VaultKeyRepository; Task 4 recreates them — cost if wrong: none.
+- Task 4: Ruling: session exports 3 extras beyond plan — replacePasscode (set new passcode after recovery-code/server unlock in the forgot flow, Task 9/17), ensureRecoveryCode + getBackupWraps (Task 17 needs a code before first push, and wraps for upload) — cost if wrong: unused exports.
+- Task 5: Ruling: mood store also exports onMoodChange(listener) (mirror of onVaultChange) and loadMoods(force) — needed by Task 17 backup push/restore — cost if wrong: unused export.
+- Task 6: Ruling: mini-audio-bar.tsx not created here — a bar without the engine wiring is dead UI; Task 11 builds it whole — cost if wrong: none.
+- Task 6: Ruling: adding tags/note after a one-tap check-in = addMood(details) then removeMood(previous) (no update API) so a locked-vault failure leaves the original log intact — cost if wrong: log id/createdAt change on edit.
+- Task 6: Ruling: next/navigation + next/link mocked globally in tests/setup.ts (helper-level vi.mock is not hoisted before component imports) — cost if wrong: none.
+- Task 6: Ruling: lib/dates formatters now take a locale argument (were browser-default) — needed for vi/en — cost if wrong: none.
+- Task 6: Ruling: AdBanner stub file created now at components/modules/ads/ad-banner.tsx (Task 14 fills it) — cost if wrong: none.
+- Task 7: Ruling: dissolve completion is timer-driven (known total duration) instead of framer's onAnimationComplete — deterministic in tests and robust to skipped frames — cost if wrong: none.
+- Task 7: Ruling: tests run with useReducedMotion mocked true (600ms fade) and use the real IndexedDB driver (fake-indexeddb) to dump all stored values — cost if wrong: none.
+- Task 7: Ruling: test infra — RTL cleanup added to tests/setup.ts (not automatic without vitest globals), renderWithProviders uses the wrapper option so rerender keeps providers — cost if wrong: none.
+- Task 8: Ruling: accented 'tự tử'/'tự vẫn' matched on the original text; unaccented 'tu tu' only with intent words (muon/tinh/dinh/nghi den) — 'từ từ' (slowly) normalizes to the same letters — cost if wrong: an unaccented bare 'tu tu' is missed (help link still always visible).
+- Task 8: Ruling: gentle card also guards 'Save to vault' with a 'Continue saving' label (spec §4.2 says check on Thả or Cất) — cost if wrong: none.
+- Task 8: Ruling: help page sorts the locale's home country first only for vi (VN); en shows all lines sorted open-first — no country detection without location — cost if wrong: an English-speaking Vietnamese user sees VN lines in the list, not first.
+- Task 9: Ruling: passcode submit button labelled 'Save passcode' (opener stays 'Set a passcode') to keep names unambiguous; test adjusted while still RED — cost if wrong: copy only.
+- Task 9: Ruling: after unlocking with the recovery code, the user must choose a new passcode (replacePasscode) — the old one is assumed forgotten — cost if wrong: one extra step.
+- Task 9: Ruling: the unlock panel opens straight on the forgot flow when a device reset is pending — cost if wrong: none.
+- Task 10: Ruling: mood colours re-stepped (were muted brand tints) — dataviz validator failed chroma/CVD (peaceful↔anxious deutan ΔE 3.5); new per-theme sets pass all-pairs checks (dark CVD ΔE 9.7, light 9.7, no WARN in light); numb moved from grey to dusty violet to clear the chroma floor — cost if wrong: palette slightly more saturated than the original muted brief.
+- Task 10: Ruling: history list doubles as the dataviz 'table view' (mood, tags, date per row); legend always shown; heatmap cells carry aria-label + title tooltip — cost if wrong: none.
+- Task 11: Ruling: all placeholder audio now AAC .m4a via ffmpeg (scripts/wav.mjs) — WAV would be ~26 MB for night-time mobile data; now 5.9 MB; gen:audio needs ffmpeg — cost if wrong: contributors without ffmpeg can't regenerate (committed files still work).
+- Task 11: Ruling: couldn't listen to the music; verified instead with ffmpeg volumedetect (all 14 files mean ≈ -18 dB, peaks ≤ -0.1 dB, none silent) — cost if wrong: placeholder pieces may sound plain; replaced before launch anyway.
+- Task 11: Ruling: mini bar shows sleep time as whole minutes (not mm:ss) and useNow now ticks every 5 s (was per-minute, showed '21 min' right after choosing 20) — cost if wrong: slightly more re-renders.
+- Task 11: Ruling: 'Round n of 4' counter omitted from breathing (spec: no counters); phase seconds kept as breathing guidance — cost if wrong: none.
+- Task 12: Ruling: lib/analytics.ts created now with only the preference store (isAnalyticsEnabled/setAnalyticsEnabled/subscribe); Task 18 adds sending — avoids a throwaway localStorage binding — cost if wrong: none.
+- Task 12: Ruling: export/erase logic lives in lib/data.ts (buildExport, downloadExport, eraseEverything); SettingsView takes onErased (defaults to reload) for testability — cost if wrong: none.
+- Task 12: Ruling: hydration-safe reads (useSyncExternalStore with server snapshots; useHydrated for theme) instead of setState-in-effect — cost if wrong: none.
+- Task 13: Ruling: service worker serves /audio/* range requests by slicing a fully cached copy (206) — media elements always send Range, so a range-skipping SW would never make audio available offline — cost if wrong: first play downloads the whole file (≤ 0.7 MB).
+- Task 13: Ruling: offline navigation to an uncached page falls back to the cached /<lang>/help page — the one page that must always work — cost if wrong: none.
+- Task 13: Ruling: sw-register + install hint merged into one PwaBootstrap component; persistent storage requested on the first vault/mood change (or at start when installed) — cost if wrong: none.
+- Task 13: Verified manually (prod build): /en/help reloads offline; /vi/vent loads offline and Release works. Note for Task 19: first-run dialog hides content from getByRole — e2e must set mc:first-run-seen.
+- Task 14: Ruling: ad config split into parseAdsConfig(env) (pure, tested) + getAdsConfig() reading NEXT_PUBLIC_* by literal name (required for build-time inlining); a slot also requires the client id — cost if wrong: none.
+- Task 15: Ruling: migration NOT applied yet — no Supabase CLI and no DB password; applying DDL to the owner's project is an outside-the-worktree action → batched into the end-of-Part-B ask (with the dashboard reminder the user requested). Live RLS verification (Step 2) deferred until then; unit tests cover the client — cost if wrong: Part B features fail live until applied.
+- Task 15: Ruling: column-level grants — vault_recovery_secrets insert(user_id) only so the secret is always server-generated; app_opens insert(device_id,hour_bucket,locale) only; app_opens policy bounds hour_bucket to ±2h of now() to limit junk — cost if wrong: none.
+- Task 15: Ruling: env var NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (new key format) instead of the plan's ANON_KEY; supabase-js pinned to 2.118.0 — cost if wrong: rename.
+- Task 16: Ruling: under-16 answer hides the sign-in button for good and shows a one-line explanation instead (spec: no nudges for under-16) — cost if wrong: a 16-year-old who tapped 'Not yet' by mistake must clear site data (or we add a reset later).
+- Task 16: Ruling: auth store exposes onSignedIn(listener) + getAccessToken() for Task 17/route auth — cost if wrong: none.
+- Task 16: Verified live: DELETE /api/account → 401 without token and with an invalid token (real Supabase getUser call). Manual OTP/Google sign-in pending the owner's dashboard config (Google provider is currently disabled).
+- Task 17: Ruling: on sign-in with local data and a remote backup, the engine pushes only when it can open the remote with the local data key AND every remote entry/log id exists locally (same vault, local is newer); otherwise 'conflict' — v1 never merges and never silently overwrites — cost if wrong: a returning user may see the conflict dialog after deleting entries elsewhere.
+- Task 17: Ruling: engine adds subscribe()/onRecoveryCode() beyond the plan's API (UI status + showing a freshly created recovery code); active engine kept in lib/backup/active.ts — cost if wrong: none.
+- Task 17: Ruling: after restore, the session unlocks with the same secret the user just typed (recovery code or passcode), so a passcode-protected backup doesn't land locked — cost if wrong: none.
+- Task 17: Ruling: retry test made robust with vi.waitFor — WebCrypto resolves on the real event loop, so fake-timer advances alone were flaky under full-suite load (root cause, not a symptom patch) — cost if wrong: none.
+- Task 18: Ruling: one attempt per page load (flag set before the request, no retry) — counts are approximate by design; a failed request is not worth retrying at night on bad networks — cost if wrong: slight undercount.
+- Task 19: Ruling: FOUND via e2e — iOS install hint was a fixed overlay covering the vault header controls; moved inline onto Today (InstallHint) with visibility in a small store — cost if wrong: hint less prominent.
+- Task 19: Ruling: e2e waits for networkidle before typing — WebKit run showed typing before hydration leaves React state empty (buttons disabled until the next keystroke) — cost if wrong: on very slow networks a first burst of typing needs one more keystroke to enable Release/Save (deferred minor).
+- Final review: opus reviewer — verdict 'not ready': 1 Critical, 6 Important, several Minor.
+- Final: fixed C1 auto-push overwrote pending restore — 'does not push anything while a restore decision is pending' RED→GREEN (initial false-pass fixed by letting real WebCrypto finish), suite 153/153
+- Final: fixed I1 false conflict on launch — 'waits for the vault to be unlocked…' + 'opens the vault itself before deciding' RED→GREEN, suite 153/153
+- Final: fixed I2 note on Today without passcode / locked vault — 3 Today tests RED→GREEN, suite 153/153
+- Final: fixed I3 recovery-code reset never set new passcode — 'sets a new passcode after unlocking with the recovery code' RED→GREEN, suite 153/153
+- Final: Ruling: I4 (plan/spec flaw) — only the recovery wrap is uploaded; restore needs the 12-word code (spec allowed 'or the passcode') because a 4–6 digit PIN wrap stored server-side is offline-brute-forceable, breaking §6.1's promise — keyring/backup tests RED→GREEN — cost if wrong: users who lost the recovery code can't restore with their passcode on a new device. OWNER TO CONFIRM.
+- Final: fixed I5 risk-phrase gaps — 10 phrase tests RED→GREEN (+2 negatives), suite 153/153
+- Final: fixed I6 no backup off switch — 'lets a signed-in user turn backup off' RED→GREEN, suite 153/153
+- Final: fixed flaky suite (reviewer's minor) — root cause: an overtaken initVault wrote over newer state after a reset (also reachable via wipeVault) — 'ignores an initialisation that was overtaken by a reset' RED→GREEN, suite 5×153/153
+- Final: minor (deferred): overlapping pushes not serialised; push errors before upload leave status 'pending'
+- Final: minor (deferred): restore writes journal/moods/keyring non-atomically and drops the local server wrap until next sign-in
+- Final: minor (deferred): local storage uses whole-list read-modify-write (two tabs can race)
+- Final: minor (deferred): released text stays in React state if the user navigates away mid-dissolve (~2.5 s)
+- Final: minor (deferred): service worker — suffix ranges, ever-growing single cache, CSS not cached before SW control
+- Final: minor (deferred): quiet hours fail open when NEXT_PUBLIC_QUIET_HOURS is unset (ads are off by default anyway)
+- Final: minor (deferred): third-party AdSense script would share the origin with decrypted entries — sandbox/CSP before enabling ads
+- Final: minor (deferred): 'Erase everything' keeps the Supabase session signed in
+- Final: minor (deferred): recovery code card is shown after the first upload rather than before
+- Final: minor (deferred): typing before hydration needs one more keystroke to enable Vent buttons (from Task 19)
