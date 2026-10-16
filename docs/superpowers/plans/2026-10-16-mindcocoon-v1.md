@@ -382,7 +382,8 @@ Behaviour (spec §4.2): fixed full-screen surface (`fixed inset-0 z-40`), autosi
 
 **Files:**
 - Create: `supabase/migrations/0001_init.sql`, `lib/supabase/client.ts`, `docs/SUPABASE.md`
-- Modify: `.env.example` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` server-only), `package.json` (`@supabase/supabase-js`)
+- Modify: `.env.example` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` server-only), `package.json` (`@supabase/supabase-js`, exact pinned version — no `@supabase/ssr`: the app is client-only/local-first, sessions live in localStorage, and `proxy.ts` stays locale-only)
+- Load the project skills `.claude/skills/supabase` and `.claude/skills/supabase-postgres-best-practices` before writing SQL or client code.
 
 **Interfaces:**
 - Produces: `getSupabase(): SupabaseClient | null` (null when env vars missing — every caller degrades to local-only), tables:
@@ -409,8 +410,8 @@ create table public.app_opens (
   locale text not null check (locale in ('vi','en'))
 );
 ```
-  RLS: enable on all three; `vault_backups` and `vault_recovery_secrets` select/insert/update/delete `using (auth.uid() = user_id)`; `app_opens` insert for `anon, authenticated` with `check (hour_bucket = date_trunc('hour', hour_bucket))`, no select policy. A unique index on `app_opens (device_id, hour_bucket)` to dedupe.
-- [ ] **Step 1: Provision (needs the user):** create the Supabase project — preferred via Vercel Marketplace (`vercel integration add supabase`, then `vercel env pull .env.local`) or supabase.com; enable Email (OTP) and Google providers; add redirect URLs `http://localhost:3000/*/auth/callback` and the production domain. Record steps in `docs/SUPABASE.md`. **Pause and ask the user for credentials if not available — do not invent keys.**
+  RLS: enable on all three. Policies use `to authenticated` + `(select auth.uid()) = user_id`; every UPDATE policy has both `using` and `with check`, and each table that is updated also has a SELECT policy. `vault_recovery_secrets`: select + insert only (no update/delete from clients). `app_opens`: insert policy `to anon, authenticated` with `with check (hour_bucket = date_trunc('hour', hour_bucket))`, no select policy. Explicit `grant` statements for `anon`/`authenticated` on exactly these operations (Data API may not auto-expose new tables). Unique index on `app_opens (device_id, hour_bucket)`. No `security definer` functions.
+- [ ] **Step 1: Provision — DONE (2026-10-16):** project `apqhxpcgtpzayswgdcqw` exists; keys are in `.env.local` (git-ignored). Remaining user actions: create the Supabase project — preferred via Vercel Marketplace (`vercel integration add supabase`, then `vercel env pull .env.local`) or supabase.com; enable Email (OTP) and Google providers; add redirect URLs `http://localhost:3000/*/auth/callback` and the production domain. Record steps in `docs/SUPABASE.md`. **Pause and ask the user for credentials if not available — do not invent keys.**
 - [ ] **Step 2:** Apply the migration (`supabase db push` or SQL editor). Verify with an anon client in a scratch script: insert into `app_opens` succeeds, select returns 0 rows; select from `vault_backups` as anon returns 0 rows.
 - [ ] **Step 3:** Implement `getSupabase()` (browser singleton, `auth: { persistSession: true, flowType: 'pkce' }`). `npm run typecheck`.
 - [ ] **Step 4:** Commit `feat(supabase): schema with RLS and browser client`.
@@ -496,6 +497,6 @@ createBackupEngine(remote: BackupRemote): {
 - [ ] **Step 1: E2E specs** (both projects): `/` with `Accept-Language: vi` → URL `/vi` and heading in Vietnamese; vent: type, release, after-release text visible, reload → textarea empty, IndexedDB has no journal; vault: save from vent, set passcode, lock, unlock; mood: one-tap check-in shows in week strip; offline (chromium, production build): visit `/en`, `/en/help`, then `context.setOffline(true)` → reload `/en/help` renders hotline list.
 - [ ] **Step 2:** `npm run test:e2e` → all PASS.
 - [ ] **Step 3:** `npm run typecheck && npm run lint && npm test && npm run build` → zero errors, zero warnings from lint.
-- [ ] **Step 4:** `docs/LAUNCH_CHECKLIST.md` = spec §10 items as checkboxes plus: every `HOTLINES` entry verified (number + hours) and flipped to `verified: true`; phrase lists reviewed by a native speaker / mental-health professional; music replaced with licensed tracks; Privacy Policy + Terms pages; Supabase SMTP configured for production OTP mail; legal review (Nghị định 13/2023) done; AdSense application after traffic, then block sensitive categories (dating, alcohol, gambling, weight loss) in the AdSense dashboard.
+- [ ] **Step 4:** `docs/LAUNCH_CHECKLIST.md` = spec §10 items as checkboxes plus: every `HOTLINES` entry verified (number + hours) and flipped to `verified: true`; phrase lists reviewed by a native speaker / mental-health professional; music replaced with licensed tracks; Privacy Policy + Terms pages; Supabase SMTP configured for production OTP mail; rotate the service-role key (it was shared in a chat session) — create a new `sb_secret_…` key, update Vercel env, disable legacy JWT keys; legal review (Nghị định 13/2023) done; AdSense application after traffic, then block sensitive categories (dating, alcohol, gambling, weight loss) in the AdSense dashboard.
 - [ ] **Step 5:** `README.md` (Vietnamese + English sections): prerequisites (Node ≥ 22), `npm install`, `cp .env.example .env.local`, `npm run gen:audio`, `npm run dev`, tests, deploy on Vercel (link Supabase env vars, set `NEXT_PUBLIC_QUIET_HOURS`, keep ads disabled), how to flip feature flags (env + redeploy).
 - [ ] **Step 6:** Commit `chore: e2e coverage, launch checklist and setup docs`.
