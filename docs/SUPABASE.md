@@ -43,3 +43,24 @@ Then run the advisors (Dashboard → Advisors → Security) and fix anything the
 - Rotate the service-role key: create a new secret key (`sb_secret_…`), update Vercel, then
   disable the legacy JWT keys. (The current one was shared in a chat session.)
 - Re-run the security advisors.
+
+## 5. Reading the open counts
+
+Distinct devices that opened the app each night (21:00–05:00 Vietnam time):
+
+```sql
+select (hour_bucket at time zone 'Asia/Ho_Chi_Minh' - interval '5 hours')::date as night,
+       count(distinct device_id) as devices
+from public.app_opens
+where extract(hour from hour_bucket at time zone 'Asia/Ho_Chi_Minh') >= 21
+   or extract(hour from hour_bucket at time zone 'Asia/Ho_Chi_Minh') < 5
+group by night
+order by night desc;
+```
+
+Opens by local hour (to decide whether quiet hours for ads should stay):
+
+```sql
+select extract(hour from hour_bucket at time zone 'Asia/Ho_Chi_Minh') as hour, count(*)
+from public.app_opens group by hour order by hour;
+```

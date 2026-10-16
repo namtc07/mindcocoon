@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk, Newsreader } from "next/font/google";
 import { notFound } from "next/navigation";
+import { TrackOpen } from "@/components/modules/analytics/track-open";
 import { I18nProvider } from "@/components/providers/i18n-provider";
 import { AppShell } from "@/components/shell/app-shell";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -50,6 +51,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
         <ThemeProvider>
           <I18nProvider locale={lang} dictionary={getDictionary(lang)}>
             <AppShell>{children}</AppShell>
+            <TrackOpen />
             <Toaster position="top-center" />
           </I18nProvider>
         </ThemeProvider>
