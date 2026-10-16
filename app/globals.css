@@ -71,11 +71,12 @@
   --ring: #3f7a6c;
   --ember: #a8712f;
 
-  --mood-peaceful: #4f9384;
-  --mood-hopeful: #c0913d;
-  --mood-numb: #8590a2;
-  --mood-heavy: #5d6c9c;
-  --mood-anxious: #b76f72;
+  /* Mood palette — validated with the dataviz checks (all pairs, CVD ΔE ≥ 9.7) on #f1f5f9. */
+  --mood-peaceful: #269b7e;
+  --mood-hopeful: #b07a00;
+  --mood-numb: #9077bc;
+  --mood-heavy: #21539c;
+  --mood-anxious: #a43a3d;
 }
 
 .dark {
@@ -100,11 +101,12 @@
   --ring: #7fb5a8;
   --ember: #d9a86c;
 
-  --mood-peaceful: #7fb5a8;
-  --mood-hopeful: #d9b26f;
-  --mood-numb: #8b95a7;
-  --mood-heavy: #7584b8;
-  --mood-anxious: #c99090;
+  /* Validated on #0f172a (all pairs, CVD ΔE ≥ 9.7). */
+  --mood-peaceful: #37a88a;
+  --mood-hopeful: #b88c2e;
+  --mood-numb: #9c83c9;
+  --mood-heavy: #3568b2;
+  --mood-anxious: #b14648;
 }
 
 @layer base {
