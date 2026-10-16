@@ -189,8 +189,8 @@ MindCocoon là một "nơi trú ẩn" số để trút bỏ cảm xúc, viết n
 2. Nhờ người có chuyên môn tâm lý duyệt câu chữ an toàn, câu gợi mở và danh sách cụm từ.
 3. Thay **nhạc tạm** bằng nhạc có bản quyền dùng trong app (mua/đặt từ nhạc sĩ; đọc kỹ giấy phép — nhiều kho "royalty-free" cấm dùng như thư viện nghe trong app). Âm thanh nền tạm có thể giữ hoặc thay.
 4. **Trước khi ra mắt v1** (vì đăng nhập + sao lưu đã lên v1): tư vấn pháp lý về Nghị định 13/2023 (dữ liệu người dưới 16, dữ liệu sức khỏe, chính sách quyền riêng tư, nơi đặt máy chủ). Trước khi bật thanh toán (v1.1+): xác định tư cách nhận tiền (cá nhân/công ty) để chọn cổng.
-6. Viết **Chính sách quyền riêng tư** và **Điều khoản sử dụng** (bắt buộc khi có tài khoản).
-5. Đăng ký AdSense khi có lưu lượng.
+5. Viết **Chính sách quyền riêng tư** và **Điều khoản sử dụng** (bắt buộc khi có tài khoản).
+6. Đăng ký AdSense khi có lưu lượng.
 
 ## 11. Quyết định sau review [Claude quyết]
 
