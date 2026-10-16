@@ -65,4 +65,21 @@ describe("account", () => {
     );
     expect(await screen.findByRole("textbox", { name: /code/i })).toBeInTheDocument();
   });
+
+  it("lets a signed-in user turn backup off", async () => {
+    const client = fakeClient();
+    client.auth.getSession.mockResolvedValue({
+      data: { session: { access_token: "t", user: { id: "u1", email: "me@example.com" } } },
+    });
+    supabase.client = client;
+    const AccountSection = await load();
+    const user = userEvent.setup();
+    renderWithProviders(<AccountSection />);
+    const toggle = await screen.findByRole("switch", { name: /back up automatically/i });
+    expect(toggle).toBeChecked();
+    await user.click(toggle);
+    expect(toggle).not.toBeChecked();
+    expect(localStorage.getItem("mc:backup")).toBe("off");
+    expect(screen.getByText(/backup is off/i)).toBeInTheDocument();
+  });
 });

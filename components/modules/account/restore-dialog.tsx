@@ -12,13 +12,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { BackupEngine } from "@/lib/backup/engine";
 
 export function RestoreDialog({ engine, open, onOpenChange }: { engine: BackupEngine | null; open: boolean; onOpenChange: (open: boolean) => void }) {
   const { t } = useI18n();
-  const [mode, setMode] = useState<"recovery" | "passcode">("recovery");
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -28,9 +26,7 @@ export function RestoreDialog({ engine, open, onOpenChange }: { engine: BackupEn
     if (!engine) return;
     setBusy(true);
     setError(null);
-    const ok = await engine
-      .restore(mode === "recovery" ? { recoveryCode: value } : { passcode: value })
-      .catch(() => false);
+    const ok = await engine.restore(value).catch(() => false);
     setBusy(false);
     if (!ok) return setError(t.backup.wrongSecret);
     toast.success(t.backup.restored);
@@ -44,31 +40,17 @@ export function RestoreDialog({ engine, open, onOpenChange }: { engine: BackupEn
         <form onSubmit={submit} className="space-y-4">
           <DialogHeader>
             <DialogTitle className="font-serif text-2xl font-normal">{t.backup.restoreTitle}</DialogTitle>
-            <DialogDescription>{mode === "recovery" ? t.backup.restoreBody : t.backup.restoreBodyPasscode}</DialogDescription>
+            <DialogDescription>{t.backup.restoreBody}</DialogDescription>
           </DialogHeader>
-          {mode === "recovery" ? (
-            <Textarea
-              aria-label={t.vault.recoveryInputLabel}
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              rows={3}
-              className="font-mono"
-              autoComplete="off"
-              spellCheck={false}
-            />
-          ) : (
-            <Input type="password" aria-label={t.vault.passcodeLabel} value={value} onChange={(e) => setValue(e.target.value)} />
-          )}
-          <button
-            type="button"
-            className="text-sm text-muted-foreground hover:text-foreground"
-            onClick={() => {
-              setMode(mode === "recovery" ? "passcode" : "recovery");
-              setValue("");
-            }}
-          >
-            {mode === "recovery" ? t.backup.usePasscode : t.backup.useRecovery}
-          </button>
+          <Textarea
+            aria-label={t.vault.recoveryInputLabel}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            rows={3}
+            className="font-mono"
+            autoComplete="off"
+            spellCheck={false}
+          />
           <p role="alert" className="min-h-5 text-sm text-destructive">
             {error}
           </p>

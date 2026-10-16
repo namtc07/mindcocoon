@@ -75,14 +75,14 @@ describe("snapshots", () => {
 });
 
 describe("backup engine", () => {
-  it("uploads only the passcode and recovery wraps", async () => {
+  it("uploads only the recovery wrap (a short passcode could be brute-forced server-side)", async () => {
     await seed();
     await regenerateRecoveryCode();
     await setVaultPasscode("2468");
     await attachServerSecret("server-secret");
     const remote = new MemoryRemote();
     await createBackupEngine(remote).pushNow();
-    expect(Object.keys(remote.stored!.wraps).sort()).toEqual(["passcode", "recovery"]);
+    expect(Object.keys(remote.stored!.wraps)).toEqual(["recovery"]);
     expect(JSON.stringify(remote.stored)).not.toContain("secret journal words");
   });
 
@@ -97,10 +97,10 @@ describe("backup engine", () => {
     await newDevice();
     const engine = createBackupEngine(remote);
     expect(await engine.onSignedIn()).toBe("restore-available");
-    expect(await engine.restore({ recoveryCode: "abandon ".repeat(11) + "about" })).toBe(false);
+    expect(await engine.restore("abandon ".repeat(11) + "about")).toBe(false);
     expect(getVaultState().entries).toEqual([]);
 
-    expect(await engine.restore({ recoveryCode: code })).toBe(true);
+    expect(await engine.restore(code)).toBe(true);
     expect(getVaultState().entries).toEqual(originalEntries);
     expect(getMoodState().logs).toEqual(originalMoods);
   });
@@ -146,9 +146,11 @@ describe("backup engine", () => {
     await seed();
     await regenerateRecoveryCode();
     const remote = new MemoryRemote();
-    remote.failures = 2;
     const engine = createBackupEngine(remote);
     const stop = engine.start();
+    await engine.onSignedIn(); // no backup yet → pushed, automatic backups armed
+    remote.put.mockClear();
+    remote.failures = 2;
 
     // WebCrypto resolves on the real event loop, so wait for each step instead of asserting immediately.
     await saveVaultEntry({ body: "one more" });
@@ -167,5 +169,55 @@ describe("backup engine", () => {
     await attachServerSecret("server-secret");
     lockVault();
     expect(await unlockWithServerSecret("server-secret")).toBe(true);
+  });
+
+  it("does not push anything while a restore decision is pending", async () => {
+    vi.useFakeTimers();
+    await seed();
+    await regenerateRecoveryCode();
+    const remote = new MemoryRemote();
+    await createBackupEngine(remote).pushNow();
+    const original = remote.stored;
+
+    await newDevice();
+    remote.put.mockClear();
+    const engine = createBackupEngine(remote);
+    const stop = engine.start();
+    expect(await engine.onSignedIn()).toBe("restore-available");
+    await addMood({ mood: "peaceful", tags: [] });
+    await vi.advanceTimersByTimeAsync(20_000);
+    // Let any real WebCrypto work triggered by the timers finish before asserting.
+    vi.useRealTimers();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(remote.put).not.toHaveBeenCalled();
+    expect(remote.stored).toBe(original);
+    stop();
+  });
+
+  it("waits for the vault to be unlocked instead of reporting a conflict", async () => {
+    await seed();
+    await regenerateRecoveryCode();
+    await setVaultPasscode("2468");
+    const remote = new MemoryRemote();
+    await createBackupEngine(remote).pushNow();
+    remote.put.mockClear();
+
+    // Next launch: passcode vault starts locked.
+    __resetVaultForTests();
+    await initVault();
+    const engine = createBackupEngine(remote);
+    expect(await engine.onSignedIn()).toBe("deferred");
+    expect(remote.put).not.toHaveBeenCalled();
+  });
+
+  it("opens the vault itself before deciding (no false conflict on launch)", async () => {
+    await seed();
+    await regenerateRecoveryCode();
+    const remote = new MemoryRemote();
+    await createBackupEngine(remote).pushNow();
+
+    // Next launch: nothing has opened the vault yet.
+    __resetVaultForTests();
+    expect(await createBackupEngine(remote).onSignedIn()).toBe("pushed");
   });
 });

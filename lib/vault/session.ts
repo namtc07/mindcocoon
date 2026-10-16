@@ -46,6 +46,7 @@ let ring: Keyring | null = null;
 let deviceKey: CryptoKey | null = null;
 let dek: UnlockedDek | null = null;
 let initPromise: Promise<void> | null = null;
+let generation = 0;
 const listeners = new Set<() => void>();
 const changeListeners = new Set<() => void>();
 
@@ -114,10 +115,11 @@ async function encryptEntry(k: CryptoKey, entry: DecryptedJournalEntry): Promise
   };
 }
 
-async function openWith(unlocked: UnlockedDek) {
-  dek = unlocked;
+async function openWith(unlocked: UnlockedDek, gen = generation) {
   const stored = await getStorage().journal.list();
   const entries = await Promise.all(stored.map((e) => decryptEntry(unlocked.key, e)));
+  if (gen !== generation) return;
+  dek = unlocked;
   setState({ entries, status: "unlocked" });
   markActivity();
 }
@@ -125,28 +127,39 @@ async function openWith(unlocked: UnlockedDek) {
 /** Idempotent. A vault without a passcode unlocks on its own. */
 export function initVault(): Promise<void> {
   initPromise ??= (async () => {
+    // A reset (wipe, restore, tests) bumps the generation; an overtaken init must not
+    // write its keys or entries over the newer state.
+    const gen = generation;
+    const stale = () => gen !== generation;
     if (!isCryptoAvailable()) {
       setState({ status: "unsupported" });
       return;
     }
     setState({ status: "loading" });
     const storage = getStorage();
-    deviceKey = (await storage.vaultKeys.getDeviceKey()) ?? null;
-    if (!deviceKey) {
-      deviceKey = await generateDeviceKey();
-      await storage.vaultKeys.setDeviceKey(deviceKey);
+    let key = (await storage.vaultKeys.getDeviceKey()) ?? null;
+    if (stale()) return;
+    if (!key) {
+      key = await generateDeviceKey();
+      if (stale()) return;
+      await storage.vaultKeys.setDeviceKey(key);
     }
+    if (stale()) return;
+    deviceKey = key;
 
     const existing = await storage.vaultKeys.getKeyring();
+    if (stale()) return;
     if (!existing) {
-      const created = await keyring.createKeyring(deviceKey);
+      const created = await keyring.createKeyring(key);
+      if (stale()) return;
       await saveRing(created.keyring);
-      await openWith(created.dek);
+      await openWith(created.dek, gen);
       return;
     }
     await saveRing(existing);
-    const unlocked = await keyring.unlockWithDevice(existing, deviceKey);
-    if (unlocked) await openWith(unlocked);
+    const unlocked = await keyring.unlockWithDevice(existing, key);
+    if (stale()) return;
+    if (unlocked) await openWith(unlocked, gen);
     else setState({ status: "locked" });
   })().catch((error) => {
     initPromise = null;
@@ -273,6 +286,37 @@ export async function completePasscodeReset(newPasscode: string): Promise<boolea
   return true;
 }
 
+/** True when the recovery code opens this vault. Does not unlock the session. */
+export async function checkRecoveryCode(code: string) {
+  return ring ? (await keyring.unlockWithRecoveryCode(ring, code)) !== null : false;
+}
+
+/** True when the server secret opens this vault. Does not unlock the session. */
+export async function checkServerSecret(secret: string) {
+  return ring ? (await keyring.unlockWithServerSecret(ring, secret)) !== null : false;
+}
+
+async function resetWith(attempt: Promise<UnlockedDek | null>, newPasscode: string) {
+  const unlocked = await attempt;
+  if (!unlocked) return false;
+  await saveRing(await keyring.setPasscode(requireRing(), unlocked, newPasscode, deviceKey!));
+  await openWith(unlocked);
+  emitChange();
+  return true;
+}
+
+/**
+ * Forgot-passcode resets: the new passcode is written first, and only then does the
+ * vault open — so the person never ends up unlocked but still stuck with the old one.
+ */
+export function resetPasscodeWithRecoveryCode(code: string, newPasscode: string) {
+  return resetWith(keyring.unlockWithRecoveryCode(requireRing(), code), newPasscode);
+}
+
+export function resetPasscodeWithServerSecret(secret: string, newPasscode: string) {
+  return resetWith(keyring.unlockWithServerSecret(requireRing(), secret), newPasscode);
+}
+
 /** Sets a new passcode while unlocked by another route (recovery code, server secret). */
 export async function replacePasscode(newPasscode: string) {
   await saveRing(await keyring.setPasscode(requireRing(), requireDek(), newPasscode, deviceKey!));
@@ -320,6 +364,7 @@ export async function wipeVault() {
 
 /** Clears module state. Tests use it to simulate a fresh page load. */
 export function __resetVaultForTests() {
+  generation++;
   state = INITIAL_STATE;
   ring = null;
   deviceKey = null;

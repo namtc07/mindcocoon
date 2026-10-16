@@ -12,11 +12,12 @@ import { getAgeAnswer, subscribeAge } from "@/lib/auth/age";
 import { fetchServerSecret } from "@/lib/backup/active";
 import { formatTime } from "@/lib/dates";
 import {
+  checkRecoveryCode,
+  checkServerSecret,
   completePasscodeReset,
-  replacePasscode,
   requestPasscodeReset,
-  unlockWithRecoveryCode,
-  unlockWithServerSecret,
+  resetPasscodeWithRecoveryCode,
+  resetPasscodeWithServerSecret,
 } from "@/lib/vault/session";
 import { PasscodeForm } from "./passcode-form";
 
@@ -29,7 +30,8 @@ export function ForgotPasscode({ resetReadyAt, onBack }: { resetReadyAt: number 
   const now = useNow();
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState<string | null>(null);
-  const [chooseNew, setChooseNew] = useState(false);
+  /** Verified secret waiting for the new passcode; the vault stays locked until it is set. */
+  const [verified, setVerified] = useState<{ kind: "recovery" | "server"; value: string } | null>(null);
   const auth = useAuth();
   const age = useSyncExternalStore(subscribeAge, getAgeAnswer, () => null);
   const [signInOpen, setSignInOpen] = useState(false);
@@ -40,7 +42,7 @@ export function ForgotPasscode({ resetReadyAt, onBack }: { resetReadyAt: number 
     if (auth.status !== "signed-in" || !auth.user) return setSignInOpen(true);
     setAccountError(null);
     const secret = await fetchServerSecret(auth.user.id).catch(() => null);
-    if (secret && (await unlockWithServerSecret(secret))) setChooseNew(true);
+    if (secret && (await checkServerSecret(secret))) setVerified({ kind: "server", value: secret });
     else setAccountError(t.backup.resetUnavailable);
   }
 
@@ -48,23 +50,26 @@ export function ForgotPasscode({ resetReadyAt, onBack }: { resetReadyAt: number 
 
   async function submitCode(event: FormEvent) {
     event.preventDefault();
-    if (await unlockWithRecoveryCode(code)) {
+    if (await checkRecoveryCode(code)) {
       setCodeError(null);
-      setChooseNew(true);
+      setVerified({ kind: "recovery", value: code });
     } else {
       setCodeError(t.vault.wrongRecovery);
     }
   }
 
-  if (chooseNew) {
+  if (verified) {
     return (
       <section className="space-y-4">
         <h2 className="font-serif text-2xl">{t.vault.chooseNew}</h2>
         <PasscodeForm
           submitLabel={t.vault.savePasscode}
           onSubmit={async (passcode) => {
-            await replacePasscode(passcode);
-            toast.success(t.vault.resetDone);
+            const ok =
+              verified.kind === "recovery"
+                ? await resetPasscodeWithRecoveryCode(verified.value, passcode)
+                : await resetPasscodeWithServerSecret(verified.value, passcode);
+            if (ok) toast.success(t.vault.resetDone);
           }}
         />
       </section>

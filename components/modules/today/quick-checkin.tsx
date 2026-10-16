@@ -6,11 +6,13 @@ import { useState } from "react";
 import { MoodPicker } from "@/components/modules/mood/mood-picker";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { addMood, removeMood } from "@/lib/mood/store";
+import { useVault } from "@/hooks/use-vault";
+import { addMood, changeMood, removeMood } from "@/lib/mood/store";
 import { DEFAULT_TAGS } from "@/lib/moods";
 import { cn } from "@/lib/utils";
-import { VaultLockedError } from "@/lib/vault/session";
+import { VaultLockedError, initVault, unlockWithPasscode } from "@/lib/vault/session";
 import type { MoodLog, MoodType } from "@/types";
 
 /** One tap saves the mood; details (tags, note) can be added afterwards. */
@@ -22,10 +24,13 @@ export function QuickCheckin() {
   const [tags, setTags] = useState<string[]>([]);
   const [note, setNote] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [passcode, setPasscode] = useState("");
+  // Opens the vault on Today too, so notes can be encrypted without visiting the Vault.
+  const vault = useVault();
+  const locked = vault.status === "locked";
 
   async function pick(mood: MoodType) {
-    if (saved) await removeMood(saved.id);
-    const log = await addMood({ mood, tags: saved?.tags ?? [] });
+    const log = saved ? await changeMood(saved, mood) : await addMood({ mood, tags: [] });
     setSaved(log);
     setMessage(t.today.saved);
   }
@@ -33,14 +38,18 @@ export function QuickCheckin() {
   async function saveDetails() {
     if (!saved) return;
     try {
+      await initVault();
+      if (note.trim() && locked && !(await unlockWithPasscode(passcode))) {
+        setMessage(t.vault.wrongPasscode);
+        return;
+      }
       const log = await addMood({ mood: saved.mood, tags, note });
       await removeMood(saved.id);
       setSaved(log);
       setOpen(false);
       setMessage(t.today.detailsSaved);
     } catch (error) {
-      if (error instanceof VaultLockedError) setMessage(t.today.noteLocked);
-      else throw error;
+      setMessage(error instanceof VaultLockedError ? t.today.noteLocked : t.account.error);
     }
   }
 
@@ -105,6 +114,19 @@ export function QuickCheckin() {
               maxLength={280}
               className="resize-none"
             />
+            {locked && note.trim() && (
+              <label className="block space-y-2 text-sm">
+                <span className="text-muted-foreground">{t.today.noteLocked}</span>
+                <Input
+                  type="password"
+                  autoComplete="current-password"
+                  aria-label={t.vault.passcodeLabel}
+                  value={passcode}
+                  onChange={(e) => setPasscode(e.target.value)}
+                  className="max-w-xs"
+                />
+              </label>
+            )}
             <div className="flex gap-3">
               <Button onClick={saveDetails}>{t.today.saveDetails}</Button>
               <Button variant="ghost" onClick={() => setOpen(false)}>

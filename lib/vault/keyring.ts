@@ -143,12 +143,12 @@ export async function completeDeviceReset(
   return unwrap(deviceKey, k.deviceReset);
 }
 
-/** The only wraps that may leave the device. */
-export function backupWraps(k: Keyring): Pick<Keyring, "passcode" | "recovery"> {
-  const wraps: Pick<Keyring, "passcode" | "recovery"> = {};
-  if (k.passcode) wraps.passcode = k.passcode;
-  if (k.recovery) wraps.recovery = k.recovery;
-  return wraps;
+/**
+ * The only wrap that may leave the device: the 128-bit recovery code. The passcode
+ * wrap stays local — a short PIN could be brute-forced by whoever holds the backup.
+ */
+export function backupWraps(k: Keyring): Pick<Keyring, "recovery"> {
+  return k.recovery ? { recovery: k.recovery } : {};
 }
 
 /** Builds a local keyring on a new device from restored wraps. */

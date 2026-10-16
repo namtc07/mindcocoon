@@ -66,6 +66,19 @@ export async function addMood(input: { mood: MoodType; tags: string[]; note?: st
   return log;
 }
 
+/**
+ * Changes the mood of a check-in, keeping its tags and (still encrypted) note.
+ * Adds the new log before removing the old one so nothing is lost on failure.
+ */
+export async function changeMood(previous: MoodLog, mood: MoodType): Promise<MoodLog> {
+  const log: MoodLog = { ...previous, id: newId(), mood, createdAt: new Date().toISOString() };
+  await getStorage().moods.add(log);
+  await getStorage().moods.remove(previous.id);
+  setState({ ...state, logs: [log, ...state.logs.filter((l) => l.id !== previous.id)] });
+  changeListeners.forEach((l) => l());
+  return log;
+}
+
 /** Decrypted note, or null when there is none or the vault is locked. */
 export async function readNote(log: MoodLog): Promise<string | null> {
   if (!log.note) return null;

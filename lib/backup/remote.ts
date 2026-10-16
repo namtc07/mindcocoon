@@ -1,6 +1,7 @@
 import type { Keyring } from "@/types";
 
-export type BackupWraps = Pick<Keyring, "passcode" | "recovery">;
+/** Only the recovery wrap is uploaded (see keyring.backupWraps). */
+export type BackupWraps = Pick<Keyring, "recovery">;
 
 /** What the server stores: ciphertext plus the wraps that need a user secret to open. */
 export interface RemoteBackup {

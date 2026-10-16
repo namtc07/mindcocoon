@@ -19,6 +19,16 @@ describe("checkText", () => {
     "I want to kill myself",
     "i dont want to live anymore",
     "Sometimes I think about ending my life.",
+    "ko muốn sống nữa",
+    "k muốn sống nữa",
+    "hong muon song nua",
+    "chán sống quá",
+    "không thiết sống nữa",
+    "tôi muốn tự làm đau mình",
+    "lại rạch tay rồi",
+    "I wanna die",
+    "i want to end it all",
+    "honestly kms",
   ])("flags %j", (text) => {
     expect(checkText(text).flagged).toBe(true);
   });
@@ -31,6 +41,8 @@ describe("checkText", () => {
     "chết rồi, quên mang ví",
     "từ từ thôi",
     "hôm nay mình mệt quá",
+    "chán quá, sống ở thành phố này",
+    "k muốn đi học",
     "",
   ])("does not flag %j", (text) => {
     expect(checkText(text).flagged).toBe(false);

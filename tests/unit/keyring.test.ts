@@ -122,7 +122,7 @@ describe("keyring", () => {
     const locked = await setPasscode(withCode, dek, "2468", deviceKey);
     const full = await setServerWrap(locked, dek, "server-secret");
     const wraps = backupWraps(full);
-    expect(Object.keys(wraps).sort()).toEqual(["passcode", "recovery"]);
+    expect(Object.keys(wraps)).toEqual(["recovery"]);
   });
 
   it("adopts backup wraps on a new device", async () => {
@@ -134,10 +134,10 @@ describe("keyring", () => {
     const open = await adoptBackupWraps(backupWraps(withCode), dek, newDevice);
     expect((await unlockWithDevice(open, newDevice))!.raw).toEqual(dek.raw);
 
+    // A passcode never travels: the restored device opens without one until the user sets a new one.
     const locked = await setPasscode(withCode, dek, "2468", oldDevice);
     const adoptedLocked = await adoptBackupWraps(backupWraps(locked), dek, newDevice);
-    expect(adoptedLocked.device).toBeUndefined();
-    expect(adoptedLocked.deviceReset).toMatch(/^v1\./);
-    expect((await unlockWithPasscode(adoptedLocked, "2468"))!.raw).toEqual(dek.raw);
+    expect(adoptedLocked.passcode).toBeUndefined();
+    expect((await unlockWithDevice(adoptedLocked, newDevice))!.raw).toEqual(dek.raw);
   });
 });

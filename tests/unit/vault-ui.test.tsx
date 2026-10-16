@@ -6,7 +6,7 @@ import { setStorage } from "@/lib/storage";
 import { createMemoryDriver } from "@/lib/storage/driver";
 import { createLocalAdapter } from "@/lib/storage/local";
 import { DEVICE_RESET_WAIT_MS, __setIterationsForTests } from "@/lib/vault/keyring";
-import { __resetVaultForTests, initVault, saveVaultEntry } from "@/lib/vault/session";
+import { __resetVaultForTests, initVault, lockVault, saveVaultEntry, setVaultPasscode, unlockWithPasscode } from "@/lib/vault/session";
 import { renderWithProviders } from "../utils/render";
 
 const clock = vi.hoisted(() => ({ now: new Date("2026-10-16T22:00:00Z") }));
@@ -96,5 +96,25 @@ describe("Vault screen", () => {
     await user.type(screen.getByLabelText(/type it again/i), "1111");
     await user.click(screen.getByRole("button", { name: /set a new passcode/i }));
     await waitFor(() => expect(screen.getByText("First night")).toBeInTheDocument());
+  });
+
+  it("sets a new passcode after unlocking with the recovery code", async () => {
+    const user = userEvent.setup();
+    const { recoveryCode } = await setVaultPasscode("2468");
+    lockVault();
+    renderWithProviders(<VaultView />);
+
+    await user.click(await screen.findByRole("button", { name: /forgot passcode/i }));
+    await user.type(screen.getByRole("textbox", { name: /recovery code/i }), recoveryCode!);
+    await user.click(screen.getByRole("button", { name: /^continue$/i }));
+
+    await user.type(await screen.findByLabelText(/^new passcode/i), "1357");
+    await user.type(screen.getByLabelText(/type it again/i), "1357");
+    await user.click(screen.getByRole("button", { name: /^save passcode$/i }));
+    expect(await screen.findByText("First night")).toBeInTheDocument();
+
+    lockVault();
+    expect(await unlockWithPasscode("2468")).toBe(false);
+    expect(await unlockWithPasscode("1357")).toBe(true);
   });
 });

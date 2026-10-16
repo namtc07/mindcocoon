@@ -155,4 +155,23 @@ describe("vault session", () => {
     await saveVaultEntry({ body: "two" });
     expect(listener).toHaveBeenCalledTimes(1);
   });
+
+  it("ignores an initialisation that was overtaken by a reset", async () => {
+    // First storage gets its own vault and an entry.
+    await initVault();
+    await saveVaultEntry({ body: "old device" });
+
+    // Start a new init, then reset onto fresh storage before it finishes (wipe/restore do this).
+    __resetVaultForTests();
+    const stale = initVault();
+    __resetVaultForTests();
+    setStorage(createLocalAdapter(createMemoryDriver()));
+    await initVault();
+    await stale.catch(() => {});
+
+    const entry = await saveVaultEntry({ body: "new storage" });
+    __resetVaultForTests();
+    await initVault();
+    expect(getVaultState().entries.map((e) => e.id)).toEqual([entry.id]);
+  });
 });

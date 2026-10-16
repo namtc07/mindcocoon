@@ -1,15 +1,15 @@
 import { generateDeviceKey } from "@/lib/crypto";
 import { loadMoods, onMoodChange } from "@/lib/mood/store";
 import { getStorage } from "@/lib/storage";
-import { DEFAULT_AUTO_LOCK_MINUTES, adoptBackupWraps, unlockWithPasscode, unlockWithRecoveryCode } from "@/lib/vault/keyring";
+import { DEFAULT_AUTO_LOCK_MINUTES, adoptBackupWraps, unlockWithRecoveryCode } from "@/lib/vault/keyring";
 import {
   attachServerSecret,
   ensureRecoveryCode,
   getBackupWraps,
   getUnlockedDek,
+  initVault,
   onVaultChange,
   reloadVault,
-  unlockWithPasscode as unlockSessionWithPasscode,
   unlockWithRecoveryCode as unlockSessionWithRecoveryCode,
 } from "@/lib/vault/session";
 import type { Keyring } from "@/types";
@@ -24,8 +24,8 @@ import { buildSnapshot, containsAll, isEmptySnapshot, openSnapshot, sealSnapshot
  */
 
 export type BackupStatus = "idle" | "pending" | "synced" | "error";
-export type SignInOutcome = "pushed" | "restore-available" | "conflict";
-export type RestoreSecret = { recoveryCode: string } | { passcode: string };
+/** "deferred": the vault is locked; call onSignedIn again after it is unlocked. */
+export type SignInOutcome = "pushed" | "restore-available" | "conflict" | "deferred";
 
 const DEBOUNCE_MS = 5_000;
 const RETRY_START_MS = 5_000;
@@ -36,6 +36,12 @@ export function createBackupEngine(remote: BackupRemote) {
   let debounce: ReturnType<typeof setTimeout> | null = null;
   let retry: ReturnType<typeof setTimeout> | null = null;
   let retryDelay = RETRY_START_MS;
+  /**
+   * Automatic pushes stay off until the sign-in check has decided it is safe
+   * (no backup, same vault, the user kept this device's copy, or a restore finished).
+   * Otherwise a pending "restore?" choice could be overwritten by a near-empty device.
+   */
+  let armed = false;
   const statusListeners = new Set<() => void>();
   const codeListeners = new Set<(code: string) => void>();
 
@@ -72,20 +78,18 @@ export function createBackupEngine(remote: BackupRemote) {
   }
 
   function schedulePush() {
+    if (!armed) return;
     setStatus("pending");
     clearTimers();
     debounce = setTimeout(() => void pushNow(), DEBOUNCE_MS);
   }
 
   /** Replaces this device's data with the backup. Returns false when the secret is wrong. */
-  async function restore(secret: RestoreSecret): Promise<boolean> {
+  async function restore(recoveryCode: string): Promise<boolean> {
     const backup = await remote.fetch();
     if (!backup) return false;
     const temp: Keyring = { version: 1, ...backup.wraps, autoLockMinutes: DEFAULT_AUTO_LOCK_MINUTES };
-    const dek =
-      "recoveryCode" in secret
-        ? await unlockWithRecoveryCode(temp, secret.recoveryCode)
-        : await unlockWithPasscode(temp, secret.passcode);
+    const dek = await unlockWithRecoveryCode(temp, recoveryCode);
     if (!dek) return false;
 
     const snapshot = await openSnapshot(backup.ciphertext, dek);
@@ -100,43 +104,41 @@ export function createBackupEngine(remote: BackupRemote) {
     await storage.vaultKeys.setKeyring(await adoptBackupWraps(backup.wraps, dek, deviceKey));
 
     await reloadVault();
-    if (!getUnlockedDek()) {
-      if ("recoveryCode" in secret) await unlockSessionWithRecoveryCode(secret.recoveryCode);
-      else await unlockSessionWithPasscode(secret.passcode);
-    }
+    if (!getUnlockedDek()) await unlockSessionWithRecoveryCode(recoveryCode);
     await loadMoods(true);
+    armed = true;
     setStatus("synced");
     return true;
   }
 
   /** Decides what to do right after sign-in. Never overwrites either side on its own. */
   async function onSignedIn(): Promise<SignInOutcome> {
-    if (getUnlockedDek()) {
-      try {
-        await attachServerSecret(await remote.getServerSecret());
-      } catch {
-        // Not fatal: the passcode can still be reset with the recovery code.
-      }
+    await initVault();
+    const dek = getUnlockedDek();
+    if (!dek) return "deferred";
+    try {
+      await attachServerSecret(await remote.getServerSecret());
+    } catch {
+      // Not fatal: the passcode can still be reset with the recovery code.
     }
     const backup = await remote.fetch();
     const local = await buildSnapshot();
     if (!backup) {
+      armed = true;
       await pushNow();
       return "pushed";
     }
     if (isEmptySnapshot(local)) return "restore-available";
 
-    const dek = getUnlockedDek();
-    if (dek) {
-      try {
-        const remoteSnapshot = await openSnapshot(backup.ciphertext, dek);
-        if (containsAll(local, remoteSnapshot)) {
-          await pushNow();
-          return "pushed";
-        }
-      } catch {
-        // Different data key: this backup came from another vault.
+    try {
+      const remoteSnapshot = await openSnapshot(backup.ciphertext, dek);
+      if (containsAll(local, remoteSnapshot)) {
+        armed = true;
+        await pushNow();
+        return "pushed";
       }
+    } catch {
+      // Different data key: this backup came from another vault.
     }
     return "conflict";
   }
@@ -153,6 +155,11 @@ export function createBackupEngine(remote: BackupRemote) {
       };
     },
     pushNow,
+    /** The user chose to keep this device's copy over the backup. */
+    async keepLocal() {
+      armed = true;
+      await pushNow();
+    },
     restore,
     onSignedIn,
     status: () => status,

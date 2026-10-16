@@ -6,7 +6,9 @@ import { __resetMoodsForTests } from "@/lib/mood/store";
 import { getStorage, setStorage } from "@/lib/storage";
 import { createMemoryDriver } from "@/lib/storage/driver";
 import { createLocalAdapter } from "@/lib/storage/local";
-import { __resetVaultForTests } from "@/lib/vault/session";
+import { readNote } from "@/lib/mood/store";
+import { __setIterationsForTests } from "@/lib/vault/keyring";
+import { __resetVaultForTests, initVault, lockVault, setVaultPasscode } from "@/lib/vault/session";
 import { renderWithProviders } from "../utils/render";
 
 beforeEach(() => {
@@ -51,5 +53,52 @@ describe("Today", () => {
     renderWithProviders(<TodayView />);
     await screen.findByRole("radiogroup");
     expect(screen.queryByText(/these last days seem heavy/i)).not.toBeInTheDocument();
+  });
+
+  it("adds a note right after launch when there is no passcode", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<TodayView />);
+    await user.click(await screen.findByRole("radio", { name: /heavy/i }));
+    await user.click(await screen.findByRole("button", { name: /add tags or a note/i }));
+    await user.type(screen.getByPlaceholderText(/a few words/i), "long day");
+    await user.click(screen.getByRole("button", { name: /save details/i }));
+    expect(await screen.findByText("Details saved")).toBeInTheDocument();
+    const [log] = await getStorage().moods.list();
+    expect(log.note).toMatch(/^v1\./);
+    expect(await readNote(log)).toBe("long day");
+  });
+
+  it("keeps the note when the mood is changed afterwards", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<TodayView />);
+    await user.click(await screen.findByRole("radio", { name: /heavy/i }));
+    await user.click(await screen.findByRole("button", { name: /add tags or a note/i }));
+    await user.type(screen.getByPlaceholderText(/a few words/i), "long day");
+    await user.click(screen.getByRole("button", { name: /save details/i }));
+    await screen.findByText("Details saved");
+
+    await user.click(screen.getByRole("radio", { name: /peaceful/i }));
+    await waitFor(async () => {
+      const logs = await getStorage().moods.list();
+      expect(logs.map((l) => l.mood)).toEqual(["peaceful"]);
+      expect(await readNote(logs[0])).toBe("long day");
+    });
+  });
+
+  it("asks for the passcode to add a note while the vault is locked", async () => {
+    __setIterationsForTests(1_000);
+    await initVault();
+    await setVaultPasscode("2468");
+    lockVault();
+    const user = userEvent.setup();
+    renderWithProviders(<TodayView />);
+    await user.click(await screen.findByRole("radio", { name: /anxious/i }));
+    await user.click(await screen.findByRole("button", { name: /add tags or a note/i }));
+    await user.type(screen.getByPlaceholderText(/a few words/i), "exam");
+    await user.type(screen.getByLabelText(/^passcode$/i), "2468");
+    await user.click(screen.getByRole("button", { name: /save details/i }));
+    expect(await screen.findByText("Details saved")).toBeInTheDocument();
+    const [log] = await getStorage().moods.list();
+    expect(await readNote(log)).toBe("exam");
   });
 });
