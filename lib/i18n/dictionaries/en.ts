@@ -229,6 +229,10 @@ export const en = {
     firstRunBody: "A private place to let things out, breathe and rest. Everything you write stays on this device unless you choose to back it up.",
     firstRunOk: "Got it",
   },
+  pwa: {
+    installTitle: "Keep MindCocoon on your home screen",
+    installBody: "Tap Share, then Add to Home Screen. It opens faster at night, and Safari keeps your journal safer.",
+  },
   safety: {
     cardMessage: "What you just wrote sounds really heavy. You're not alone.",
     callLine: "Call a support line",
