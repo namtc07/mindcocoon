@@ -6,11 +6,14 @@ import type { RemoteFlags } from "@/lib/ads/policy";
 import { audio } from "@/lib/audio";
 import { getPref, setPref } from "@/lib/prefs";
 import { remoteConfig } from "@/lib/remote-config";
+import { captureFocusEffects } from "@/test-utils/focus";
 import { renderWithApp } from "@/test-utils/render";
+import { AppState, type AppStateStatus } from "react-native";
 
 const ON: RemoteFlags = { adsEnabled: true, rewardedEnabled: true, quietHours: [23, 5] };
 const rewarded = () => (jest.requireMock("react-native-google-mobile-ads") as { __rewarded: { emit(t: string, p?: unknown): void; load: jest.Mock; show: jest.Mock } }).__rewarded;
 const UNLOCK = "Watch an ad to unlock Distant thunder for 24 hours";
+const UNLOCK_STREAM = "Watch an ad to unlock Forest stream for 24 hours";
 
 async function setup(flags: RemoteFlags = ON, unlocks?: Record<string, number>) {
   jest.clearAllMocks();
@@ -109,5 +112,50 @@ describe("Premium sounds", () => {
     await setup({ ...ON, rewardedEnabled: false }, { thunder: Date.now() + 60_000 });
     expect(await screen.findByRole("button", { name: "Play: Distant thunder" })).toBeOnTheScreen();
     expect(screen.getByText("More sounds")).toBeOnTheScreen();
+  });
+
+  it("leaving Sanctuary before the ad loads never shows it", async () => {
+    const focus = captureFocusEffects();
+    try {
+      const user = await setup();
+      await user.press(await screen.findByRole("button", { name: UNLOCK }));
+      await act(async () => focus.blur());
+      await act(async () => rewarded().emit("rewarded_loaded"));
+      expect(rewarded().show).not.toHaveBeenCalled();
+    } finally {
+      focus.restore();
+    }
+  });
+
+  it("the app going to the background before the ad loads never shows it", async () => {
+    let handler: ((s: AppStateStatus) => void) | undefined;
+    const original = AppState.addEventListener;
+    AppState.addEventListener = ((_type: string, fn: (s: AppStateStatus) => void) => {
+      handler = fn;
+      return { remove: () => {} };
+    }) as unknown as typeof AppState.addEventListener;
+    try {
+      const user = await setup();
+      await user.press(await screen.findByRole("button", { name: UNLOCK }));
+      await act(async () => handler?.("background"));
+      await act(async () => rewarded().emit("rewarded_loaded"));
+      expect(rewarded().show).not.toHaveBeenCalled();
+    } finally {
+      AppState.addEventListener = original;
+    }
+  });
+
+  it("one ad at a time", async () => {
+    const user = await setup();
+    const { RewardedAd } = jest.requireMock("react-native-google-mobile-ads") as { RewardedAd: { createForAdRequest: jest.Mock } };
+    await user.press(await screen.findByRole("button", { name: UNLOCK }));
+    expect(screen.getByRole("button", { name: UNLOCK_STREAM })).toBeDisabled();
+    await user.press(screen.getByRole("button", { name: UNLOCK_STREAM }));
+    expect(RewardedAd.createForAdRequest).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      rewarded().emit("rewarded_loaded");
+      rewarded().emit("closed");
+    });
+    expect(screen.getByRole("button", { name: UNLOCK_STREAM })).toBeEnabled();
   });
 });

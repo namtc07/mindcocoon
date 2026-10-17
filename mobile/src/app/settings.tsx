@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { TextField } from "@/components/ui/TextField";
 import { ReminderSettings } from "@/components/settings/ReminderSettings";
+import { showAdPrivacyOptions, useAdPrivacyRequired } from "@/lib/ads/admob";
 import { eraseEverything, shareExport } from "@/lib/export";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
@@ -104,6 +105,7 @@ export default function SettingsScreen() {
   const { name, c, setTheme } = useTheme();
   const [eraseOpen, setEraseOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const adPrivacy = useAdPrivacyRequired();
   return (
     <>
       <Stack.Screen
@@ -156,6 +158,11 @@ export default function SettingsScreen() {
           >
             {t.settings.export}
           </Button>
+          {adPrivacy && (
+            <Button variant="outline" onPress={() => void showAdPrivacyOptions()}>
+              {t.settings.adPrivacy}
+            </Button>
+          )}
           <Button variant="destructive" onPress={() => setEraseOpen(true)}>
             {t.settings.erase}
           </Button>

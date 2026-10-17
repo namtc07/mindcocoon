@@ -20,7 +20,7 @@ export function UnlockPanel({ resetReadyAt }: { resetReadyAt: number | null }) {
   const [forgot, setForgot] = useState(resetReadyAt !== null);
   const method = useBiometricMethod();
   const biometric = useBiometricEnabled() && method !== null;
-  const methodName = method === "face" ? t.vault.methodFace : t.vault.methodFingerprint;
+  const methodName = method === "face" ? t.vault.methodFace : method === "biometric" ? t.vault.methodBiometric : t.vault.methodFingerprint;
 
   if (forgot) return <ForgotPasscode resetReadyAt={resetReadyAt} onBack={() => setForgot(false)} />;
 

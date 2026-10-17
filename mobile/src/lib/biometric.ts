@@ -2,6 +2,7 @@ import { unlockWithPasscode } from "@mindcocoon/core/vault/session";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as SecureStore from "expo-secure-store";
 import { useSyncExternalStore } from "react";
+import { Platform } from "react-native";
 import { getPref, setPref, subscribePrefs } from "./prefs";
 
 /**
@@ -11,11 +12,17 @@ import { getPref, setPref, subscribePrefs } from "./prefs";
  */
 
 export const BIOMETRIC_KEY = "vault-biometric";
-export type BiometricMethod = "face" | "fingerprint";
+/** iOS: Face ID / Touch ID; Android: one generic name (the system picks fingerprint or face). */
+export type BiometricMethod = "face" | "fingerprint" | "biometric";
 
 export async function biometricMethod(): Promise<BiometricMethod | null> {
   try {
     if (!(await LocalAuthentication.hasHardwareAsync()) || !(await LocalAuthentication.isEnrolledAsync())) return null;
+    if (Platform.OS === "android") {
+      // The Keystore item needs a strong (class 3) biometric; weak face unlock can't open it.
+      const level = await LocalAuthentication.getEnrolledLevelAsync();
+      return level === LocalAuthentication.SecurityLevel.BIOMETRIC_STRONG ? "biometric" : null;
+    }
     const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
     if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) return "face";
     if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) return "fingerprint";

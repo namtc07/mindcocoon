@@ -105,6 +105,8 @@ export const en = {
     biometricEnable: "Turn on",
     biometricFailed: "Couldn't use {method}. Enter your passcode.",
     methodFace: "Face ID",
+    methodBiometric: "fingerprint or face",
+    biometricSetupFailed: "Couldn't turn on {method}. Try again.",
     methodFingerprint: "fingerprint",
     title: "Your vault",
     intro: "Entries are encrypted on this device. Only you can read them.",
@@ -220,6 +222,7 @@ export const en = {
     "piano-letter": "A letter",
   },
   settings: {
+    adPrivacy: "Ad privacy choices",
     reminderOff: "Off",
     reminderTitle: "Evening reminder",
     reminderHint: "A gentle nudge at night. Off unless you turn it on.",

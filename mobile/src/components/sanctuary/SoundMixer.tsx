@@ -2,7 +2,6 @@ import { formatTime } from "@mindcocoon/core/dates";
 import { AMBIENT_TRACKS, SOUND_TRACKS } from "@mindcocoon/core/sounds";
 import Slider from "@react-native-community/slider";
 import { Lock } from "lucide-react-native";
-import { useState } from "react";
 import { StyleSheet, Switch, Text, View } from "react-native";
 import { Button } from "@/components/ui/Button";
 import { toast } from "@/components/ui/Toast";
@@ -50,15 +49,12 @@ function TrackRow({ id, note }: { id: string; note?: string }) {
 }
 
 /** Rewarded unlock for one premium sound: only on the person's tap, never automatic. */
-function LockedRow({ id, unlock }: { id: string; unlock: (id: string) => Promise<string> }) {
+function LockedRow({ id, busy, unlock }: { id: string; busy: boolean; unlock: (id: string) => Promise<string> }) {
   const { t } = useI18n();
   const { c } = useTheme();
-  const [busy, setBusy] = useState(false);
   const name = t.sounds[id as keyof typeof t.sounds];
   async function watch() {
-    setBusy(true);
     const result = await unlock(id);
-    setBusy(false);
     if (result === "unavailable") toast.show(t.sanctuary.adUnavailable);
   }
   return (
@@ -83,7 +79,7 @@ export function SoundMixer() {
   const state = useAudio();
   const now = useNow();
   const unlocks = useUnlocks();
-  const { offer, unlock } = useRewardedUnlock();
+  const { offer, busy, unlock } = useRewardedUnlock();
   const premium = PREMIUM_TRACKS.map((track) => ({ id: track.id, until: unlockedUntilIn(unlocks, track.id, now.getTime()) })).filter(
     (p) => p.until !== null || offer,
   );
@@ -106,7 +102,7 @@ export function SoundMixer() {
             until !== null ? (
               <TrackRow key={id} id={id} note={t.sanctuary.unlockedUntil.replace("{time}", formatTime(new Date(until).toISOString(), locale))} />
             ) : (
-              <LockedRow key={id} id={id} unlock={unlock} />
+              <LockedRow key={id} id={id} busy={busy} unlock={unlock} />
             ),
           )}
         </View>

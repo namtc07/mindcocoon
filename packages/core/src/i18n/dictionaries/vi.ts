@@ -106,6 +106,8 @@ export const vi: Dictionary = {
     biometricEnable: "Bật",
     biometricFailed: "Không dùng được {method}. Hãy nhập mã khóa.",
     methodFace: "Face ID",
+    methodBiometric: "vân tay hoặc khuôn mặt",
+    biometricSetupFailed: "Chưa bật được {method}. Thử lại nhé.",
     methodFingerprint: "vân tay",
     title: "Két riêng của bạn",
     intro: "Mọi bài viết được mã hóa trên máy này. Chỉ bạn đọc được.",
@@ -221,6 +223,7 @@ export const vi: Dictionary = {
     "piano-letter": "Lá thư",
   },
   settings: {
+    adPrivacy: "Lựa chọn quyền riêng tư quảng cáo",
     reminderOff: "Tắt",
     reminderTitle: "Nhắc nhở buổi tối",
     reminderHint: "Một lời nhắc nhẹ vào buổi tối. Chỉ bật khi bạn muốn.",

@@ -2,6 +2,7 @@ import { getVaultState, initVault, lockVault, setVaultPasscode } from "@mindcoco
 import { act, fireEvent, screen, userEvent, waitFor } from "@testing-library/react-native";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 import VaultScreen from "@/app/(tabs)/vault";
 import { __resetVaultHookForTests } from "@/hooks/use-vault";
 import { BIOMETRIC_KEY } from "@/lib/biometric";
@@ -135,5 +136,39 @@ describe("Face ID unlock", () => {
       await eraseEverything();
     });
     expect(store().data.has(BIOMETRIC_KEY)).toBe(false);
+  });
+
+  it("Android: not offered with only weak biometrics", async () => {
+    const os = jest.replaceProperty(Platform, "OS", "android");
+    (LocalAuthentication.getEnrolledLevelAsync as jest.Mock).mockResolvedValue(2);
+    try {
+      const user = await setup();
+      await user.press(await screen.findByRole("button", { name: "Vault settings" }));
+      await screen.findAllByRole("button", { name: "Lock now" });
+      expect(screen.queryByLabelText(/Unlock with/)).not.toBeOnTheScreen();
+    } finally {
+      (LocalAuthentication.getEnrolledLevelAsync as jest.Mock).mockResolvedValue(3);
+      os.restore();
+    }
+  });
+
+  it("Android: strong biometrics are named for Android, not Face ID", async () => {
+    const os = jest.replaceProperty(Platform, "OS", "android");
+    try {
+      const user = await setup();
+      await user.press(await screen.findByRole("button", { name: "Vault settings" }));
+      expect(await screen.findByLabelText("Unlock with fingerprint or face")).toBeOnTheScreen();
+      expect(screen.queryByText(/Face ID/)).not.toBeOnTheScreen();
+    } finally {
+      os.restore();
+    }
+  });
+
+  it("a cancelled or failed set-up says so and leaves it off", async () => {
+    jest.spyOn(SecureStore, "setItemAsync").mockRejectedValueOnce(new Error("User canceled"));
+    const user = await setup();
+    await turnOn(user);
+    expect(await screen.findByText("Couldn't turn on Face ID. Try again.")).toBeOnTheScreen();
+    expect(getPref("biometric")).toBeUndefined();
   });
 });

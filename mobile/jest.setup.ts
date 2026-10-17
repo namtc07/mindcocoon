@@ -190,7 +190,12 @@ jest.mock("react-native-google-mobile-ads", () => {
     default: () => sdk,
     __sdk: sdk,
     __rewarded: rewarded,
-    AdsConsent: { gatherConsent: jest.fn(() => Promise.resolve({ canRequestAds: true })) },
+    AdsConsent: {
+      gatherConsent: jest.fn(() => Promise.resolve({ canRequestAds: true, privacyOptionsRequirementStatus: "NOT_REQUIRED" })),
+      getConsentInfo: jest.fn(() => Promise.resolve({ canRequestAds: false, privacyOptionsRequirementStatus: "UNKNOWN" })),
+      showPrivacyOptionsForm: jest.fn(() => Promise.resolve({})),
+    },
+    AdsConsentPrivacyOptionsRequirementStatus: { UNKNOWN: "UNKNOWN", REQUIRED: "REQUIRED", NOT_REQUIRED: "NOT_REQUIRED" },
     MaxAdContentRating: { G: "G", PG: "PG", T: "T", MA: "MA" },
     TestIds: { ADAPTIVE_BANNER: "test-adaptive-banner", REWARDED: "test-rewarded" },
     BannerAd,
@@ -216,5 +221,7 @@ jest.mock("expo-local-authentication", () => ({
   hasHardwareAsync: jest.fn(() => Promise.resolve(true)),
   isEnrolledAsync: jest.fn(() => Promise.resolve(true)),
   supportedAuthenticationTypesAsync: jest.fn(() => Promise.resolve([2])),
+  getEnrolledLevelAsync: jest.fn(() => Promise.resolve(3)),
   AuthenticationType: { FINGERPRINT: 1, FACIAL_RECOGNITION: 2, IRIS: 3 },
+  SecurityLevel: { NONE: 0, SECRET: 1, BIOMETRIC_WEAK: 2, BIOMETRIC_STRONG: 3 },
 }));

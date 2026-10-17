@@ -17,15 +17,21 @@ export function BiometricToggle() {
   const enabled = useBiometricEnabled();
   const [asking, setAsking] = useState(false);
   const [passcode, setPasscode] = useState("");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<"wrong" | "setup" | null>(null);
   if (!method) return null;
-  const label = t.vault.biometricToggle.replace("{method}", method === "face" ? t.vault.methodFace : t.vault.methodFingerprint);
+  const methodName = method === "face" ? t.vault.methodFace : method === "biometric" ? t.vault.methodBiometric : t.vault.methodFingerprint;
+  const label = t.vault.biometricToggle.replace("{method}", methodName);
 
   async function confirm() {
-    if (await enableBiometric(passcode, label)) {
-      setAsking(false);
-      setPasscode("");
-    } else setError(true);
+    try {
+      if (await enableBiometric(passcode, label)) {
+        setAsking(false);
+        setPasscode("");
+      } else setError("wrong");
+    } catch {
+      // Prompt cancelled (Android asks while saving) or the device refused the protected item.
+      setError("setup");
+    }
   }
 
   return (
@@ -36,7 +42,7 @@ export function BiometricToggle() {
           accessibilityLabel={label}
           value={enabled || asking}
           onValueChange={(on) => {
-            setError(false);
+            setError(null);
             if (on) setAsking(true);
             else {
               setAsking(false);
@@ -54,14 +60,14 @@ export function BiometricToggle() {
             value={passcode}
             onChangeText={(v) => {
               setPasscode(v);
-              setError(false);
+              setError(null);
             }}
             secureTextEntry
             autoComplete="off"
           />
           {error && (
             <Text accessibilityRole="alert" style={{ color: c.destructive, fontFamily: fonts.sans }}>
-              {t.vault.wrongPasscode}
+              {error === "wrong" ? t.vault.wrongPasscode : t.vault.biometricSetupFailed.replace("{method}", methodName)}
             </Text>
           )}
           <Button disabled={!passcode} onPress={() => void confirm()}>

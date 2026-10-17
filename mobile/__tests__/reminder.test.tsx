@@ -1,5 +1,6 @@
 import { act, screen, userEvent, waitFor } from "@testing-library/react-native";
 import * as Notifications from "expo-notifications";
+import { Platform } from "react-native";
 import SettingsScreen from "@/app/settings";
 import { eraseEverything } from "@/lib/export";
 import { getPref, setPref } from "@/lib/prefs";
@@ -82,5 +83,17 @@ describe("Evening reminder", () => {
     await act(() => setPref("reminder", { hour: 22 }));
     await act(() => eraseEverything());
     expect(cancel).toHaveBeenCalledWith("mindcocoon-evening");
+  });
+
+  it("Android: the reminder channel never puts a dot on the app icon", async () => {
+    const os = jest.replaceProperty(Platform, "OS", "android");
+    try {
+      const user = await open();
+      await user.press(await screen.findByRole("button", { name: "22:00" }));
+      await waitFor(() => expect(schedule).toHaveBeenCalled());
+      expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith("evening", expect.objectContaining({ showBadge: false }));
+    } finally {
+      os.restore();
+    }
   });
 });

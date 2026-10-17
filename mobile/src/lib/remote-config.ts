@@ -19,7 +19,7 @@ export const remoteConfig = createRemoteConfig({
 export function startRemoteConfig(appState: AppStateLike = AppState as unknown as AppStateLike) {
   void loadPrefs().then(() => {
     remoteConfig.reload();
-    return remoteConfig.refresh();
+    return remoteConfig.refresh(true); // every cold start: switching ads off takes effect on the next launch
   });
   const sub = appState.addEventListener("change", (s) => {
     if (s === "active") void remoteConfig.refresh();

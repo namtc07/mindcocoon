@@ -14,7 +14,7 @@ const CHANNEL = "evening";
 async function schedule(hour: ReminderHour, t: Dictionary) {
   await Notifications.cancelScheduledNotificationAsync(ID);
   if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync(CHANNEL, { name: t.settings.reminderTitle, importance: AndroidImportance.DEFAULT });
+    await Notifications.setNotificationChannelAsync(CHANNEL, { name: t.settings.reminderTitle, importance: AndroidImportance.DEFAULT, showBadge: false });
   }
   await Notifications.scheduleNotificationAsync({
     identifier: ID,
