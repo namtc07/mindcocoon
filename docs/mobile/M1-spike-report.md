@@ -30,7 +30,7 @@ Screenshot: `docs/mobile/m1-spike-ios.png`.
 
 ## Decision
 
-**iOS: GO.** Formats are byte-compatible in both directions, so a journal backed up on the
+**iOS: GO (simulator).** Real-device timing and Keychain key storage are verified in M2. Formats are byte-compatible in both directions, so a journal backed up on the
 web restores on a phone and vice versa. PBKDF2 timing is from the simulator (Mac CPU) and is
 provisional; the native C++ implementation makes a real-device problem unlikely — re-measure
 on a physical iPhone in M2.

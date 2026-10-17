@@ -15,3 +15,10 @@ it("keeps one non-extractable device key in IndexedDB", async () => {
   const other = await createLocalAdapter(createIndexedDBDriver(`device-key-test-${crypto.randomUUID()}`)).vaultKeys.getOrCreateDeviceKey();
   await expect(decryptString(other, envelope)).rejects.toThrow();
 });
+
+it("creates only one device key when asked twice at the same time", async () => {
+  const adapter = createLocalAdapter(createIndexedDBDriver(`device-key-race-${crypto.randomUUID()}`));
+  const [a, b] = await Promise.all([adapter.vaultKeys.getOrCreateDeviceKey(), adapter.vaultKeys.getOrCreateDeviceKey()]);
+  const envelope = await encryptString(a, "one key");
+  expect(await decryptString(b, envelope)).toBe("one key");
+});

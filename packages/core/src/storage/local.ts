@@ -15,6 +15,7 @@ const byNewest = (a: { createdAt: string }, b: { createdAt: string }) =>
 
 export function createLocalAdapter(driver: KVDriver): StorageAdapter {
   const readList = async <T>(key: string) => (await driver.get<T[]>(key)) ?? [];
+  let deviceKeyPromise: Promise<CryptoKey> | null = null;
 
   return {
     moods: {
@@ -62,14 +63,22 @@ export function createLocalAdapter(driver: KVDriver): StorageAdapter {
     vaultKeys: {
       getKeyring: () => driver.get<Keyring>(KEYS.keyring),
       setKeyring: (keyring) => driver.set(KEYS.keyring, keyring),
-      async getOrCreateDeviceKey() {
-        const existing = await driver.get<CryptoKey>(KEYS.deviceKey);
-        if (existing) return existing;
-        const key = await generateDeviceKey();
-        await driver.set(KEYS.deviceKey, key);
-        return key;
+      /** Concurrent callers share one lookup so two keys can never be created and raced. */
+      getOrCreateDeviceKey() {
+        deviceKeyPromise ??= (async () => {
+          const existing = await driver.get<CryptoKey>(KEYS.deviceKey);
+          if (existing) return existing;
+          const key = await generateDeviceKey();
+          await driver.set(KEYS.deviceKey, key);
+          return key;
+        })().catch((error) => {
+          deviceKeyPromise = null;
+          throw error;
+        });
+        return deviceKeyPromise;
       },
       async clear() {
+        deviceKeyPromise = null;
         await driver.del(KEYS.keyring);
         await driver.del(KEYS.deviceKey);
       },
