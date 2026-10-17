@@ -27,7 +27,8 @@
       "react-native-quick-crypto",
       "expo-router",
       "expo-sqlite",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-localization"
     ],
     "scheme": "mindcocoon",
     "backgroundColor": "#0F172A",
