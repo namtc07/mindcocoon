@@ -27,3 +27,30 @@ jest.mock("expo-haptics", () => ({
   NotificationFeedbackType: { Success: "success" },
   ImpactFeedbackStyle: { Light: "light" },
 }));
+
+jest.mock("expo-router", () => {
+  const React = require("react");
+  const { Pressable, Text } = require("react-native");
+  const router = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), navigate: jest.fn(), setParams: jest.fn() };
+  const Link = ({ href, children, ...rest }: { href: unknown; children: React.ReactNode }) =>
+    React.createElement(Pressable, { accessibilityRole: "link", onPress: () => router.push(href), ...rest }, React.createElement(Text, null, children));
+  return {
+    router,
+    useRouter: () => router,
+    Link,
+    useLocalSearchParams: jest.fn(() => ({})),
+    useNavigation: () => ({ setOptions: jest.fn(), addListener: jest.fn(() => jest.fn()) }),
+    useFocusEffect: (cb: () => void | (() => void)) => React.useEffect(cb, [cb]),
+    Stack: { Screen: () => null },
+  };
+});
+
+// Icons are decorative in tests: every lucide icon renders an empty View.
+jest.mock("lucide-react-native", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return new Proxy(
+    { __esModule: true },
+    { get: (target: Record<string, unknown>, name: string) => (name in target ? target[name] : () => React.createElement(View)) },
+  );
+});

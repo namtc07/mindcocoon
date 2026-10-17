@@ -5,6 +5,10 @@ import { createKvDriver } from "./kv-driver";
 export interface Prefs {
   locale?: Locale;
   theme?: "dusk" | "mist";
+  /** Epoch ms the heavy-week nudge was last shown (at most once a week). */
+  heavyNudgeAt?: number;
+  firstRunSeen?: boolean;
+  customTags?: string[];
 }
 
 const KEY = "prefs:v1";
