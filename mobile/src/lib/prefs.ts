@@ -27,6 +27,8 @@ export interface Prefs {
   breathing?: { pattern: BreathPatternId; minutes: 1 | 3 | 5 };
   /** Sound mixes the person saved (at most 5). */
   mixes?: SavedMix[];
+  /** How Vent lets words go: "burn" | "float" | "scatter" | "fade". */
+  ritual?: "burn" | "float" | "scatter" | "fade";
 }
 
 const KEY = "prefs:v1";

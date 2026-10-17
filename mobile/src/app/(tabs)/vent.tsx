@@ -2,14 +2,16 @@ import { promptForDay } from "@mindcocoon/core/prompts";
 import { checkText } from "@mindcocoon/core/safety/detect";
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GentleCard, claimGentleCard } from "@/components/safety/GentleCard";
 import { HelpLink } from "@/components/safety/HelpLink";
 import { Button } from "@/components/ui/Button";
 import { AfterRelease } from "@/components/vent/AfterRelease";
-import { Dissolve, planDissolve, type DissolvePlan } from "@/components/vent/Dissolve";
+import { Dissolve, planDissolve, RITUALS, type DissolvePlan } from "@/components/vent/Dissolve";
+import { Chip } from "@/components/ui/Chip";
+import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
 import { SaveSheet } from "@/components/vent/SaveSheet";
 import { useAppState } from "@/hooks/use-app-state";
 import { appAutoLock } from "@/lib/app-auto-lock";
@@ -27,6 +29,8 @@ type Phase = "writing" | "dissolving" | "released";
  * native undo history goes too. Autocorrect/suggestions are off so the keyboard
  * doesn't learn what was written, and the page is covered in the app switcher.
  */
+const readRitual = () => getPref("ritual") ?? "burn";
+
 export default function VentScreen() {
   const { t, locale } = useI18n();
   const { c, name } = useTheme();
@@ -43,6 +47,7 @@ export default function VentScreen() {
   // The save sheet opens only once the gentle card has gone (iOS won't stack modals mid-animation).
   const [saveAfterCard, setSaveAfterCard] = useState(false);
   const empty = text.trim().length === 0;
+  const ritual = useSyncExternalStore(subscribePrefs, readRitual, readRitual);
 
   const clearEditor = useCallback(() => {
     setText("");
@@ -50,7 +55,7 @@ export default function VentScreen() {
   }, []);
 
   function doRelease() {
-    setPlan(planDissolve(text));
+    setPlan(planDissolve(text, ritual));
     clearEditor();
     setPhase("dissolving");
   }
@@ -128,6 +133,16 @@ export default function VentScreen() {
 
       {phase === "writing" && (
         <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, space.md) }]}>
+          <View style={styles.rituals}>
+            <Text style={{ fontFamily: fonts.sans, color: c.mutedForeground, fontSize: 14 }}>{t.vent.ritualLabel}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.ritualRow}>
+              {RITUALS.map((r) => (
+                <Chip key={r} selected={ritual === r} onPress={() => void setPref("ritual", r)}>
+                  {t.vent.rituals[r]}
+                </Chip>
+              ))}
+            </ScrollView>
+          </View>
           <View style={styles.actions}>
             <Button variant="ember" onPress={() => attempt("release")} disabled={empty}>
               {t.vent.release}
@@ -173,6 +188,8 @@ export default function VentScreen() {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   header: { paddingHorizontal: space.xl, paddingVertical: space.sm },
+  rituals: { gap: space.xs },
+  ritualRow: { gap: space.sm, paddingRight: space.lg },
   back: { flexDirection: "row", alignItems: "center", gap: 6, minHeight: 44, alignSelf: "flex-start" },
   page: { flexGrow: 1, paddingHorizontal: space.xl, paddingTop: space.xl },
   prompt: { fontFamily: fonts.serifItalic, fontSize: 18, lineHeight: 26, marginBottom: space.lg },

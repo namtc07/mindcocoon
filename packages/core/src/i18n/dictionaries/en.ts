@@ -57,6 +57,8 @@ export const en = {
     },
   },
   vent: {
+    ritualLabel: "How to let go",
+    rituals: { burn: "Burn", float: "Float away", scatter: "Scatter in the wind", fade: "Fade into the night" },
     editorLabel: "Write what's on your mind",
     placeholder: "Let it all out. No one else will read this.",
     release: "Release into the void",

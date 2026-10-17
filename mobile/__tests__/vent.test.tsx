@@ -7,6 +7,9 @@ import { __resetGentleCardForTests } from "@/components/safety/GentleCard";
 import { ToastHost } from "@/components/ui/Toast";
 import { finishModalDismissals } from "@/test-utils/modals";
 import { renderWithApp } from "@/test-utils/render";
+import { planDissolve } from "@/components/vent/Dissolve";
+import { getPref, setPref } from "@/lib/prefs";
+import * as Reanimated from "react-native-reanimated";
 import { createMemoryDriver } from "@mindcocoon/core/storage/driver";
 import { createLocalAdapter } from "@mindcocoon/core/storage/local";
 
@@ -121,5 +124,59 @@ describe("Vent", () => {
     state.replaceValue("active");
     await act(async () => handler?.("active"));
     expect(screen.queryByLabelText("Hidden while you're away")).not.toBeOnTheScreen();
+  });
+
+  describe("ways to let go", () => {
+    afterEach(async () => {
+      await act(() => setPref("ritual", undefined));
+    });
+
+    it("each ritual has its own motion; only burning leaves embers", () => {
+      const text = "one two three four five six";
+      const words = (r: Parameters<typeof planDissolve>[1]) => planDissolve(text, r).tokens.filter((t) => t.text.trim());
+      expect(planDissolve(text, "burn").embers.length).toBeGreaterThan(0);
+      expect(words("burn").every((t) => t.dy < 0)).toBe(true);
+      for (const r of ["float", "scatter", "fade"] as const) expect(planDissolve(text, r).embers).toEqual([]);
+      expect(words("float").every((t) => t.dy > 0 && t.dx > 0)).toBe(true);
+      expect(words("scatter").every((t) => Math.abs(t.dx) >= 120)).toBe(true);
+      expect(words("fade").every((t) => t.dx === 0 && t.rotate === 0)).toBe(true);
+    });
+
+    it.each([
+      ["Burn", "burn"],
+      ["Float away", "float"],
+      ["Scatter in the wind", "scatter"],
+      ["Fade into the night", "fade"],
+    ])("%s releases and clears the text", async (label, id) => {
+      const user = await setup();
+      await user.press(screen.getByRole("button", { name: label }));
+      expect(getPref("ritual")).toBe(id);
+      await user.type(screen.getByLabelText("Write what's on your mind"), SECRET);
+      await user.press(screen.getByRole("button", { name: "Release into the void" }));
+      await act(async () => jest.advanceTimersByTime(4_500));
+      expect(await screen.findByText("Let go.")).toBeOnTheScreen();
+      expect(screen.queryByText(new RegExp(SECRET))).not.toBeOnTheScreen();
+    });
+
+    it("the chosen ritual is remembered", async () => {
+      await act(() => setPref("ritual", "scatter"));
+      await setup();
+      expect(screen.getByRole("button", { name: "Scatter in the wind" })).toBeSelected();
+      expect(screen.getByRole("button", { name: "Burn" })).not.toBeSelected();
+    });
+
+    it("Reduce Motion uses the short fade for every ritual", async () => {
+      const reduce = jest.spyOn(Reanimated, "useReducedMotion").mockReturnValue(true);
+      try {
+        await act(() => setPref("ritual", "float"));
+        const user = await setup();
+        await user.type(screen.getByLabelText("Write what's on your mind"), SECRET);
+        await user.press(screen.getByRole("button", { name: "Release into the void" }));
+        await act(async () => jest.advanceTimersByTime(700));
+        expect(await screen.findByText("Let go.")).toBeOnTheScreen();
+      } finally {
+        reduce.mockRestore();
+      }
+    });
   });
 });

@@ -58,6 +58,8 @@ export const vi: Dictionary = {
     },
   },
   vent: {
+    ritualLabel: "Buông theo cách",
+    rituals: { burn: "Đốt", float: "Thả trôi", scatter: "Gió cuốn", fade: "Tan vào đêm" },
     editorLabel: "Viết ra điều bạn đang nghĩ",
     placeholder: "Cứ trút hết ra. Không ai khác đọc được đâu.",
     release: "Thả vào hư không",

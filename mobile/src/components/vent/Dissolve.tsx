@@ -5,6 +5,10 @@ import * as Haptics from "expo-haptics";
 import { fonts } from "@/theme/fonts";
 import { useTheme } from "@/theme/theme";
 
+/** How the words leave: burn to embers (default), float away on water, scatter in the wind, or fade into the night. */
+export type Ritual = "burn" | "float" | "scatter" | "fade";
+export const RITUALS: Ritual[] = ["burn", "float", "scatter", "fade"];
+
 /** One drifting word. Offsets are generated in the release handler, never during render. */
 export interface DissolveToken {
   text: string;
@@ -24,6 +28,11 @@ export interface DissolveEmber {
 }
 
 export interface DissolvePlan {
+  ritual: Ritual;
+  /** How long the whole animation runs (ms). */
+  total: number;
+  /** Per-word drift duration (ms). */
+  drift: number;
   tokens: DissolveToken[];
   /** Words beyond the animated budget fade out together (keeps old phones smooth). */
   rest: string;
@@ -34,22 +43,44 @@ const ANIMATED_WORDS = 120;
 const DRIFT_MS = 1100;
 const STAGGER_MS = 1300;
 const REDUCED_MS = 600;
-export const DISSOLVE_TOTAL_MS = STAGGER_MS + 250 + DRIFT_MS + 200;
 
-export function planDissolve(text: string, random: () => number = Math.random): DissolvePlan {
+
+interface RitualMotion {
+  stagger: number;
+  drift: number;
+  word(random: () => number): { dx: number; dy: number; rotate: number };
+}
+
+const MOTIONS: Record<Ritual, RitualMotion> = {
+  burn: { stagger: STAGGER_MS, drift: DRIFT_MS, word: (r) => ({ dx: (r() - 0.5) * 60, dy: -(40 + r() * 110), rotate: (r() - 0.5) * 30 }) },
+  // Paper on water: slowly down and to the right, barely turning.
+  float: { stagger: 1800, drift: 1600, word: (r) => ({ dx: 20 + r() * 60, dy: 30 + r() * 40, rotate: (r() - 0.5) * 16 }) },
+  // A gust: far to either side, spinning.
+  scatter: {
+    stagger: 700,
+    drift: 1000,
+    word: (r) => ({ dx: (r() < 0.5 ? -1 : 1) * (120 + r() * 140), dy: -(20 + r() * 60), rotate: (r() - 0.5) * 120 }),
+  },
+  // The page darkens: words sink a little and fade where they are.
+  fade: { stagger: 300, drift: 2000, word: () => ({ dx: 0, dy: 8, rotate: 0 }) },
+};
+
+export function planDissolve(text: string, ritual: Ritual = "burn", random: () => number = Math.random): DissolvePlan {
+  const motion = MOTIONS[ritual];
   const words = text.normalize("NFC").split(/(\s+)/).filter((w) => w.length > 0);
   const animated = words.slice(0, ANIMATED_WORDS * 2);
   const n = Math.max(animated.length, 1);
   return {
+    ritual,
+    total: motion.stagger + 250 + motion.drift + 200,
+    drift: motion.drift,
     tokens: animated.map((w, i) => ({
       text: w,
-      dx: (random() - 0.5) * 60,
-      dy: -(40 + random() * 110),
-      rotate: (random() - 0.5) * 30,
-      delay: ((n - 1 - i) / n) * STAGGER_MS + random() * 250,
+      ...motion.word(random),
+      delay: ((n - 1 - i) / n) * motion.stagger + random() * 250,
     })),
     rest: words.slice(ANIMATED_WORDS * 2).join(""),
-    embers: Array.from({ length: Math.min(36, 10 + Math.floor(text.length / 25)) }, () => ({
+    embers: ritual !== "burn" ? [] : Array.from({ length: Math.min(36, 10 + Math.floor(text.length / 25)) }, () => ({
       left: random() * 100,
       top: 30 + random() * 60,
       size: 2 + random() * 3,
@@ -60,11 +91,11 @@ export function planDissolve(text: string, random: () => number = Math.random): 
   };
 }
 
-function Word({ token, color, ember }: { token: DissolveToken; color: string; ember: string }) {
+function Word({ token, color, ember, drift }: { token: DissolveToken; color: string; ember: string; drift: number }) {
   const p = useSharedValue(0);
   useEffect(() => {
-    p.value = withDelay(token.delay, withTiming(1, { duration: DRIFT_MS, easing: Easing.inOut(Easing.quad) }));
-  }, [p, token.delay]);
+    p.value = withDelay(token.delay, withTiming(1, { duration: drift, easing: Easing.inOut(Easing.quad) }));
+  }, [p, token.delay, drift]);
   const style = useAnimatedStyle(() => ({
     opacity: 1 - p.value,
     color: p.value > 0.35 ? ember : color,
@@ -89,15 +120,16 @@ function Ember({ e, color }: { e: DissolveEmber; color: string }) {
   );
 }
 
-/** Words drift up and burn to ember; Reduce Motion gets a short fade. A soft haptic marks the end. */
+/** Words leave the page in the chosen way; Reduce Motion always gets a short fade. A soft haptic marks the end. */
 export function Dissolve({ plan, onDone }: { plan: DissolvePlan; onDone: () => void }) {
   const { c } = useTheme();
   const reduceMotion = useReducedMotion();
-  const total = reduceMotion ? REDUCED_MS : DISSOLVE_TOTAL_MS;
+  const total = reduceMotion ? REDUCED_MS : plan.total;
+  const tint = plan.ritual === "burn" ? c.ember : plan.ritual === "float" ? c.primary : plan.ritual === "scatter" ? c.mutedForeground : c.foreground;
   const fade = useSharedValue(1);
 
   useEffect(() => {
-    fade.value = withTiming(0, { duration: reduceMotion ? REDUCED_MS : DISSOLVE_TOTAL_MS });
+    fade.value = withTiming(0, { duration: total });
     const id = setTimeout(() => {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       onDone();
@@ -123,7 +155,7 @@ export function Dissolve({ plan, onDone }: { plan: DissolvePlan; onDone: () => v
           /^\s+$/.test(t.text) ? (
             t.text.includes("\n") ? <View key={i} style={styles.lineBreak} /> : <View key={i} style={styles.space} />
           ) : (
-            <Word key={i} token={t} color={c.foreground} ember={c.ember} />
+            <Word key={i} token={t} color={c.foreground} ember={tint} drift={plan.drift} />
           ),
         )}
       </View>
