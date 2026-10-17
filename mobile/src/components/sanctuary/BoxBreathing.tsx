@@ -2,7 +2,7 @@ import { breathAt, TOTAL_MS, type BreathPhase } from "@mindcocoon/core/breathing
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { AppState, StyleSheet, Text, View } from "react-native";
+import { AccessibilityInfo, AppState, Platform, StyleSheet, Text, View } from "react-native";
 import Animated, { cancelAnimation, Easing, useAnimatedProps, useReducedMotion, useSharedValue, withTiming } from "react-native-reanimated";
 import Svg, { Circle, Rect } from "react-native-svg";
 import { Button } from "@/components/ui/Button";
@@ -70,6 +70,19 @@ export function BoxBreathing() {
     return () => sub.remove();
   }, [stop]);
 
+  const phaseLabel: Record<BreathPhase, string> = {
+    inhale: t.sanctuary.inhale,
+    "hold-in": t.sanctuary.holdIn,
+    exhale: t.sanctuary.exhale,
+    "hold-out": t.sanctuary.holdOut,
+  };
+
+  // iOS has no live regions: announce each phase (and the end) for VoiceOver.
+  const spoken = finished ? t.sanctuary.done : running ? phaseLabel[state.phase] : null;
+  useEffect(() => {
+    if (spoken && Platform.OS === "ios") AccessibilityInfo.announceForAccessibility(spoken);
+  }, [spoken]);
+
   const innerProps = useAnimatedProps(() => {
     const on = clock.value > 0 && clock.value < TOTAL_MS;
     const b = breathAtWorklet(clock.value);
@@ -85,12 +98,6 @@ export function BoxBreathing() {
     return { cx: p.x, cy: p.y, opacity: on ? 1 : 0 };
   });
 
-  const phaseLabel: Record<BreathPhase, string> = {
-    inhale: t.sanctuary.inhale,
-    "hold-in": t.sanctuary.holdIn,
-    exhale: t.sanctuary.exhale,
-    "hold-out": t.sanctuary.holdOut,
-  };
 
   return (
     <View style={styles.wrap}>

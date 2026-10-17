@@ -79,6 +79,8 @@ export interface AudioEngine {
   setLabels(labels: { names: Record<string, string>; album: string }): void;
   /** Stops everything, drops the players and returns to defaults (ignoring stored prefs). */
   reset(): void;
+  /** Re-reads stored prefs (they load asynchronously after the engine is created at startup). */
+  restorePrefs(): void;
 }
 
 const DEFAULT_VOLUME = 0.6;
@@ -102,8 +104,10 @@ interface PlayerRecord {
   player: MixPlayer;
   /** What the engine last asked of this player. */
   wanted: boolean;
-  /** The player has reported the wanted state since the last command. */
+  /** The player is known to be in the wanted state (reported, or already there when asked). */
   settled: boolean;
+  /** Last state the player reported. Real players only report changes, never a no-op pause/play. */
+  reported: boolean;
   subscription: { remove(): void };
 }
 
@@ -130,8 +134,7 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
     };
   }
 
-  function initial(): AudioState {
-    const base = defaults();
+  function withPrefs(base: AudioState): AudioState {
     const prefs = deps.loadPrefs();
     if (!prefs) return base;
     return {
@@ -142,7 +145,7 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
     };
   }
 
-  let state = initial();
+  let state = withPrefs(defaults());
 
   function setState(patch: Partial<AudioState>) {
     state = { ...state, ...patch };
@@ -172,6 +175,7 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
         player,
         wanted: false,
         settled: true,
+        reported: false,
         subscription: player.addListener("playbackStatusUpdate", (s) => onStatus(id, s)),
       };
       rec = created;
@@ -184,7 +188,7 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
 
   function command(rec: PlayerRecord, play: boolean) {
     rec.wanted = play;
-    rec.settled = false;
+    rec.settled = rec.reported === play;
     if (play) rec.player.play();
     else rec.player.pause();
   }
@@ -192,9 +196,13 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
   function onStatus(id: string, status: PlayerStatus) {
     const rec = records.get(id);
     if (!rec) return;
+    rec.reported = status.playing;
     if (status.didJustFinish && !state.loop) {
       rec.wanted = false;
       rec.settled = true;
+      rec.reported = false;
+      // expo-audio stays at the end of a finished item; rewind so Play starts it again.
+      rec.player.seekTo(0).catch(() => {});
       if (state.playing.includes(id)) setState({ playing: state.playing.filter((p) => p !== id) });
       return;
     }
@@ -358,6 +366,15 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
     setLabels(next) {
       labels = next;
       setState({});
+    },
+
+    restorePrefs() {
+      state = withPrefs(state);
+      applyVolumes();
+      records.forEach((rec) => {
+        rec.player.loop = state.loop;
+      });
+      listeners.forEach((l) => l());
     },
 
     reset() {

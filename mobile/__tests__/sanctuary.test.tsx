@@ -4,7 +4,7 @@ import { SOUND_TRACKS } from "@mindcocoon/core/sounds";
 import { act, fireEvent, screen, userEvent, waitFor } from "@testing-library/react-native";
 import { setAudioModeAsync } from "expo-audio";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
-import { AppState, type AppStateStatus } from "react-native";
+import { AccessibilityInfo, AppState, type AppStateStatus } from "react-native";
 import SanctuaryScreen from "@/app/(tabs)/sanctuary";
 import { BoxBreathing } from "@/components/sanctuary/BoxBreathing";
 import { ToastHost } from "@/components/ui/Toast";
@@ -133,6 +133,17 @@ describe("Box breathing", () => {
     expect(screen.getByText("Hold")).toBeOnTheScreen();
     await act(async () => jest.advanceTimersByTime(4_000));
     expect(screen.getByText("Breathe out")).toBeOnTheScreen();
+  });
+
+  it("VoiceOver hears each phase", async () => {
+    const announce = jest.spyOn(AccessibilityInfo, "announceForAccessibility").mockImplementation(() => {});
+    await begin();
+    expect(announce).toHaveBeenLastCalledWith("Breathe in");
+    await act(async () => jest.advanceTimersByTime(4_100));
+    expect(announce).toHaveBeenLastCalledWith("Hold");
+    await act(async () => jest.advanceTimersByTime(60_500));
+    expect(announce).toHaveBeenLastCalledWith("Well done. Notice how you feel now.");
+    announce.mockRestore();
   });
 
   it("finishes with the done message and Again", async () => {

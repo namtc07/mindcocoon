@@ -7,7 +7,8 @@ Branch `feat/mobile-m4` (on `main`). Plan: `docs/superpowers/plans/2026-10-17-mo
 - **Box breathing**: 4 s in / hold / out / hold, 4 rounds (~64 s). The square and dot are drawn on the
   UI thread (Reanimated + SVG); the phase label and seconds come from core `breathAt`. The screen
   stays on while breathing (`expo-keep-awake`). Leaving the tab or the app stops and resets it.
-  Reduce Motion: no moving dot, the inner square stays still, labels still change.
+  Reduce Motion: no moving dot, the inner square stays still, labels still change. VoiceOver
+  announces each phase.
 - **Tonight's music**: picked from today's latest check-in (else a soft piece), plays with ambient sounds.
 - **Sounds**: Rain, Ocean, Night wind, Campfire mixed together; per-sound volume, overall volume and
   loop (all remembered). Premium sounds come back in M6 with rewarded ads.
@@ -30,12 +31,12 @@ with licensed recordings before launch (already on the launch checklist).
 
 ## Tests
 
-- Vitest: mixer engine (`test/audio-engine.test.ts`, 21 — sleep fade/late tick, lock-screen leader,
+- Vitest: mixer engine (`test/audio-engine.test.ts`, 25 — sleep fade/late tick, lock-screen leader,
   status sync for lock-screen and OS pauses), breathing geometry (`test/breath-geometry.test.ts`, 3).
 - Jest: `audio-wiring` (sources, background session, foreground re-check, labels per language),
   `sanctuary` (mixer, tonight, sleep timer, breathing incl. keep-awake/tab blur/background),
   `mini-player` (bar, sleep minutes, deep links + scroll), `settings` (erase stops sound).
-- Totals: mobile Vitest 49, Jest 71; web 166.
+- Totals: mobile Vitest 53, Jest 73; web 166.
 
 ## Owner checklist (device / simulator after the rebuild)
 
@@ -55,6 +56,8 @@ with licensed recordings before launch (already on the launch checklist).
 11. Settings → Tiếng Việt → the next sound shows a Vietnamese title on the lock screen.
 
 ## Known gaps
+
+- Review minors deferred (see the M4 ledger in `docs/superpowers/plans/2026-10-17-mobile-m4-ledger.md`).
 
 - Playback is not restored after the app is killed (volumes, master and loop are).
 - Settings and Help (stack screens) don't show the mini player.

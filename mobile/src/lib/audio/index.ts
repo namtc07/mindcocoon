@@ -3,7 +3,7 @@ import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
 import { useSyncExternalStore } from "react";
 import { AppState } from "react-native";
 import type { AppStateLike } from "@/lib/auto-lock";
-import { getPref, setPref } from "@/lib/prefs";
+import { getPref, loadPrefs, setPref } from "@/lib/prefs";
 import { createAudioEngine, type AudioState, type MixPlayer } from "./engine";
 import { TRACK_SOURCES } from "./sources";
 
@@ -17,6 +17,12 @@ export const audio = createAudioEngine({
   loadPrefs: () => getPref("audio"),
   savePrefs: (prefs) => void setPref("audio", prefs),
 });
+
+/** The engine is created at import, before prefs are read: apply the saved mix settings once they load. */
+export async function hydrateAudio() {
+  await loadPrefs();
+  audio.restorePrefs();
+}
 
 /** Re-checks the sleep timer whenever the app comes back to the foreground (JS may be throttled while locked). */
 export function startAudioLifecycle(appState: AppStateLike = AppState as unknown as AppStateLike) {

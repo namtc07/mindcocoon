@@ -8,7 +8,7 @@ import { FirstRunNotice } from "@/components/FirstRunNotice";
 import { AudioLabelsSync } from "@/components/sanctuary/AudioLabelsSync";
 import { ToastHost } from "@/components/ui/Toast";
 import { appAutoLock } from "@/lib/app-auto-lock";
-import { startAudioLifecycle } from "@/lib/audio";
+import { hydrateAudio, startAudioLifecycle } from "@/lib/audio";
 import { useEraseCount } from "@/lib/export";
 import { loadPrefs } from "@/lib/prefs";
 import { useAppFonts } from "@/theme/fonts";
@@ -25,6 +25,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     loadPrefs().finally(() => setPrefsReady(true));
+    void hydrateAudio();
   }, []);
 
   // Locks a passcode vault after the chosen idle time, in the background or foreground.

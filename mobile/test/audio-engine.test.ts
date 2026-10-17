@@ -297,6 +297,59 @@ describe("audio engine", () => {
   });
 });
 
+describe("like real players (status only on actual changes)", () => {
+  it("lock-screen pause then play brings the whole mix back", async () => {
+    const { engine } = setup();
+    await engine.play("rain");
+    await engine.play("ocean");
+    p("rain").emit({ playing: true });
+    p("ocean").emit({ playing: true });
+    p("rain").emit({ playing: false }); // lock-screen pause
+    p("ocean").emit({ playing: false }); // ocean really stops after pauseAll; rain was already paused, so it stays silent
+    p("rain").emit({ playing: true }); // lock-screen play
+    await vi.waitFor(() => expect(engine.getState().playing).toEqual(["rain", "ocean"]));
+    expect(engine.getState().held).toEqual([]);
+    expect(p("ocean").calls.filter((c) => c === "play")).toHaveLength(2);
+  });
+
+  it("a sound the OS resumes after a call shows as playing again", async () => {
+    const { engine } = setup();
+    await engine.play("rain");
+    p("rain").emit({ playing: true });
+    p("rain").emit({ playing: false }); // call starts
+    expect(engine.getState().held).toEqual(["rain"]);
+    p("rain").emit({ playing: true }); // call ends, iOS resumes it
+    await vi.waitFor(() => expect(engine.getState().playing).toEqual(["rain"]));
+  });
+
+  it("a finished track rewinds so it can play again", async () => {
+    const { engine } = setup();
+    engine.setLoop(false);
+    await engine.play("piano-still");
+    p("piano-still").emit({ playing: true });
+    p("piano-still").emit({ playing: false, didJustFinish: true });
+    expect(p("piano-still").calls).toContain("seek:0");
+    await engine.play("piano-still");
+    p("piano-still").emit({ playing: true });
+    expect(engine.getState().playing).toEqual(["piano-still"]);
+  });
+});
+
+describe("restorePrefs", () => {
+  it("applies prefs that were not readable when the engine was created", async () => {
+    let stored: Partial<AudioPrefs> | undefined;
+    const { engine } = setup({ loadPrefs: () => stored });
+    expect(engine.getState().master).toBe(0.8);
+    stored = { volumes: { rain: 0.3 }, master: 0.5, loop: false };
+    engine.restorePrefs();
+    expect(engine.getState()).toMatchObject({ master: 0.5, loop: false });
+    expect(engine.getState().volumes).toMatchObject({ rain: 0.3, ocean: 0.6 });
+    await engine.play("rain");
+    expect(p("rain").volume).toBeCloseTo(0.15);
+    expect(p("rain").loop).toBe(false);
+  });
+});
+
 describe("sleepMinutesLeft", () => {
   it("never shows more than the minutes chosen, even with a slightly stale clock", async () => {
     const { engine } = setup();
