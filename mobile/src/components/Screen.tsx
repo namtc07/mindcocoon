@@ -1,14 +1,14 @@
-import type { ReactNode } from "react";
-import { ScrollView, StyleSheet, Text } from "react-native";
+import type { ReactNode, Ref } from "react";
+import { ScrollView, StyleSheet, Text, type ScrollViewInstance } from "react-native";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 
 /** Scrollable page with a serif title, left-aligned like the web. */
-export function Screen({ title, children }: { title: string; children?: ReactNode }) {
+export function Screen({ title, children, scrollRef }: { title: string; children?: ReactNode; scrollRef?: Ref<ScrollViewInstance> }) {
   const { c } = useTheme();
   return (
-    <ScrollView style={{ backgroundColor: c.background }} contentContainerStyle={styles.content}>
+    <ScrollView ref={scrollRef} style={{ backgroundColor: c.background }} contentContainerStyle={styles.content}>
       <Text accessibilityRole="header" style={[styles.title, { color: c.foreground }]}>
         {title}
       </Text>

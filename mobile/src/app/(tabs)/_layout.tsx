@@ -1,6 +1,8 @@
 import { router, Tabs } from "expo-router";
+import { BottomTabBar } from "expo-router/js-tabs";
 import { BookLock, Feather, Leaf, Settings2, Sunrise, Waves } from "lucide-react-native";
 import { Pressable, Text } from "react-native";
+import { MiniPlayer } from "@/components/sanctuary/MiniPlayer";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { useTheme } from "@/theme/theme";
@@ -12,6 +14,16 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      // The mini player rides on top of the tab bar; on Vent the bar is hidden but the player stays.
+      tabBar={(props) => {
+        const immersive = props.state.routes[props.state.index]?.name === "vent";
+        return (
+          <>
+            <MiniPlayer safeBottom={immersive} />
+            <BottomTabBar {...props} />
+          </>
+        );
+      }}
       screenOptions={{
         headerStyle: { backgroundColor: c.background },
         headerShadowVisible: false,
