@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useNow } from "@/hooks/use-now";
 import { getAgeAnswer, subscribeAge } from "@/lib/auth/age";
 import { fetchServerSecret } from "@/lib/backup/active";
-import { formatTime } from "@/lib/dates";
+import { formatTime } from "@mindcocoon/core/dates";
 import {
   checkRecoveryCode,
   checkServerSecret,
@@ -18,7 +18,7 @@ import {
   requestPasscodeReset,
   resetPasscodeWithRecoveryCode,
   resetPasscodeWithServerSecret,
-} from "@/lib/vault/session";
+} from "@mindcocoon/core/vault/session";
 import { PasscodeForm } from "./passcode-form";
 
 /**

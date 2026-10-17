@@ -4,7 +4,7 @@ import { RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
-import { promptForDay } from "@/lib/prompts";
+import { promptForDay } from "@mindcocoon/core/prompts";
 
 export function ReflectionPrompt({ now }: { now: Date }) {
   const { t, locale, href } = useI18n();

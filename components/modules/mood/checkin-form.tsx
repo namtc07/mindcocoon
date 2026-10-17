@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useVault } from "@/hooks/use-vault";
-import { addMood } from "@/lib/mood/store";
-import { DEFAULT_TAGS } from "@/lib/moods";
+import { addMood } from "@mindcocoon/core/mood/store";
+import { DEFAULT_TAGS } from "@mindcocoon/core/moods";
 import { cn } from "@/lib/utils";
-import type { MoodType } from "@/types";
+import type { MoodType } from "@mindcocoon/core/types";
 import { MoodPicker } from "./mood-picker";
 import { tagLabel } from "./tag-label";
 

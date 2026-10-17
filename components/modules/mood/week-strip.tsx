@@ -1,10 +1,10 @@
 "use client";
 
 import { useI18n } from "@/components/providers/i18n-provider";
-import { formatShortDay, formatWeekdayInitial } from "@/lib/dates";
-import { weekStrip } from "@/lib/mood/selectors";
-import { MOOD_COLOR } from "@/lib/moods";
-import type { MoodLog } from "@/types";
+import { formatShortDay, formatWeekdayInitial } from "@mindcocoon/core/dates";
+import { weekStrip } from "@mindcocoon/core/mood/selectors";
+import { MOOD_COLOR } from "@mindcocoon/core/moods";
+import type { MoodLog } from "@mindcocoon/core/types";
 
 /** Seven dots, oldest to today. An empty day is an outline ring, never a zero. */
 export function WeekStrip({ logs, now }: { logs: MoodLog[]; now: Date }) {

@@ -4,7 +4,7 @@ import Script from "next/script";
 import { useEffect, useRef } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { useNow } from "@/hooks/use-now";
-import { canShowAd, getAdsConfig, type AdPlacement } from "@/lib/ads/config";
+import { canShowAd, getAdsConfig, type AdPlacement } from "@mindcocoon/core/ads/config";
 
 export type { AdPlacement };
 

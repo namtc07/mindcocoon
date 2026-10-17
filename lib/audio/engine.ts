@@ -1,4 +1,4 @@
-import { SOUND_TRACKS, TRACK_BY_ID } from "@/lib/sounds";
+import { SOUND_TRACKS, TRACK_BY_ID } from "@mindcocoon/core/sounds";
 
 /**
  * Ambient mixer. Module-level so playback survives route changes; one

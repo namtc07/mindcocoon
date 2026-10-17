@@ -4,12 +4,12 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
-import { dayKey, dayKeyFromISO, formatDay, formatTime, formatWeekdayInitial } from "@/lib/dates";
-import { monthGrid } from "@/lib/mood/selectors";
-import { readNote } from "@/lib/mood/store";
-import { MOOD_COLOR } from "@/lib/moods";
+import { dayKey, dayKeyFromISO, formatDay, formatTime, formatWeekdayInitial } from "@mindcocoon/core/dates";
+import { monthGrid } from "@mindcocoon/core/mood/selectors";
+import { readNote } from "@mindcocoon/core/mood/store";
+import { MOOD_COLOR } from "@mindcocoon/core/moods";
 import { cn } from "@/lib/utils";
-import type { MoodLog } from "@/types";
+import type { MoodLog } from "@mindcocoon/core/types";
 import { tagLabel } from "./tag-label";
 
 function NoteText({ log }: { log: MoodLog }) {

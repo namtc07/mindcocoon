@@ -11,13 +11,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { VaultState } from "@/lib/vault/session";
+import type { VaultState } from "@mindcocoon/core/vault/session";
 import {
   regenerateRecoveryCode,
   removeVaultPasscode,
   setVaultAutoLock,
   setVaultPasscode,
-} from "@/lib/vault/session";
+} from "@mindcocoon/core/vault/session";
 import { PasscodeForm } from "./passcode-form";
 
 const AUTO_LOCK_OPTIONS = [1, 5, 15, 30];

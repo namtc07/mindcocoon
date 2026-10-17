@@ -1,5 +1,5 @@
 import { BookLock, Feather, Leaf, Settings2, Sunrise, Waves, type LucideIcon } from "lucide-react";
-import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import type { Dictionary } from "@mindcocoon/core/i18n/get-dictionary";
 
 export interface NavItem {
   href: string;

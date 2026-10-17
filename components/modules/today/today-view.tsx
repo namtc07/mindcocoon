@@ -7,7 +7,7 @@ import { InstallHint } from "@/components/modules/pwa/install-hint";
 import { HeavyNudge } from "@/components/modules/safety/heavy-nudge";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { useNow } from "@/hooks/use-now";
-import { formatDay, partOfDay } from "@/lib/dates";
+import { formatDay, partOfDay } from "@mindcocoon/core/dates";
 import { QuickCheckin } from "./quick-checkin";
 import { ReflectionPrompt } from "./reflection-prompt";
 

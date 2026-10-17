@@ -4,7 +4,7 @@ import { useReducedMotion } from "framer-motion";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
-import { breathAt, type BreathPhase } from "@/lib/breathing";
+import { breathAt, type BreathPhase } from "@mindcocoon/core/breathing";
 
 const SIZE = 220;
 const PAD = 20;

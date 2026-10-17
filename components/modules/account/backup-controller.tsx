@@ -5,8 +5,8 @@ import { RecoveryCodeCard } from "@/components/modules/vault/recovery-code-card"
 import { useAuth } from "@/hooks/use-auth";
 import { activateBackup, deactivateBackup } from "@/lib/backup/active";
 import { isBackupEnabled, subscribeBackupPref } from "@/lib/backup/prefs";
-import { getVaultState, subscribeVault } from "@/lib/vault/session";
-import type { BackupEngine } from "@/lib/backup/engine";
+import { getVaultState, subscribeVault } from "@mindcocoon/core/vault/session";
+import type { BackupEngine } from "@mindcocoon/core/backup/engine";
 import { ConflictDialog } from "./conflict-dialog";
 import { RestoreDialog } from "./restore-dialog";
 

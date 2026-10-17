@@ -5,9 +5,9 @@ import {
   getVaultServerState,
   getVaultState,
   initVault,
-  startVaultAutoLock,
   subscribeVault,
-} from "@/lib/vault/session";
+} from "@mindcocoon/core/vault/session";
+import { startVaultAutoLock } from "@/lib/vault/auto-lock";
 
 export function useVault() {
   const state = useSyncExternalStore(subscribeVault, getVaultState, getVaultServerState);

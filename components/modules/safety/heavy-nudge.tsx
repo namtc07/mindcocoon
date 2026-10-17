@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { useMoodLogs } from "@/hooks/use-mood-logs";
-import { shouldShowHeavyNudge } from "@/lib/mood/selectors";
+import { shouldShowHeavyNudge } from "@mindcocoon/core/mood/selectors";
 
 const STORAGE_KEY = "mc:heavy-nudge";
 

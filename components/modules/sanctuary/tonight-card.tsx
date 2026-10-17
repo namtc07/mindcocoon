@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { useAudio } from "@/hooks/use-audio";
 import { useMoodLogs } from "@/hooks/use-mood-logs";
-import { pickTonightTrack } from "@/lib/audio/tonight";
+import { pickTonightTrack } from "@mindcocoon/core/audio/tonight";
 import { toggleTrack } from "@/lib/audio/engine";
-import { dayKey, dayKeyFromISO } from "@/lib/dates";
-import { SOUND_TRACKS } from "@/lib/sounds";
+import { dayKey, dayKeyFromISO } from "@mindcocoon/core/dates";
+import { SOUND_TRACKS } from "@mindcocoon/core/sounds";
 
 /** Tonight's music, picked for the latest check-in today. Plays alongside ambient sounds. */
 export function TonightCard({ now }: { now: Date }) {

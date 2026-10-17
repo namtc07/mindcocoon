@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useVault } from "@/hooks/use-vault";
-import { addMood, changeMood, removeMood } from "@/lib/mood/store";
-import { DEFAULT_TAGS } from "@/lib/moods";
+import { addMood, changeMood, removeMood } from "@mindcocoon/core/mood/store";
+import { DEFAULT_TAGS } from "@mindcocoon/core/moods";
 import { cn } from "@/lib/utils";
-import { VaultLockedError, initVault, unlockWithPasscode } from "@/lib/vault/session";
-import type { MoodLog, MoodType } from "@/types";
+import { VaultLockedError, initVault, unlockWithPasscode } from "@mindcocoon/core/vault/session";
+import type { MoodLog, MoodType } from "@mindcocoon/core/types";
 
 /** One tap saves the mood; details (tags, note) can be added afterwards. */
 export function QuickCheckin() {

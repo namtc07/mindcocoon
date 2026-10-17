@@ -4,9 +4,9 @@ import { createStore, entries } from "idb-keyval";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { VentView } from "@/components/modules/vent/vent-view";
 import { __resetGentleCardForTests } from "@/components/modules/safety/gentle-card";
-import { getStorage } from "@/lib/storage";
-import { __setIterationsForTests } from "@/lib/vault/keyring";
-import { __resetVaultForTests, getVaultState } from "@/lib/vault/session";
+import { getStorage } from "@mindcocoon/core/storage/index";
+import { __setIterationsForTests } from "@mindcocoon/core/vault/keyring";
+import { __resetVaultForTests, getVaultState } from "@mindcocoon/core/vault/session";
 import { renderWithProviders } from "../utils/render";
 
 // Reduced motion keeps the dissolve short (600ms) and deterministic in jsdom.

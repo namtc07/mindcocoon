@@ -3,12 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsView } from "@/components/modules/settings/settings-view";
 import { buildExport } from "@/lib/data";
-import { __resetMoodsForTests, addMood, loadMoods } from "@/lib/mood/store";
-import { getStorage, setStorage } from "@/lib/storage";
-import { createMemoryDriver } from "@/lib/storage/driver";
-import { createLocalAdapter } from "@/lib/storage/local";
-import { __setIterationsForTests } from "@/lib/vault/keyring";
-import { __resetVaultForTests, initVault, saveVaultEntry } from "@/lib/vault/session";
+import { __resetMoodsForTests, addMood, loadMoods } from "@mindcocoon/core/mood/store";
+import { getStorage, setStorage } from "@mindcocoon/core/storage/index";
+import { createMemoryDriver } from "@mindcocoon/core/storage/driver";
+import { createLocalAdapter } from "@mindcocoon/core/storage/local";
+import { __setIterationsForTests } from "@mindcocoon/core/vault/keyring";
+import { __resetVaultForTests, initVault, saveVaultEntry } from "@mindcocoon/core/vault/session";
 import { renderWithProviders } from "../utils/render";
 
 vi.mock("next-themes", () => ({ useTheme: () => ({ theme: "dark", setTheme: vi.fn() }) }));

@@ -3,8 +3,8 @@
 import { Phone } from "lucide-react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { useNow } from "@/hooks/use-now";
-import type { Locale } from "@/lib/i18n/config";
-import { FIND_A_HELPLINE_URL, HOTLINES, isOpenNow, telHref, type Hotline } from "@/lib/safety/hotlines";
+import type { Locale } from "@mindcocoon/core/i18n/config";
+import { FIND_A_HELPLINE_URL, HOTLINES, isOpenNow, telHref, type Hotline } from "@mindcocoon/core/safety/hotlines";
 
 const HOME_COUNTRY: Record<Locale, string | null> = { vi: "VN", en: null };
 

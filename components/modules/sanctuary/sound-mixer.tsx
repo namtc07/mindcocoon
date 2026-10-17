@@ -7,7 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { useAudio } from "@/hooks/use-audio";
 import { setLoop, setMasterVolume, setTrackVolume, toggleTrack } from "@/lib/audio/engine";
-import { AMBIENT_TRACKS } from "@/lib/sounds";
+import { AMBIENT_TRACKS } from "@mindcocoon/core/sounds";
 import { cn } from "@/lib/utils";
 
 export function SoundMixer() {

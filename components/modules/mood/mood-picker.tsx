@@ -2,9 +2,9 @@
 
 import { useRef, type KeyboardEvent } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
-import { MOODS } from "@/lib/moods";
+import { MOODS } from "@mindcocoon/core/moods";
 import { cn } from "@/lib/utils";
-import type { MoodType } from "@/types";
+import type { MoodType } from "@mindcocoon/core/types";
 
 interface MoodPickerProps {
   value: MoodType | null;

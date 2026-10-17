@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { isAnalyticsEnabled, setAnalyticsEnabled, subscribeAnalyticsPref } from "@/lib/analytics";
 import { downloadExport, eraseEverything } from "@/lib/data";
-import { LOCALES, type Locale } from "@/lib/i18n/config";
+import { LOCALES, type Locale } from "@mindcocoon/core/i18n/config";
 import { cn } from "@/lib/utils";
 
 const LANGUAGE_NAMES: Record<Locale, string> = { vi: "Tiếng Việt", en: "English" };

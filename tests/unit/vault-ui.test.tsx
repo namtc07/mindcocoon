@@ -2,11 +2,11 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { VaultView } from "@/components/modules/vault/vault-view";
-import { setStorage } from "@/lib/storage";
-import { createMemoryDriver } from "@/lib/storage/driver";
-import { createLocalAdapter } from "@/lib/storage/local";
-import { DEVICE_RESET_WAIT_MS, __setIterationsForTests } from "@/lib/vault/keyring";
-import { __resetVaultForTests, initVault, lockVault, saveVaultEntry, setVaultPasscode, unlockWithPasscode } from "@/lib/vault/session";
+import { setStorage } from "@mindcocoon/core/storage/index";
+import { createMemoryDriver } from "@mindcocoon/core/storage/driver";
+import { createLocalAdapter } from "@mindcocoon/core/storage/local";
+import { DEVICE_RESET_WAIT_MS, __setIterationsForTests } from "@mindcocoon/core/vault/keyring";
+import { __resetVaultForTests, initVault, lockVault, saveVaultEntry, setVaultPasscode, unlockWithPasscode } from "@mindcocoon/core/vault/session";
 import { renderWithProviders } from "../utils/render";
 
 const clock = vi.hoisted(() => ({ now: new Date("2026-10-16T22:00:00Z") }));

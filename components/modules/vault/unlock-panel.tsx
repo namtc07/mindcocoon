@@ -5,7 +5,7 @@ import { useState, type FormEvent } from "react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { unlockWithPasscode } from "@/lib/vault/session";
+import { unlockWithPasscode } from "@mindcocoon/core/vault/session";
 import { ForgotPasscode } from "./forgot-passcode";
 
 export function UnlockPanel({ resetReadyAt }: { resetReadyAt: number | null }) {

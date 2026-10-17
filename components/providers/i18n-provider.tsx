@@ -2,8 +2,8 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useMemo, type ReactNode } from "react";
-import { LOCALE_COOKIE, LOCALES, type Locale } from "@/lib/i18n/config";
-import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import { LOCALE_COOKIE, LOCALES, type Locale } from "@mindcocoon/core/i18n/config";
+import type { Dictionary } from "@mindcocoon/core/i18n/get-dictionary";
 
 interface I18nContextValue {
   locale: Locale;

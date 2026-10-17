@@ -2,12 +2,12 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { MoodView } from "@/components/modules/mood/mood-view";
-import { __resetMoodsForTests } from "@/lib/mood/store";
-import { setStorage } from "@/lib/storage";
-import { createMemoryDriver } from "@/lib/storage/driver";
-import { createLocalAdapter } from "@/lib/storage/local";
-import { __setIterationsForTests } from "@/lib/vault/keyring";
-import { __resetVaultForTests, initVault } from "@/lib/vault/session";
+import { __resetMoodsForTests } from "@mindcocoon/core/mood/store";
+import { setStorage } from "@mindcocoon/core/storage/index";
+import { createMemoryDriver } from "@mindcocoon/core/storage/driver";
+import { createLocalAdapter } from "@mindcocoon/core/storage/local";
+import { __setIterationsForTests } from "@mindcocoon/core/vault/keyring";
+import { __resetVaultForTests, initVault } from "@mindcocoon/core/vault/session";
 import { renderWithProviders } from "../utils/render";
 
 beforeEach(async () => {

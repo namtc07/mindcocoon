@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import type { BackupEngine } from "@/lib/backup/engine";
+import type { BackupEngine } from "@mindcocoon/core/backup/engine";
 
 export function RestoreDialog({ engine, open, onOpenChange }: { engine: BackupEngine | null; open: boolean; onOpenChange: (open: boolean) => void }) {
   const { t } = useI18n();

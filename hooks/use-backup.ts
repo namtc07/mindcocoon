@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { getActiveBackup, subscribeActiveBackup } from "@/lib/backup/active";
-import type { BackupStatus } from "@/lib/backup/engine";
+import type { BackupStatus } from "@mindcocoon/core/backup/engine";
 
 const noopSubscribe = () => () => {};
 

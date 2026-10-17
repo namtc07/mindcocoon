@@ -2,13 +2,13 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { TodayView } from "@/components/modules/today/today-view";
-import { __resetMoodsForTests } from "@/lib/mood/store";
-import { getStorage, setStorage } from "@/lib/storage";
-import { createMemoryDriver } from "@/lib/storage/driver";
-import { createLocalAdapter } from "@/lib/storage/local";
-import { readNote } from "@/lib/mood/store";
-import { __setIterationsForTests } from "@/lib/vault/keyring";
-import { __resetVaultForTests, initVault, lockVault, setVaultPasscode } from "@/lib/vault/session";
+import { __resetMoodsForTests } from "@mindcocoon/core/mood/store";
+import { getStorage, setStorage } from "@mindcocoon/core/storage/index";
+import { createMemoryDriver } from "@mindcocoon/core/storage/driver";
+import { createLocalAdapter } from "@mindcocoon/core/storage/local";
+import { readNote } from "@mindcocoon/core/mood/store";
+import { __setIterationsForTests } from "@mindcocoon/core/vault/keyring";
+import { __resetVaultForTests, initVault, lockVault, setVaultPasscode } from "@mindcocoon/core/vault/session";
 import { renderWithProviders } from "../utils/render";
 
 beforeEach(() => {

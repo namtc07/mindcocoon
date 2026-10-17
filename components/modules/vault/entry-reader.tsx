@@ -7,9 +7,9 @@ import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { formatDay, formatTime } from "@/lib/dates";
-import { deleteVaultEntry, updateVaultEntry } from "@/lib/vault/session";
-import type { DecryptedJournalEntry } from "@/types";
+import { formatDay, formatTime } from "@mindcocoon/core/dates";
+import { deleteVaultEntry, updateVaultEntry } from "@mindcocoon/core/vault/session";
+import type { DecryptedJournalEntry } from "@mindcocoon/core/types";
 
 export function EntryReader({ entry, onBack }: { entry: DecryptedJournalEntry; onBack: () => void }) {
   const { t, locale } = useI18n();

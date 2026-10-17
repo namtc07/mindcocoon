@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useVault } from "@/hooks/use-vault";
-import { saveVaultEntry, unlockWithPasscode } from "@/lib/vault/session";
+import { saveVaultEntry, unlockWithPasscode } from "@mindcocoon/core/vault/session";
 
 interface SaveDialogProps {
   open: boolean;

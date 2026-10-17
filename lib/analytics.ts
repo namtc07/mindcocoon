@@ -1,4 +1,4 @@
-import type { Locale } from "@/lib/i18n/config";
+import type { Locale } from "@mindcocoon/core/i18n/config";
 import { getSupabase } from "@/lib/supabase/client";
 
 /**

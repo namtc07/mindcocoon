@@ -30,14 +30,20 @@ E2E specs import `test` from `tests/e2e/fixtures.ts` (skips the first-run dialog
 
 ## Architecture
 
+- npm workspaces: the web app at the root, `packages/core` (`@mindcocoon/core`, platform-free
+  TypeScript shared with mobile — crypto, vault, moods, backup, safety, i18n, prompts…), `mobile/`
+  (Expo app, from M1). Import core as `@mindcocoon/core/<path>`; inside core use relative imports.
+  `packages/core/test/purity.test.ts` forbids DOM globals and React/Next imports in core;
+  `golden-vectors.test.ts` pins the encryption formats — never change those vectors.
+
 - Next.js 16 App Router with a `[lang]` root segment; `proxy.ts` picks `vi`/`en`.
   `cacheComponents` is on, so hidden routes stay mounted inside `<Activity>`:
   effects clean up on hide and re-run on show — design state resets accordingly.
 - Product UI is client components reading module-level external stores through
-  `useSyncExternalStore` (`lib/vault/session.ts`, `lib/mood/store.ts`, `lib/audio/engine.ts`).
+  `useSyncExternalStore` (`@mindcocoon/core/vault/session`, `@mindcocoon/core/mood/store`, `lib/audio/engine.ts`).
 - Persistence goes through `lib/storage` (IndexedDB via idb-keyval; memory fallback).
 - Private content is encrypted on-device: one random data key (DEK) wrapped by
-  device / passcode / recovery-code / server-secret keys (`lib/vault/keyring.ts`).
+  device / passcode / recovery-code / server-secret keys (`@mindcocoon/core/vault/keyring`). Web auto-lock lives in `lib/vault/auto-lock.ts`.
   The `server` and device wraps never leave the device.
 - Supabase (client-side `supabase-js` only) handles auth, encrypted backup blobs and
   anonymous open counts. Without env vars every Supabase feature degrades to local-only.

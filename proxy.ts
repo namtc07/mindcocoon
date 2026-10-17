@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { LOCALE_COOKIE, LOCALES, resolveLocale } from "@/lib/i18n/config";
+import { LOCALE_COOKIE, LOCALES, resolveLocale } from "@mindcocoon/core/i18n/config";
 
 /** Sends every un-prefixed page request to its locale: "/vent" → "/vi/vent". */
 export function proxy(request: NextRequest) {

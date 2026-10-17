@@ -1,13 +1,13 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createBackupEngine } from "@/lib/backup/engine";
-import { createSupabaseRemote } from "@/lib/backup/supabase-remote";
-import { __resetMoodsForTests, addMood, getMoodState, loadMoods } from "@/lib/mood/store";
-import { setStorage } from "@/lib/storage";
-import { createMemoryDriver } from "@/lib/storage/driver";
-import { createLocalAdapter } from "@/lib/storage/local";
-import { __setIterationsForTests } from "@/lib/vault/keyring";
-import { __resetVaultForTests, getVaultState, initVault, regenerateRecoveryCode, saveVaultEntry } from "@/lib/vault/session";
+import { createBackupEngine } from "@mindcocoon/core/backup/engine";
+import { createSupabaseRemote } from "@mindcocoon/core/backup/supabase-remote";
+import { __resetMoodsForTests, addMood, getMoodState, loadMoods } from "@mindcocoon/core/mood/store";
+import { setStorage } from "@mindcocoon/core/storage/index";
+import { createMemoryDriver } from "@mindcocoon/core/storage/driver";
+import { createLocalAdapter } from "@mindcocoon/core/storage/local";
+import { __setIterationsForTests } from "@mindcocoon/core/vault/keyring";
+import { __resetVaultForTests, getVaultState, initVault, regenerateRecoveryCode, saveVaultEntry } from "@mindcocoon/core/vault/session";
 
 /**
  * Runs against the real project with two throwaway users, then deletes them.

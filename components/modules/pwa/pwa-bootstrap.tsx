@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { stripLocale } from "@/components/providers/i18n-provider";
-import { onMoodChange } from "@/lib/mood/store";
+import { onMoodChange } from "@mindcocoon/core/mood/store";
 import {
   isStandalone,
   markInstallHintShown,
@@ -12,7 +12,7 @@ import {
   setInstallHintVisible,
   shouldShowInstallHint,
 } from "@/lib/pwa";
-import { onVaultChange } from "@/lib/vault/session";
+import { onVaultChange } from "@mindcocoon/core/vault/session";
 
 /**
  * Registers the service worker (production), asks the browser to keep our data

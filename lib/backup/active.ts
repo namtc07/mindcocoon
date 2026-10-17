@@ -1,6 +1,6 @@
 import { getSupabase } from "@/lib/supabase/client";
-import { createBackupEngine, type BackupEngine } from "./engine";
-import { createSupabaseRemote } from "./supabase-remote";
+import { createBackupEngine, type BackupEngine } from "@mindcocoon/core/backup/engine";
+import { createSupabaseRemote } from "@mindcocoon/core/backup/supabase-remote";
 
 /** The backup engine for the signed-in user (null when signed out or not configured). */
 
