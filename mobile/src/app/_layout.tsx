@@ -30,7 +30,13 @@ export default function RootLayout() {
 
   return (
     <>
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.background } }} />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.background } }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="settings" />
+        <Stack.Protected guard={__DEV__}>
+          <Stack.Screen name="dev/spike" />
+        </Stack.Protected>
+      </Stack>
       <StatusBar style={name === "dusk" ? "light" : "dark"} />
     </>
   );
