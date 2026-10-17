@@ -32,7 +32,15 @@
       "expo-localization",
       "expo-font",
       "expo-splash-screen",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "enableBackgroundPlayback": true
+        }
+      ]
     ],
     "scheme": "mindcocoon",
     "backgroundColor": "#0F172A",

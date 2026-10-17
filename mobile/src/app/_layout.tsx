@@ -5,8 +5,10 @@ import * as SystemUI from "expo-system-ui";
 import { Fragment, useEffect, useState } from "react";
 import { View } from "react-native";
 import { FirstRunNotice } from "@/components/FirstRunNotice";
+import { AudioLabelsSync } from "@/components/sanctuary/AudioLabelsSync";
 import { ToastHost } from "@/components/ui/Toast";
 import { appAutoLock } from "@/lib/app-auto-lock";
+import { startAudioLifecycle } from "@/lib/audio";
 import { useEraseCount } from "@/lib/export";
 import { loadPrefs } from "@/lib/prefs";
 import { useAppFonts } from "@/theme/fonts";
@@ -26,7 +28,15 @@ export default function RootLayout() {
   }, []);
 
   // Locks a passcode vault after the chosen idle time, in the background or foreground.
-  useEffect(() => appAutoLock.start(), []);
+  // Also re-checks the sleep timer on return to the foreground.
+  useEffect(() => {
+    const stopAutoLock = appAutoLock.start();
+    const stopAudio = startAudioLifecycle();
+    return () => {
+      stopAutoLock();
+      stopAudio();
+    };
+  }, []);
 
   const ready = fontsReady && prefsReady;
 
@@ -52,6 +62,7 @@ export default function RootLayout() {
       </Stack>
       <FirstRunNotice />
       </Fragment>
+      <AudioLabelsSync />
       <ToastHost />
       <StatusBar style={name === "dusk" ? "light" : "dark"} />
     </View>

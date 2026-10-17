@@ -6,6 +6,7 @@ import { wipeVault } from "@mindcocoon/core/vault/session";
 import { File, Paths } from "expo-file-system";
 import { useSyncExternalStore } from "react";
 import * as Sharing from "expo-sharing";
+import { audio } from "./audio";
 import { clearPrefs } from "./prefs";
 
 export interface ExportFile {
@@ -73,6 +74,7 @@ export function useEraseCount() {
 
 /** Removes every journal entry, check-in, key (incl. the Keychain/Keystore item), preference and export copy. */
 export async function eraseEverything() {
+  audio.reset();
   await wipeVault();
   await clearMoods();
   await clearPrefs();

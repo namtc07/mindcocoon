@@ -100,7 +100,7 @@ interface PlayerRecord {
 }
 
 export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
-  const now = deps.now ?? Date.now;
+  const now = deps.now ?? (() => Date.now());
   const listeners = new Set<() => void>();
   const records = new Map<string, PlayerRecord>();
   let session: Promise<void> | null = null;

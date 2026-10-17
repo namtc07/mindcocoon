@@ -9,6 +9,8 @@ import { FirstRunNotice } from "@/components/FirstRunNotice";
 import { createMobileAdapter } from "@/lib/storage";
 import { getEraseCount } from "@/lib/export";
 import { clearPrefs, getPref, setPref } from "@/lib/prefs";
+import { audio } from "@/lib/audio";
+import { fakePlayer } from "@/test-utils/audio";
 import { renderWithApp } from "@/test-utils/render";
 
 const secureStore = () => (jest.requireMock("expo-secure-store") as { __store: { data: Map<string, string> } }).__store.data;
@@ -65,6 +67,20 @@ describe("Settings", () => {
     expect([...secureStore().values()]).not.toContain(keyBefore);
     expect(getPref("customTags")).toBeUndefined();
   });
+});
+
+it("erase everything stops sound and resets volumes", async () => {
+  const user = userEvent.setup();
+  await seed();
+  await act(() => audio.play("rain"));
+  await act(async () => audio.setTrackVolume("rain", 0.2));
+  await renderWithApp(<SettingsScreen />, { keepState: true });
+  await user.press(await screen.findByRole("button", { name: "Erase everything" }));
+  await user.type(screen.getByLabelText("Type erase to confirm"), "erase");
+  await user.press(screen.getByRole("button", { name: "Erase permanently" }));
+  await waitFor(() => expect(audio.getState().playing).toEqual([]));
+  expect(fakePlayer("rain")?.lockScreen.active).toBe(false);
+  expect(audio.getState().volumes.rain).toBe(0.6);
 });
 
 describe("First-run notice", () => {

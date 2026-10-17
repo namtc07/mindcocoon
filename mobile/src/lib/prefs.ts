@@ -1,4 +1,5 @@
 import type { Locale } from "@mindcocoon/core/i18n/config";
+import type { AudioPrefs } from "./audio/engine";
 import { createKvDriver } from "./kv-driver";
 
 /** Small persisted preferences (language, appearance), readable synchronously after loadPrefs(). */
@@ -9,6 +10,8 @@ export interface Prefs {
   heavyNudgeAt?: number;
   firstRunSeen?: boolean;
   customTags?: string[];
+  /** Sanctuary mixer volumes and loop. */
+  audio?: AudioPrefs;
 }
 
 const KEY = "prefs:v1";

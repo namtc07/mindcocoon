@@ -109,3 +109,51 @@ jest.mock("react-native/Libraries/Modal/Modal", () => {
 
 // The preset mocks AppState.currentState as a function; on a device it is a string.
 require("react-native").AppState.currentState = "active";
+
+// expo-audio: fake players recorded per source (look them up with TRACK_SOURCES[id]).
+jest.mock("expo-audio", () => {
+  const players = new Map<unknown, Record<string, unknown>>();
+  function createAudioPlayer(source: unknown) {
+    type MockStatus = { playing: boolean; didJustFinish: boolean };
+    let listener: ((s: MockStatus) => void) | null = null;
+    const player: Record<string, unknown> & { calls: string[]; lockScreen: { active: boolean; meta?: Record<string, string> } } = {
+      volume: 1,
+      loop: false,
+      calls: [] as string[],
+      lockScreen: { active: false } as { active: boolean; meta?: Record<string, string> },
+      play: jest.fn(() => player.calls.push("play")),
+      pause: jest.fn(() => player.calls.push("pause")),
+      seekTo: jest.fn(() => Promise.resolve()),
+      remove: jest.fn(() => player.calls.push("remove")),
+      setActiveForLockScreen: jest.fn((active: boolean, meta?: Record<string, string>) => {
+        player.lockScreen = { active, meta };
+      }),
+      updateLockScreenMetadata: jest.fn((meta: Record<string, string>) => {
+        if (player.lockScreen.active) player.lockScreen = { active: true, meta };
+      }),
+      clearLockScreenControls: jest.fn(() => {
+        player.lockScreen = { active: false };
+      }),
+      addListener: jest.fn((_: string, cb: (s: MockStatus) => void) => {
+        listener = cb;
+        return { remove: () => (listener = null) };
+      }),
+      emit: (s: Partial<MockStatus>) => listener?.({ playing: false, didJustFinish: false, ...s }),
+    };
+    players.set(source, player);
+    return player;
+  }
+  return { createAudioPlayer: jest.fn(createAudioPlayer), setAudioModeAsync: jest.fn(() => Promise.resolve()), __players: players };
+});
+
+jest.mock("expo-keep-awake", () => ({ activateKeepAwakeAsync: jest.fn(() => Promise.resolve()), deactivateKeepAwake: jest.fn(() => Promise.resolve()) }));
+
+// The native slider: a View that forwards props, so tests can fire "valueChange".
+jest.mock("@react-native-community/slider", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  function Slider(props: { onValueChange?: (v: number) => void }) {
+    return React.createElement(View, { ...props, onValueChange: props.onValueChange });
+  }
+  return { __esModule: true, default: Slider };
+});
