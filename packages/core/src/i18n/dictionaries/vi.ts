@@ -189,6 +189,10 @@ export const vi: Dictionary = {
     pauseAll: "Tạm dừng",
     nowPlaying: "Đang phát",
     playError: "Không phát được âm thanh này.",
+    moreSounds: "Thêm âm thanh",
+    unlockWithAd: "Xem quảng cáo để mở {name} trong 24 giờ",
+    unlockedUntil: "Mở đến {time}",
+    adUnavailable: "Chưa có quảng cáo lúc này. Thử lại sau nhé.",
   },
   sounds: {
     rain: "Mưa",

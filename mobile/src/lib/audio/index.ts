@@ -1,4 +1,4 @@
-import { AMBIENT_TRACKS, MUSIC_TRACKS } from "@mindcocoon/core/sounds";
+import { SOUND_TRACKS } from "@mindcocoon/core/sounds";
 import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
 import { useSyncExternalStore } from "react";
 import { AppState } from "react-native";
@@ -9,7 +9,7 @@ import { TRACK_SOURCES } from "./sources";
 
 /** The app-wide Sanctuary mixer (playback survives navigation; keeps playing when locked). */
 export const audio = createAudioEngine({
-  trackIds: [...AMBIENT_TRACKS, ...MUSIC_TRACKS].map((t) => t.id),
+  trackIds: SOUND_TRACKS.map((t) => t.id),
   createPlayer: (id) => createAudioPlayer(TRACK_SOURCES[id], { updateInterval: 500 }) as unknown as MixPlayer,
   // Set lazily before the first sound so merely opening the app never interrupts other apps' music.
   // `doNotMix` is required for lock-screen controls.

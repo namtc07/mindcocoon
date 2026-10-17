@@ -15,6 +15,8 @@ export interface Prefs {
   audio?: AudioPrefs;
   /** Last remote flags fetched from app_config. */
   flags?: CachedFlags;
+  /** Premium sound id → epoch ms when its rewarded unlock ends. */
+  unlocks?: Record<string, number>;
 }
 
 const KEY = "prefs:v1";

@@ -188,6 +188,10 @@ export const en = {
     pauseAll: "Pause",
     nowPlaying: "Now playing",
     playError: "That sound couldn't play.",
+    moreSounds: "More sounds",
+    unlockWithAd: "Watch an ad to unlock {name} for 24 hours",
+    unlockedUntil: "Unlocked until {time}",
+    adUnavailable: "No ad right now. Try again later.",
   },
   sounds: {
     rain: "Rain",

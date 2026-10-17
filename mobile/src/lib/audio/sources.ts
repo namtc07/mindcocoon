@@ -1,12 +1,16 @@
 /**
  * Bundled audio for the free catalogue (copies of the web's generated placeholders —
- * swap for licensed recordings before launch). Premium sounds arrive with M6.
+ * swap for licensed recordings before launch). Premium ones play after a rewarded unlock (M6).
  */
 export const TRACK_SOURCES: Record<string, number> = {
   rain: require("../../../assets/audio/rain.m4a"),
   ocean: require("../../../assets/audio/ocean.m4a"),
   "night-wind": require("../../../assets/audio/night-wind.m4a"),
   campfire: require("../../../assets/audio/campfire.m4a"),
+  thunder: require("../../../assets/audio/thunder.m4a"),
+  stream: require("../../../assets/audio/stream.m4a"),
+  "singing-bowl": require("../../../assets/audio/singing-bowl.m4a"),
+  "deep-hum": require("../../../assets/audio/deep-hum.m4a"),
   "piano-still": require("../../../assets/audio/music/piano-still.m4a"),
   "piano-dawn": require("../../../assets/audio/music/piano-dawn.m4a"),
   "lofi-rain": require("../../../assets/audio/music/lofi-rain.m4a"),
