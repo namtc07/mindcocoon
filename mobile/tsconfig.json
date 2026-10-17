@@ -16,6 +16,9 @@
   ],
   "exclude": [
     "test",
-    "vitest.config.mts"
+    "__tests__",
+    "vitest.config.mts",
+    "jest.config.js",
+    "jest.setup.ts"
   ]
 }
