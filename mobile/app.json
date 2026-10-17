@@ -31,7 +31,8 @@
       "expo-secure-store",
       "expo-localization",
       "expo-font",
-      "expo-splash-screen"
+      "expo-splash-screen",
+      "expo-sharing"
     ],
     "scheme": "mindcocoon",
     "backgroundColor": "#0F172A",

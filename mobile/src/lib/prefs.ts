@@ -41,3 +41,10 @@ export function subscribePrefs(listener: () => void) {
     listeners.delete(listener);
   };
 }
+
+/** Forgets every preference (used by "Erase everything"). */
+export async function clearPrefs() {
+  prefs = {};
+  listeners.forEach((l) => l());
+  await driver.del(KEY);
+}

@@ -39,6 +39,7 @@ jest.mock("expo-router", () => {
     useRouter: () => router,
     Link,
     useLocalSearchParams: jest.fn(() => ({})),
+    usePathname: jest.fn(() => "/"),
     useNavigation: () => ({ setOptions: jest.fn(), addListener: jest.fn(() => jest.fn()) }),
     useFocusEffect: (cb: () => void | (() => void)) => React.useEffect(cb, [cb]),
     Stack: { Screen: () => null },
@@ -59,3 +60,27 @@ jest.mock("lucide-react-native", () => {
 jest.mock("react-native-reanimated", () => require("react-native-reanimated/mock"));
 
 jest.mock("expo-clipboard", () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));
+
+jest.mock("expo-sharing", () => ({ shareAsync: jest.fn(() => Promise.resolve()), isAvailableAsync: jest.fn(() => Promise.resolve(true)) }));
+jest.mock("expo-file-system", () => {
+  const written = new Map<string, string>();
+  class File {
+    uri: string;
+    constructor(...parts: (string | { uri: string })[]) {
+      this.uri = parts.map((p) => (typeof p === "string" ? p : p.uri)).join("/");
+    }
+    get exists() {
+      return written.has(this.uri);
+    }
+    delete() {
+      written.delete(this.uri);
+    }
+    async write(content: string) {
+      written.set(this.uri, content);
+    }
+    async text() {
+      return written.get(this.uri) ?? "";
+    }
+  }
+  return { File, Paths: { cache: { uri: "file:///cache" } }, __written: written };
+});

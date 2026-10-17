@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
+import { FirstRunNotice } from "@/components/FirstRunNotice";
 import { ToastHost } from "@/components/ui/Toast";
 import { appAutoLock } from "@/lib/app-auto-lock";
 import { loadPrefs } from "@/lib/prefs";
@@ -40,10 +41,12 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.background } }}>
         <Stack.Screen name="(tabs)" options={{ title: "MindCocoon" }} />
         <Stack.Screen name="settings" />
+        <Stack.Screen name="help" />
         <Stack.Protected guard={__DEV__}>
           <Stack.Screen name="dev/spike" />
         </Stack.Protected>
       </Stack>
+      <FirstRunNotice />
       <ToastHost />
       <StatusBar style={name === "dusk" ? "light" : "dark"} />
     </View>
