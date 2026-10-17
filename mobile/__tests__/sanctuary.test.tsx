@@ -3,10 +3,14 @@ import { addMood } from "@mindcocoon/core/mood/store";
 import { SOUND_TRACKS } from "@mindcocoon/core/sounds";
 import { act, fireEvent, screen, userEvent, waitFor } from "@testing-library/react-native";
 import { setAudioModeAsync } from "expo-audio";
+import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
+import { AppState, type AppStateStatus } from "react-native";
 import SanctuaryScreen from "@/app/(tabs)/sanctuary";
+import { BoxBreathing } from "@/components/sanctuary/BoxBreathing";
 import { ToastHost } from "@/components/ui/Toast";
 import { audio } from "@/lib/audio";
 import { fakePlayer } from "@/test-utils/audio";
+import { captureFocusEffects } from "@/test-utils/focus";
 import { renderWithApp } from "@/test-utils/render";
 
 beforeEach(async () => {
@@ -103,5 +107,87 @@ describe("Sleep timer", () => {
     expect(audio.getState().sleepEndsAt).toBeNull();
     expect(screen.getByRole("button", { name: "Off" })).toBeSelected();
     await waitFor(() => expect(screen.queryByText(/Stops in/)).not.toBeOnTheScreen());
+  });
+});
+
+describe("Box breathing", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  async function begin() {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await renderWithApp(<BoxBreathing />);
+    await user.press(screen.getByRole("button", { name: "Begin" }));
+    return user;
+  }
+
+  it("Begin shows Breathe in, then Hold after 4 seconds", async () => {
+    await begin();
+    expect(screen.getByText("Breathe in")).toBeOnTheScreen();
+    await act(async () => jest.advanceTimersByTime(4_100));
+    expect(screen.getByText("Hold")).toBeOnTheScreen();
+    await act(async () => jest.advanceTimersByTime(4_000));
+    expect(screen.getByText("Breathe out")).toBeOnTheScreen();
+  });
+
+  it("finishes with the done message and Again", async () => {
+    await begin();
+    await act(async () => jest.advanceTimersByTime(64_500));
+    expect(screen.getByText("Well done. Notice how you feel now.")).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Again" })).toBeOnTheScreen();
+  });
+
+  it("Stop resets", async () => {
+    const user = await begin();
+    await user.press(screen.getByRole("button", { name: "Stop" }));
+    expect(screen.getByRole("button", { name: "Begin" })).toBeOnTheScreen();
+    expect(screen.queryByText("Breathe in")).not.toBeOnTheScreen();
+  });
+
+  it("keeps the screen awake only while breathing", async () => {
+    await begin();
+    expect(activateKeepAwakeAsync).toHaveBeenCalledWith("breathing");
+    expect(deactivateKeepAwake).not.toHaveBeenCalled();
+    await act(async () => jest.advanceTimersByTime(64_500));
+    expect(deactivateKeepAwake).toHaveBeenCalledWith("breathing");
+  });
+
+  it("leaving the tab stops the exercise", async () => {
+    const focus = captureFocusEffects();
+    try {
+      await begin();
+      await act(async () => focus.blur());
+      expect(screen.getByRole("button", { name: "Begin" })).toBeOnTheScreen();
+      expect(deactivateKeepAwake).toHaveBeenCalledWith("breathing");
+    } finally {
+      focus.restore();
+    }
+  });
+
+  it("the app going to background stops the exercise", async () => {
+    let handler: ((s: AppStateStatus) => void) | undefined;
+    // Swapped by hand: restoring a spy on the preset's jest.fn would drop its implementation.
+    const original = AppState.addEventListener;
+    AppState.addEventListener = ((_type: string, fn: (s: AppStateStatus) => void) => {
+      handler = fn;
+      return { remove: () => {} };
+    }) as unknown as typeof AppState.addEventListener;
+    await begin();
+    const state = jest.replaceProperty(AppState, "currentState", "background");
+    await act(async () => handler?.("background"));
+    state.restore();
+    await act(async () => handler?.("active"));
+    expect(screen.getByRole("button", { name: "Begin" })).toBeOnTheScreen();
+    AppState.addEventListener = original;
+  });
+
+  it("is on the Sanctuary screen", async () => {
+    await renderWithApp(<SanctuaryScreen />);
+    expect(screen.getByText("Box breathing")).toBeOnTheScreen();
   });
 });

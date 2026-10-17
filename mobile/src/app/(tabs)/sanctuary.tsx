@@ -1,5 +1,6 @@
 import { View } from "react-native";
 import { Muted, Screen } from "@/components/Screen";
+import { BoxBreathing } from "@/components/sanctuary/BoxBreathing";
 import { SleepTimer } from "@/components/sanctuary/SleepTimer";
 import { SoundMixer } from "@/components/sanctuary/SoundMixer";
 import { TonightCard } from "@/components/sanctuary/TonightCard";
@@ -15,7 +16,9 @@ export default function SanctuaryScreen() {
     <Screen title={t.sanctuary.title}>
       <Muted>{t.sanctuary.intro}</Muted>
       <View style={{ gap: space.xxl, marginTop: space.lg }}>
-        <View testID="section-breathe" />
+        <View testID="section-breathe">
+          <BoxBreathing />
+        </View>
         <View testID="section-tonight">
           <TonightCard now={now} />
         </View>

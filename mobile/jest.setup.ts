@@ -57,7 +57,13 @@ jest.mock("lucide-react-native", () => {
 });
 
 // Reanimated's official Jest mock (animations resolve immediately; timers drive the dissolve).
-jest.mock("react-native-reanimated", () => require("react-native-reanimated/mock"));
+// Its useSharedValue returns a new object each render; the real one is stable, so keep it per component.
+jest.mock("react-native-reanimated", () => {
+  const React = require("react");
+  const mock = require("react-native-reanimated/mock");
+  const create = mock.useSharedValue;
+  return { ...mock, useSharedValue: (init: unknown) => React.useState(() => create(init))[0] };
+});
 
 jest.mock("expo-clipboard", () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));
 
