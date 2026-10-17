@@ -60,9 +60,11 @@ describe("account", () => {
     await user.click(await screen.findByRole("button", { name: /yes, i'm 16 or older/i }));
     await user.type(await screen.findByRole("textbox", { name: /email/i }), "me@example.com");
     await user.click(screen.getByRole("button", { name: /send code/i }));
-    expect(client.auth.signInWithOtp).toHaveBeenCalledWith(
-      expect.objectContaining({ email: "me@example.com" }),
-    );
+    // Works whether the email carries a code or a link (the link returns to /<lang>/auth/callback).
+    expect(client.auth.signInWithOtp).toHaveBeenCalledWith({
+      email: "me@example.com",
+      options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/en/auth/callback` },
+    });
     const code = await screen.findByRole("textbox", { name: /code/i });
     // Supabase lets projects use 6–10 digit codes.
     await user.type(code, "12345678");

@@ -239,7 +239,7 @@ export const vi: Dictionary = {
     ageNoExplain: "Sao lưu cần tài khoản, và tài khoản dành cho người từ 16 tuổi. Nhật ký vẫn ở trên máy này, và thêm MindCocoon vào màn hình chính giúp giữ nó an toàn hơn.",
     emailLabel: "Email",
     sendCode: "Gửi mã",
-    codeSent: "Đã gửi mã đăng nhập tới {email}.",
+    codeSent: "Đã gửi email tới {email}. Nhập mã, hoặc mở đường link trên chính máy này.",
     codeLabel: "Mã",
     verify: "Đăng nhập",
     wrongCode: "Mã chưa đúng. Kiểm tra lại, hoặc gửi mã mới.",

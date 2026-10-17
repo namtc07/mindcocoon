@@ -68,8 +68,12 @@ function requireClient() {
   return supabase;
 }
 
-export async function signInWithEmail(email: string) {
-  const { error } = await requireClient().auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+/** Sends a sign-in email. Works with a code template or the default link template. */
+export async function signInWithEmail(email: string, locale: string) {
+  const { error } = await requireClient().auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/${locale}/auth/callback` },
+  });
   if (error) throw error;
 }
 

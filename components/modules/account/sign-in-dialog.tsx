@@ -40,7 +40,7 @@ export function SignInDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   function sendCode(event: FormEvent) {
     event.preventDefault();
     void run(async () => {
-      await signInWithEmail(email.trim());
+      await signInWithEmail(email.trim(), locale);
       setStep("code");
     }, t.account.error);
   }

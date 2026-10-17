@@ -32,9 +32,12 @@ Then run the advisors (Dashboard → Advisors → Security) and fix anything the
 
 ## 3. Auth providers (Dashboard → Authentication)
 
-1. **Email**: enabled. The app signs in with a **code**, not a link: in
-   **Authentication → Emails → Templates**, edit "Magic Link" (and "Confirm signup") so the body
-   shows `{{ .Token }}`, e.g. `Your MindCocoon code: {{ .Token }}`. Codes of 6–10 digits work.
+1. **Email**: enabled. The app accepts both the default **link** (opened on the same device) and a
+   **code**. A code is better for the installed app (a link opens in the browser, whose storage is
+   separate). Editing templates requires custom SMTP: after setting it up, edit
+   **Authentication → Emails → Templates → "Magic link or OTP"** (and "Confirm sign up") to include
+   `{{ .Token }}`, e.g. `Mã MindCocoon của bạn / Your code: {{ .Token }}`. Codes of 6–10 digits work.
+   Without custom SMTP Supabase's built-in mailer is heavily rate-limited and meant for testing.
 2. **Google**: enable, add the OAuth client id/secret from Google Cloud Console.
 3. **URL configuration** → Redirect URLs:
    - `http://localhost:3000/*/auth/callback`
