@@ -28,7 +28,9 @@
       "expo-router",
       "expo-sqlite",
       "expo-secure-store",
-      "expo-localization"
+      "expo-localization",
+      "expo-font",
+      "expo-splash-screen"
     ],
     "scheme": "mindcocoon",
     "backgroundColor": "#0F172A",
