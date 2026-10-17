@@ -18,7 +18,8 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "app.mindcocoon"
+      "package": "app.mindcocoon",
+      "allowBackup": false
     },
     "web": {
       "favicon": "./assets/favicon.png"

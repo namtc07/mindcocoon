@@ -63,6 +63,7 @@ export default function SettingsScreen() {
           headerStyle: { backgroundColor: c.background },
           headerShadowVisible: false,
           headerTintColor: c.foreground,
+          headerBackButtonDisplayMode: "minimal",
         }}
       />
       <Screen title={t.settings.title}>

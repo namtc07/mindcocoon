@@ -31,7 +31,7 @@ export default function RootLayout() {
   return (
     <>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.background } }}>
-        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(tabs)" options={{ title: "MindCocoon" }} />
         <Stack.Screen name="settings" />
         <Stack.Protected guard={__DEV__}>
           <Stack.Screen name="dev/spike" />

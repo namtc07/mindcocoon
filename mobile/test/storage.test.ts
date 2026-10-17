@@ -63,6 +63,17 @@ describe("device key", () => {
   });
 });
 
+describe("device key with an existing vault", () => {
+  it("never persists a replacement while a vault exists (a failed read must not overwrite the key)", async () => {
+    const secure = new FakeSecureStore();
+    const store = createDeviceKeyStore(secure, async () => true);
+    await store.getOrCreate();
+    expect(secure.data.size).toBe(0);
+    await store.replace();
+    expect(secure.data.size).toBe(1);
+  });
+});
+
 describe("mobile adapter + vault", () => {
   it("comes up locked, not empty, when the device key was lost (e.g. restored backup)", async () => {
     const kv = new FakeKvStore();
@@ -82,6 +93,13 @@ describe("mobile adapter + vault", () => {
     expect(await getStorage().journal.list()).toHaveLength(1);
     expect(await unlockWithRecoveryCode(code)).toBe(true);
     expect(getVaultState().entries[0].body).toBe("kept through a restore");
+
+    // Next launch opens on its own: the data key was re-wrapped with a newly saved device key.
+    setStorage(createMobileAdapter({ kv, secure }));
+    __resetVaultForTests();
+    await initVault();
+    expect(getVaultState().status).toBe("unlocked");
+    expect(secure.data.size).toBe(1);
   });
 
   it("is installed into core by the bootstrap module", async () => {

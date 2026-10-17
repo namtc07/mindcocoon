@@ -162,9 +162,22 @@ export function initVault(): Promise<void> {
   return initPromise;
 }
 
+/**
+ * After unlocking by another route, make sure this device can open the vault on its own
+ * again: if the device key no longer opens its wrap (phone restored without its Keychain /
+ * Keystore item), persist a new device key and re-wrap the data key with it.
+ */
+async function repairDeviceWrap(unlocked: UnlockedDek) {
+  const current = requireRing();
+  if (deviceKey && (await keyring.deviceWrapOpens(current, deviceKey))) return;
+  deviceKey = await getStorage().vaultKeys.replaceDeviceKey();
+  await saveRing(await keyring.rewrapForDevice(current, unlocked, deviceKey));
+}
+
 async function tryUnlock(attempt: Promise<UnlockedDek | null>) {
   const unlocked = await attempt;
   if (!unlocked) return false;
+  await repairDeviceWrap(unlocked);
   await openWith(unlocked);
   return true;
 }
@@ -291,6 +304,7 @@ export async function checkServerSecret(secret: string) {
 async function resetWith(attempt: Promise<UnlockedDek | null>, newPasscode: string) {
   const unlocked = await attempt;
   if (!unlocked) return false;
+  await repairDeviceWrap(unlocked);
   await saveRing(await keyring.setPasscode(requireRing(), unlocked, newPasscode, deviceKey!));
   await openWith(unlocked);
   emitChange();

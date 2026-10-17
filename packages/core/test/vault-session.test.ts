@@ -1,6 +1,8 @@
 // @vitest-environment node
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMemoryDriver } from "@mindcocoon/core/storage/driver";
+import { generateDeviceKey } from "@mindcocoon/core/crypto";
+import type { StorageAdapter } from "@mindcocoon/core/storage/repositories";
 import { getStorage, setStorage } from "@mindcocoon/core/storage/index";
 import { createLocalAdapter } from "@mindcocoon/core/storage/local";
 import { DEVICE_RESET_WAIT_MS, __setIterationsForTests } from "@mindcocoon/core/vault/keyring";
@@ -173,5 +175,60 @@ describe("vault session", () => {
     __resetVaultForTests();
     await initVault();
     expect(getVaultState().entries.map((e) => e.id)).toEqual([entry.id]);
+  });
+
+  describe("after the device key is lost (restored phone)", () => {
+    /** Same data, but the platform's device key is gone: a new key comes back on first read. */
+    function loseDeviceKey(adapter: StorageAdapter): StorageAdapter {
+      let key: CryptoKey | null = null;
+      return {
+        ...adapter,
+        vaultKeys: {
+          ...adapter.vaultKeys,
+          getOrCreateDeviceKey: async () => (key ??= await generateDeviceKey()),
+          replaceDeviceKey: async () => (key = await generateDeviceKey()),
+        },
+      };
+    }
+
+    it("unlocks once with the recovery code and then opens on its own again", async () => {
+      const adapter = createLocalAdapter(createMemoryDriver());
+      setStorage(adapter);
+      await initVault();
+      await saveVaultEntry({ body: "still here" });
+      const code = await regenerateRecoveryCode();
+
+      const restored = loseDeviceKey(adapter);
+      setStorage(restored);
+      __resetVaultForTests();
+      await initVault();
+      expect(getVaultState().status).toBe("locked");
+      expect(await unlockWithRecoveryCode(code)).toBe(true);
+
+      __resetVaultForTests(); // next launch
+      await initVault();
+      expect(getVaultState()).toMatchObject({ status: "unlocked" });
+      expect(getVaultState().entries[0].body).toBe("still here");
+    });
+
+    it("re-wraps the one-hour reset path after a passcode unlock", async () => {
+      const adapter = createLocalAdapter(createMemoryDriver());
+      setStorage(adapter);
+      await initVault();
+      await setVaultPasscode("2468");
+
+      const restored = loseDeviceKey(adapter);
+      setStorage(restored);
+      __resetVaultForTests();
+      await initVault();
+      expect(await unlockWithPasscode("2468")).toBe(true);
+      lockVault();
+
+      const now = vi.spyOn(Date, "now");
+      now.mockReturnValue(5_000);
+      await requestPasscodeReset();
+      now.mockReturnValue(5_000 + DEVICE_RESET_WAIT_MS);
+      expect(await completePasscodeReset("1111")).toBe(true);
+    });
   });
 });

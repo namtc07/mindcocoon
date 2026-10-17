@@ -143,6 +143,18 @@ export async function completeDeviceReset(
   return unwrap(deviceKey, k.deviceReset);
 }
 
+/** True when this device key opens the keyring's device-side wrap (device or deviceReset). */
+export async function deviceWrapOpens(k: Keyring, deviceKey: CryptoKey): Promise<boolean> {
+  const wrap = k.passcode ? k.deviceReset : k.device;
+  return wrap ? (await unwrap(deviceKey, wrap)) !== null : false;
+}
+
+/** Writes the device-side wrap (device or deviceReset) for a new device key. */
+export async function rewrapForDevice(k: Keyring, dek: UnlockedDek, deviceKey: CryptoKey): Promise<Keyring> {
+  const wrapped = await encryptBytes(deviceKey, dek.raw);
+  return k.passcode ? { ...k, deviceReset: wrapped } : { ...k, device: wrapped };
+}
+
 /**
  * The only wrap that may leave the device: the 128-bit recovery code. The passcode
  * wrap stays local — a short PIN could be brute-forced by whoever holds the backup.

@@ -34,6 +34,11 @@ export interface VaultKeyRepository {
    * IndexedDB. Mobile: bytes in the Keychain/Keystore, imported on read.
    */
   getOrCreateDeviceKey(): Promise<CryptoKey>;
+  /**
+   * Creates and persists a new device key, replacing a lost or unreadable one. Called only
+   * after the vault was unlocked another way, so the data key can be re-wrapped right away.
+   */
+  replaceDeviceKey(): Promise<CryptoKey>;
   clear(): Promise<void>;
 }
 

@@ -77,6 +77,12 @@ export function createLocalAdapter(driver: KVDriver): StorageAdapter {
         });
         return deviceKeyPromise;
       },
+      async replaceDeviceKey() {
+        const key = await generateDeviceKey();
+        await driver.set(KEYS.deviceKey, key);
+        deviceKeyPromise = Promise.resolve(key);
+        return key;
+      },
       async clear() {
         deviceKeyPromise = null;
         await driver.del(KEYS.keyring);
