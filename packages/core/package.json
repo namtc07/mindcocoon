@@ -1,0 +1,15 @@
+{
+  "name": "@mindcocoon/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Platform-free MindCocoon core shared by the web and mobile apps (TypeScript source).",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@scure/bip39": "^2.4.0",
+    "@supabase/supabase-js": "2.118.0",
+    "idb-keyval": "^6.3.0"
+  }
+}
