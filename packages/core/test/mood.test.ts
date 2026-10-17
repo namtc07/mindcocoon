@@ -10,6 +10,7 @@ import {
   loadMoods,
   readNote,
   removeMood,
+  updateMoodDetails,
 } from "@mindcocoon/core/mood/store";
 import {
   latestMoodByDay,
@@ -141,5 +142,32 @@ describe("mood store", () => {
     await removeMood(saved.id);
     expect(getMoodState().logs).toEqual([]);
     expect(await getStorage().moods.list()).toEqual([]);
+  });
+});
+
+describe("updateMoodDetails", () => {
+  beforeEach(async () => {
+    __setIterationsForTests(1_000);
+    setStorage(createLocalAdapter(createMemoryDriver()));
+    __resetVaultForTests();
+    __resetMoodsForTests();
+    await initVault();
+  });
+
+  it("keeps the id, time and mood while adding tags and an encrypted note", async () => {
+    const first = await addMood({ mood: "heavy", tags: [] });
+    const updated = await updateMoodDetails(first, { tags: ["work"], note: "long day" });
+    const logs = await getStorage().moods.list();
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toMatchObject({ id: first.id, createdAt: first.createdAt, mood: "heavy", tags: ["work"] });
+    expect(logs[0].note).toMatch(/^v1\./);
+    expect(await readNote(updated)).toBe("long day");
+    expect(getMoodState().logs).toEqual([updated]);
+  });
+
+  it("keeps an existing note when none is given", async () => {
+    const first = await addMood({ mood: "heavy", tags: [], note: "kept" });
+    const updated = await updateMoodDetails(first, { tags: ["study"] });
+    expect(await readNote(updated)).toBe("kept");
   });
 });

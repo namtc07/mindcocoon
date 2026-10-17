@@ -1,7 +1,8 @@
-import { addMood, changeMood, removeMood } from "@mindcocoon/core/mood/store";
+import { dayKey, dayKeyFromISO } from "@mindcocoon/core/dates";
+import { addMood, changeMood, updateMoodDetails } from "@mindcocoon/core/mood/store";
 import { DEFAULT_TAGS } from "@mindcocoon/core/moods";
 import type { MoodLog, MoodType } from "@mindcocoon/core/types";
-import { VaultLockedError, initVault, unlockWithPasscode } from "@mindcocoon/core/vault/session";
+import { VaultLockedError, unlockWithPasscode } from "@mindcocoon/core/vault/session";
 import { Check } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -9,17 +10,19 @@ import { MoodPicker } from "@/components/mood/MoodPicker";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { TextField } from "@/components/ui/TextField";
-import { useVault } from "@/hooks/use-vault";
+import { useNow } from "@/hooks/use-now";
+import { openVault, useVault } from "@/hooks/use-vault";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 
-/** One tap saves the mood; tags and a note can be added afterwards. */
+/** One tap saves the mood; tags and a note can be added afterwards to the same check-in. */
 export function QuickCheckin() {
   const { t } = useI18n();
   const { c } = useTheme();
   const vault = useVault();
+  const now = useNow();
   const locked = vault.status === "locked";
   const [saved, setSaved] = useState<MoodLog | null>(null);
   const [open, setOpen] = useState(false);
@@ -27,52 +30,62 @@ export function QuickCheckin() {
   const [note, setNote] = useState("");
   const [passcode, setPasscode] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  // The tab can stay mounted for days: yesterday's check-in is never today's to change.
+  const today = saved && dayKeyFromISO(saved.createdAt) === dayKey(now) ? saved : null;
+
+  function resetDetails() {
+    setOpen(false);
+    setTags([]);
+    setNote("");
+    setPasscode("");
+  }
 
   async function pick(mood: MoodType) {
-    const log = saved ? await changeMood(saved, mood) : await addMood({ mood, tags: [] });
+    if (!today) resetDetails();
+    const log = today ? await changeMood(today, mood) : await addMood({ mood, tags: [] });
     setSaved(log);
     setMessage(t.today.saved);
   }
 
   async function saveDetails() {
-    if (!saved) return;
+    if (!today) return;
     try {
-      await initVault();
+      await openVault();
       if (note.trim() && locked && !(await unlockWithPasscode(passcode))) {
         setMessage(t.vault.wrongPasscode);
         return;
       }
-      const log = await addMood({ mood: saved.mood, tags, note });
-      await removeMood(saved.id);
-      setSaved(log);
-      setOpen(false);
+      setSaved(await updateMoodDetails(today, { tags, note }));
+      // The plaintext note isn't kept in the form once it is encrypted and saved.
+      setNote("");
       setPasscode("");
+      setOpen(false);
       setMessage(t.today.detailsSaved);
     } catch (error) {
-      setMessage(error instanceof VaultLockedError ? t.today.noteLocked : t.account.error);
+      setMessage(error instanceof VaultLockedError ? t.today.noteLocked : t.vault.unavailable);
     }
   }
 
   return (
     <View style={styles.wrap}>
       <Text style={[styles.question, { color: c.mutedForeground }]}>{t.today.checkinQuestion}</Text>
-      <MoodPicker value={saved?.mood ?? null} onChange={(m) => void pick(m)} label={t.today.checkinQuestion} />
+      <MoodPicker value={today?.mood ?? null} onChange={(m) => void pick(m)} label={t.today.checkinQuestion} />
       <View accessibilityLiveRegion="polite" style={styles.message}>
-        {message && (
+        {today && message && (
           <>
             <Check size={16} color={c.primary} />
             <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.primary }}>{message}</Text>
           </>
         )}
       </View>
-      {saved && !open && (
+      {today && !open && (
         <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setOpen(true)} style={styles.link}>
           <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground, textDecorationLine: "underline" }}>
             {t.today.addDetails}
           </Text>
         </Pressable>
       )}
-      {saved && open && (
+      {today && open && (
         <View style={styles.details}>
           <View style={styles.tags}>
             {DEFAULT_TAGS.map((tag) => (

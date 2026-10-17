@@ -12,6 +12,7 @@ import { AfterRelease } from "@/components/vent/AfterRelease";
 import { Dissolve, planDissolve, type DissolvePlan } from "@/components/vent/Dissolve";
 import { SaveSheet } from "@/components/vent/SaveSheet";
 import { useAppState } from "@/hooks/use-app-state";
+import { appAutoLock } from "@/lib/app-auto-lock";
 import { useNow } from "@/hooks/use-now";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
@@ -39,6 +40,8 @@ export default function VentScreen() {
   const [inputKey, setInputKey] = useState(0);
   const [saveOpen, setSaveOpen] = useState(false);
   const [pending, setPending] = useState<"release" | "save" | null>(null);
+  // The save sheet opens only once the gentle card has gone (iOS won't stack modals mid-animation).
+  const [saveAfterCard, setSaveAfterCard] = useState(false);
   const empty = text.trim().length === 0;
 
   const clearEditor = useCallback(() => {
@@ -66,7 +69,7 @@ export default function VentScreen() {
     const action = pending;
     setPending(null);
     if (action === "release") doRelease();
-    else if (action === "save") setSaveOpen(true);
+    else if (action === "save") setSaveAfterCard(true);
   }
 
   const finishDissolve = useCallback(() => {
@@ -106,7 +109,10 @@ export default function VentScreen() {
               placeholder={t.vent.placeholder}
               placeholderTextColor={c.mutedForeground}
               value={text}
-              onChangeText={setText}
+              onChangeText={(v) => {
+                appAutoLock.markActivity();
+                setText(v);
+              }}
               multiline
               autoFocus
               autoCorrect={false}
@@ -145,6 +151,11 @@ export default function VentScreen() {
         continueLabel={pending === "save" ? t.safety.continueSave : t.safety.continueRelease}
         onContinue={continuePending}
         onClose={() => setPending(null)}
+        onDismissed={() => {
+          if (!saveAfterCard) return;
+          setSaveAfterCard(false);
+          setSaveOpen(true);
+        }}
       />
       <SaveSheet
         visible={saveOpen}

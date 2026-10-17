@@ -1,7 +1,7 @@
 import { addMood } from "@mindcocoon/core/mood/store";
 import { DEFAULT_TAGS, isDefaultTag } from "@mindcocoon/core/moods";
 import type { MoodType } from "@mindcocoon/core/types";
-import { VaultLockedError, initVault, unlockWithPasscode } from "@mindcocoon/core/vault/session";
+import { VaultLockedError, unlockWithPasscode } from "@mindcocoon/core/vault/session";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { MoodPicker } from "@/components/mood/MoodPicker";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { TextField } from "@/components/ui/TextField";
 import { toast } from "@/components/ui/Toast";
-import { useVault } from "@/hooks/use-vault";
+import { openVault, useVault } from "@/hooks/use-vault";
 import { useI18n } from "@/i18n/i18n";
 import { getPref, setPref } from "@/lib/prefs";
 import { fonts } from "@/theme/fonts";
@@ -52,7 +52,7 @@ export function CheckinForm() {
     if (!mood) return;
     setError(null);
     try {
-      await initVault();
+      await openVault();
       if (note.trim() && locked && !(await unlockWithPasscode(passcode))) {
         setError(t.vault.wrongPasscode);
         return;
@@ -64,7 +64,7 @@ export function CheckinForm() {
       setNote("");
       setPasscode("");
     } catch (e) {
-      setError(e instanceof VaultLockedError ? t.today.noteLocked : t.account.error);
+      setError(e instanceof VaultLockedError ? t.today.noteLocked : t.vault.unavailable);
     }
   }
 

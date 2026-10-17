@@ -82,5 +82,30 @@ jest.mock("expo-file-system", () => {
       return written.get(this.uri) ?? "";
     }
   }
-  return { File, Paths: { cache: { uri: "file:///cache" } }, __written: written };
+  const cache = {
+    uri: "file:///cache",
+    list: () => [...written.keys()].filter((k) => k.startsWith("file:///cache/")).map((k) => new File(k)),
+  };
+  Object.defineProperty(File.prototype, "name", { get(this: File) { return this.uri.split("/").pop(); } });
+  return { File, Paths: { cache }, __written: written };
 });
+
+// Like iOS: a modal that was shown and is now hidden reports onDismiss once its slide-out "ends".
+// Tests end that animation explicitly with finishModalDismissals() (src/test-utils/modals.ts).
+jest.mock("react-native/Libraries/Modal/Modal", () => {
+  const React = require("react");
+  const queue: (() => void)[] = [];
+  function Modal(props: { visible?: boolean; onDismiss?: () => void; children?: unknown }) {
+    const was = React.useRef(props.visible);
+    React.useEffect(() => {
+      if (was.current && !props.visible && props.onDismiss) queue.push(props.onDismiss);
+      was.current = props.visible;
+    }, [props.visible, props.onDismiss]);
+    if (props.visible === false) return null;
+    return React.createElement("Modal", props, props.children);
+  }
+  return { __esModule: true, default: Modal, __dismissQueue: queue };
+});
+
+// The preset mocks AppState.currentState as a function; on a device it is a string.
+require("react-native").AppState.currentState = "active";

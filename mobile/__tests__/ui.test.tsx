@@ -56,3 +56,15 @@ describe("UI kit", () => {
     jest.useRealTimers();
   });
 });
+
+describe("activity", () => {
+  it("counts typing as activity for the auto-lock", async () => {
+    const { appAutoLock } = require("@/lib/app-auto-lock");
+    const mark = jest.spyOn(appAutoLock, "markActivity");
+    const { TextField } = require("@/components/ui/TextField");
+    const user = userEvent.setup();
+    await renderWithApp(<TextField label="Field" value="" onChangeText={() => {}} />);
+    await user.type(screen.getByLabelText("Field"), "a");
+    expect(mark).toHaveBeenCalled();
+  });
+});

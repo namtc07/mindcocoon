@@ -21,6 +21,8 @@ export default function VaultScreen() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
+  // Shown once the settings sheet has fully gone: iOS won't present a modal mid-dismissal.
+  const [pendingCode, setPendingCode] = useState<string | null>(null);
   const open = vault.entries.find((e) => e.id === openId);
 
   let content;
@@ -61,7 +63,17 @@ export default function VaultScreen() {
     <Screen title={t.vault.title}>
       <Text style={[styles.p, { color: c.mutedForeground }]}>{t.vault.intro}</Text>
       <View style={styles.body}>{content}</View>
-      <VaultSettings visible={settingsOpen} vault={vault} onClose={() => setSettingsOpen(false)} onRecoveryCode={setRecoveryCode} />
+      <VaultSettings
+        visible={settingsOpen}
+        vault={vault}
+        onClose={() => setSettingsOpen(false)}
+        onRecoveryCode={setPendingCode}
+        onDismissed={() => {
+          if (!pendingCode) return;
+          setRecoveryCode(pendingCode);
+          setPendingCode(null);
+        }}
+      />
       <RecoveryCodeCard code={recoveryCode} onClose={() => setRecoveryCode(null)} />
     </Screen>
   );

@@ -79,6 +79,24 @@ export async function changeMood(previous: MoodLog, mood: MoodType): Promise<Moo
   return log;
 }
 
+/**
+ * Sets the tags (and optionally a new note) of an existing check-in in one write, keeping its
+ * id, time and mood. Rejects with VaultLockedError when a note is given and the vault is locked.
+ */
+export async function updateMoodDetails(previous: MoodLog, input: { tags: string[]; note?: string }): Promise<MoodLog> {
+  const note = input.note?.trim();
+  const log: MoodLog = {
+    ...previous,
+    tags: input.tags,
+    ...(note ? { note: await encryptField(note), isNoteEncrypted: true } : {}),
+  };
+  const stored = await getStorage().moods.list();
+  await getStorage().moods.replaceAll(stored.map((l) => (l.id === log.id ? log : l)));
+  setState({ ...state, logs: state.logs.map((l) => (l.id === log.id ? log : l)) });
+  changeListeners.forEach((l) => l());
+  return log;
+}
+
 /** Decrypted note, or null when there is none or the vault is locked. */
 export async function readNote(log: MoodLog): Promise<string | null> {
   if (!log.note) return null;

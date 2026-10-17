@@ -5,7 +5,10 @@ import { AppState, type AppStateStatus } from "react-native";
 import VentScreen from "@/app/(tabs)/vent";
 import { __resetGentleCardForTests } from "@/components/safety/GentleCard";
 import { ToastHost } from "@/components/ui/Toast";
+import { finishModalDismissals } from "@/test-utils/modals";
 import { renderWithApp } from "@/test-utils/render";
+import { createMemoryDriver } from "@mindcocoon/core/storage/driver";
+import { createLocalAdapter } from "@mindcocoon/core/storage/local";
 
 const SECRET = "secret words nobody should keep";
 
@@ -74,6 +77,36 @@ describe("Vent", () => {
     expect(screen.getByLabelText("Write what's on your mind")).toHaveDisplayValue("");
   });
 
+  it("opens the save sheet only after the gentle card has gone", async () => {
+    const user = await setup();
+    await user.type(screen.getByLabelText("Write what's on your mind"), "I want to die");
+    await user.press(screen.getByRole("button", { name: "Save to vault" }));
+    await user.press(await screen.findByRole("button", { name: "Continue saving" }));
+    expect(screen.queryByLabelText("Title (optional)")).not.toBeOnTheScreen();
+    await finishModalDismissals();
+    expect(await screen.findByLabelText("Title (optional)")).toBeOnTheScreen();
+  });
+
+  it("says so when saving fails, and keeps the words", async () => {
+    jest.useFakeTimers();
+    __resetGentleCardForTests();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    const base = createLocalAdapter(createMemoryDriver());
+    const broken = { ...base, journal: { ...base.journal, put: () => Promise.reject(new Error("disk full")) } };
+    await renderWithApp(
+      <>
+        <VentScreen />
+        <ToastHost />
+      </>,
+      { storage: broken },
+    );
+    await user.type(screen.getByLabelText("Write what's on your mind"), SECRET);
+    await user.press(screen.getByRole("button", { name: "Save to vault" }));
+    await user.press(await screen.findByRole("button", { name: "Save" }));
+    expect(await screen.findByText(/can't open your vault right now/i)).toBeOnTheScreen();
+    expect(screen.getByLabelText("Write what's on your mind")).toHaveDisplayValue(SECRET);
+  });
+
   it("covers what is being written when the app goes to the background", async () => {
     let handler: ((s: AppStateStatus) => void) | undefined;
     jest.spyOn(AppState, "addEventListener").mockImplementation((_type, fn) => {
@@ -82,8 +115,10 @@ describe("Vent", () => {
     });
     const user = await setup();
     await user.type(screen.getByLabelText("Write what's on your mind"), SECRET);
+    const state = jest.replaceProperty(AppState, "currentState", "inactive");
     await act(async () => handler?.("inactive"));
     expect(screen.getByLabelText("Hidden while you're away")).toBeOnTheScreen();
+    state.replaceValue("active");
     await act(async () => handler?.("active"));
     expect(screen.queryByLabelText("Hidden while you're away")).not.toBeOnTheScreen();
   });

@@ -1,11 +1,11 @@
-import { saveVaultEntry, unlockWithPasscode } from "@mindcocoon/core/vault/session";
+import { VaultLockedError, saveVaultEntry, unlockWithPasscode } from "@mindcocoon/core/vault/session";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { TextField } from "@/components/ui/TextField";
 import { toast } from "@/components/ui/Toast";
-import { useVault } from "@/hooks/use-vault";
+import { openVault, useVault } from "@/hooks/use-vault";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
@@ -25,6 +25,7 @@ export function SaveSheet({ visible, body, onClose, onSaved }: { visible: boolea
     setBusy(true);
     setError(null);
     try {
+      await openVault();
       if (locked && !(await unlockWithPasscode(passcode))) {
         setError(t.vent.wrongPasscode);
         return;
@@ -34,6 +35,9 @@ export function SaveSheet({ visible, body, onClose, onSaved }: { visible: boolea
       setTitle("");
       setPasscode("");
       onSaved();
+    } catch (e) {
+      // The words stay in the editor; nothing is lost.
+      setError(e instanceof VaultLockedError ? t.vent.lockedHint : t.vault.unavailable);
     } finally {
       setBusy(false);
     }

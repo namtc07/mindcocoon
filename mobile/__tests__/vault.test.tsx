@@ -5,6 +5,7 @@ import { initVault, lockVault, saveVaultEntry, setVaultPasscode, unlockWithPassc
 import { act, screen, userEvent, waitFor } from "@testing-library/react-native";
 import VaultScreen from "@/app/(tabs)/vault";
 import { __resetVaultHookForTests } from "@/hooks/use-vault";
+import { finishModalDismissals } from "@/test-utils/modals";
 import { renderWithApp } from "@/test-utils/render";
 
 async function setup() {
@@ -23,6 +24,12 @@ async function setPasscodeViaSettings(user: ReturnType<typeof userEvent.setup>, 
   await user.type(screen.getByLabelText("New passcode"), code);
   await user.type(screen.getByLabelText("Type it again"), code);
   await user.press(screen.getByRole("button", { name: "Save passcode" }));
+  await waitFor(() => expect(screen.queryByLabelText("New passcode")).not.toBeOnTheScreen());
+}
+
+async function setPasscodeAndSeeCode(user: ReturnType<typeof userEvent.setup>) {
+  await setPasscodeViaSettings(user);
+  await finishModalDismissals();
 }
 
 afterEach(() => jest.useRealTimers());
@@ -36,6 +43,9 @@ describe("Vault", () => {
   it("shows a 12-word recovery code that must be acknowledged", async () => {
     const user = await setup();
     await setPasscodeViaSettings(user);
+    // iOS can't present a second modal while the first is still sliding away.
+    expect(screen.queryAllByTestId("recovery-word")).toHaveLength(0);
+    await finishModalDismissals();
     expect(await screen.findAllByTestId("recovery-word")).toHaveLength(12);
     const done = screen.getByRole("button", { name: "Done" });
     expect(done).toBeDisabled();
@@ -45,7 +55,7 @@ describe("Vault", () => {
 
   it("locks and unlocks with the passcode", async () => {
     const user = await setup();
-    await setPasscodeViaSettings(user);
+    await setPasscodeAndSeeCode(user);
     await user.press(await screen.findByRole("checkbox", { name: "I've saved my recovery code" }));
     await user.press(screen.getByRole("button", { name: "Done" }));
     await user.press(await screen.findByRole("button", { name: "Lock now" }));
@@ -116,6 +126,24 @@ describe("Vault", () => {
     expect(screen.queryByRole("button", { name: "Forgot passcode?" })).not.toBeOnTheScreen();
     fail = false;
     await user.press(screen.getByRole("button", { name: "Try again" }));
+    await waitFor(() => expect(screen.getByText(/nothing here yet/i)).toBeOnTheScreen());
+  });
+
+  it("leaves the unavailable state when the vault opens from anywhere else", async () => {
+    let fail = true;
+    const base = createLocalAdapter(createMemoryDriver());
+    const flaky = {
+      ...base,
+      vaultKeys: {
+        ...base.vaultKeys,
+        getOrCreateDeviceKey: () => (fail ? Promise.reject(new Error("keychain busy")) : base.vaultKeys.getOrCreateDeviceKey()),
+      },
+    };
+    __resetVaultHookForTests();
+    await renderWithApp(<VaultScreen />, { storage: flaky });
+    await screen.findByText(/can't open your vault right now/i);
+    fail = false;
+    await act(() => initVault());
     await waitFor(() => expect(screen.getByText(/nothing here yet/i)).toBeOnTheScreen());
   });
 });

@@ -1,7 +1,7 @@
 import { readNote } from "@mindcocoon/core/mood/store";
 import { getStorage } from "@mindcocoon/core/storage/index";
 import { initVault, lockVault, setVaultPasscode } from "@mindcocoon/core/vault/session";
-import { screen, userEvent, waitFor } from "@testing-library/react-native";
+import { act, screen, userEvent, waitFor } from "@testing-library/react-native";
 import { router } from "expo-router";
 import TodayScreen from "@/app/(tabs)/index";
 import { renderWithApp } from "@/test-utils/render";
@@ -11,6 +11,8 @@ async function addNote(user: ReturnType<typeof userEvent.setup>, mood: string, n
   await user.press(await screen.findByRole("button", { name: "Add tags or a note" }));
   await user.type(screen.getByLabelText("A few words, if you want"), note);
 }
+
+afterEach(() => jest.useRealTimers());
 
 describe("Today", () => {
   it("saves a mood with one tap", async () => {
@@ -57,6 +59,39 @@ describe("Today", () => {
     await user.press(screen.getByRole("button", { name: "Save details" }));
     expect(await screen.findByText("Details saved")).toBeOnTheScreen();
     expect(await readNote((await getStorage().moods.list())[0])).toBe("exam");
+  });
+
+  it("adds details to the same check-in (same id and time)", async () => {
+    const user = userEvent.setup();
+    await renderWithApp(<TodayScreen />);
+    await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+    await waitFor(async () => expect(await getStorage().moods.list()).toHaveLength(1));
+    const [first] = await getStorage().moods.list();
+    await user.press(screen.getByRole("button", { name: "Add tags or a note" }));
+    await user.type(screen.getByLabelText("A few words, if you want"), "long day");
+    await user.press(screen.getByRole("button", { name: "Save details" }));
+    await screen.findByText("Details saved");
+    const logs = await getStorage().moods.list();
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toMatchObject({ id: first.id, createdAt: first.createdAt });
+    // The plaintext note is not kept around in the form afterwards.
+    await user.press(screen.getByRole("button", { name: "Add tags or a note" }));
+    expect(screen.getByLabelText("A few words, if you want")).toHaveDisplayValue("");
+  });
+
+  it("never touches yesterday's check-in when the app stays open overnight", async () => {
+    jest.useFakeTimers({ now: new Date(2026, 9, 17, 23, 0) });
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await renderWithApp(<TodayScreen />);
+    await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+    await waitFor(async () => expect(await getStorage().moods.list()).toHaveLength(1));
+    await act(async () => {
+      jest.setSystemTime(new Date(2026, 9, 18, 21, 0));
+      jest.advanceTimersByTime(6_000);
+    });
+    await user.press(screen.getByRole("radio", { name: "Peaceful" }));
+    await waitFor(async () => expect((await getStorage().moods.list()).map((l) => l.mood).sort()).toEqual(["heavy", "peaceful"]));
+    jest.useRealTimers();
   });
 
   it("opens Vent with today's prompt", async () => {

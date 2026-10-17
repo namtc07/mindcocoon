@@ -1,4 +1,5 @@
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
+import { appAutoLock } from "@/lib/app-auto-lock";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
@@ -19,6 +20,11 @@ export function TextField({ label, showLabel = false, ...props }: TextFieldProps
         placeholderTextColor={c.mutedForeground}
         keyboardAppearance={name === "dusk" ? "dark" : "light"}
         {...props}
+        // Keyboard taps never reach the root view's touch handler, so typing marks activity here.
+        onChangeText={(text) => {
+          appAutoLock.markActivity();
+          props.onChangeText?.(text);
+        }}
         style={[
           styles.input,
           props.multiline && styles.multiline,

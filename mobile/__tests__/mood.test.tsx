@@ -1,5 +1,5 @@
 import { getStorage } from "@mindcocoon/core/storage/index";
-import { initVault } from "@mindcocoon/core/vault/session";
+import { initVault, lockVault, setVaultPasscode } from "@mindcocoon/core/vault/session";
 import { act, screen, userEvent, waitFor, within } from "@testing-library/react-native";
 import { Alert } from "react-native";
 import MoodScreen from "@/app/(tabs)/mood";
@@ -35,6 +35,17 @@ describe("Mood journey", () => {
     await user.press(screen.getByRole("button", { name: /anxious.*today/i }));
     expect(await screen.findByText("exam")).toBeOnTheScreen();
     expect(screen.getAllByText("Study").length).toBeGreaterThan(0);
+  });
+
+  it("hides decrypted notes in the day detail when the vault locks", async () => {
+    const user = await setup();
+    await act(() => setVaultPasscode("2468"));
+    await checkIn(user);
+    await waitFor(async () => expect(await getStorage().moods.list()).toHaveLength(1));
+    await user.press(screen.getByRole("button", { name: /anxious.*today/i }));
+    expect(await screen.findByText("exam")).toBeOnTheScreen();
+    await act(async () => lockVault());
+    await waitFor(() => expect(screen.queryByText("exam")).not.toBeOnTheScreen());
   });
 
   it("marks today on the month map and disables going past this month", async () => {

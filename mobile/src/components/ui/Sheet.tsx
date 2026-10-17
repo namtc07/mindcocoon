@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
@@ -11,20 +11,29 @@ export function Sheet({
   title,
   children,
   dismissable = true,
+  onDismissed,
 }: {
   visible: boolean;
   onClose: () => void;
   title: string;
   children: ReactNode;
   dismissable?: boolean;
+  /** Called once the sheet has fully gone — the safe moment to present another modal on iOS. */
+  onDismissed?: () => void;
 }) {
   const { c } = useTheme();
+  const wasVisible = useRef(visible);
+  useEffect(() => {
+    // Modal.onDismiss is iOS-only; elsewhere the sheet is gone as soon as it is hidden.
+    if (wasVisible.current && !visible && Platform.OS !== "ios") onDismissed?.();
+    wasVisible.current = visible;
+  }, [visible, onDismissed]);
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={() => {
+    <Modal visible={visible} transparent animationType="slide" onDismiss={onDismissed} onRequestClose={() => {
         if (dismissable) onClose();
       }}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.fill}>
-        <Pressable accessibilityLabel={title} style={styles.backdrop} onPress={() => {
+        <Pressable accessible={false} importantForAccessibility="no" style={styles.backdrop} onPress={() => {
             if (dismissable) onClose();
           }} />
         <View style={[styles.sheet, { backgroundColor: c.card, borderColor: c.border }]} accessibilityViewIsModal>

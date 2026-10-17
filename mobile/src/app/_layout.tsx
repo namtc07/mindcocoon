@@ -2,11 +2,12 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { View } from "react-native";
 import { FirstRunNotice } from "@/components/FirstRunNotice";
 import { ToastHost } from "@/components/ui/Toast";
 import { appAutoLock } from "@/lib/app-auto-lock";
+import { useEraseCount } from "@/lib/export";
 import { loadPrefs } from "@/lib/prefs";
 import { useAppFonts } from "@/theme/fonts";
 import { useTheme } from "@/theme/theme";
@@ -18,6 +19,7 @@ export default function RootLayout() {
   const fontsReady = useAppFonts();
   const [prefsReady, setPrefsReady] = useState(false);
   const { name, c } = useTheme();
+  const eraseCount = useEraseCount();
 
   useEffect(() => {
     loadPrefs().finally(() => setPrefsReady(true));
@@ -38,6 +40,8 @@ export default function RootLayout() {
   return (
     // Any touch counts as activity for the foreground auto-lock (observed, never captured).
     <View style={{ flex: 1 }} onTouchStart={appAutoLock.markActivity}>
+      {/* Keyed on erases: after "Erase everything" every screen, draft and form starts over. */}
+      <Fragment key={eraseCount}>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.background } }}>
         <Stack.Screen name="(tabs)" options={{ title: "MindCocoon" }} />
         <Stack.Screen name="settings" />
@@ -47,6 +51,7 @@ export default function RootLayout() {
         </Stack.Protected>
       </Stack>
       <FirstRunNotice />
+      </Fragment>
       <ToastHost />
       <StatusBar style={name === "dusk" ? "light" : "dark"} />
     </View>

@@ -19,11 +19,13 @@ export function VaultSettings({
   vault,
   onClose,
   onRecoveryCode,
+  onDismissed,
 }: {
   visible: boolean;
   vault: MobileVaultState;
   onClose: () => void;
   onRecoveryCode: (code: string) => void;
+  onDismissed: () => void;
 }) {
   const { t } = useI18n();
   const { c } = useTheme();
@@ -37,6 +39,7 @@ export function VaultSettings({
         onClose();
       }}
       title={t.vault.settings}
+      onDismissed={onDismissed}
     >
       <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground }}>{vault.hasPasscode ? t.vault.passcodeOn : t.vault.passcodeOff}</Text>
       {form ? (

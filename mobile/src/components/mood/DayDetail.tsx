@@ -2,7 +2,8 @@ import { dayKeyFromISO, formatDay, formatTime } from "@mindcocoon/core/dates";
 import type { DayCell } from "@mindcocoon/core/mood/selectors";
 import { readNote } from "@mindcocoon/core/mood/store";
 import type { MoodLog } from "@mindcocoon/core/types";
-import { useEffect, useState } from "react";
+import { getVaultServerState, getVaultState, subscribeVault } from "@mindcocoon/core/vault/session";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Sheet } from "@/components/ui/Sheet";
 import { useI18n } from "@/i18n/i18n";
@@ -16,15 +17,19 @@ function LogRow({ log }: { log: MoodLog }) {
   const { c } = useTheme();
   const tagLabel = useTagLabel();
   const [note, setNote] = useState<string | null>(null);
+  const vaultStatus = useSyncExternalStore(subscribeVault, () => getVaultState().status, () => getVaultServerState().status);
   useEffect(() => {
     let live = true;
+    if (vaultStatus !== "unlocked") return;
     readNote(log)
       .then((n) => live && setNote(n))
       .catch(() => live && setNote(null));
     return () => {
       live = false;
     };
-  }, [log]);
+  }, [log, vaultStatus]);
+  // Locked (e.g. auto-lock while this sheet is open): the decrypted note is not shown.
+  const shownNote = vaultStatus === "unlocked" ? note : null;
   return (
     <View style={styles.row}>
       <View style={[styles.dot, { backgroundColor: c.mood[log.mood] }]} />
@@ -33,7 +38,7 @@ function LogRow({ log }: { log: MoodLog }) {
           {t.mood.states[log.mood].label} · {formatTime(log.createdAt, locale)}
         </Text>
         {log.tags.length > 0 && <Text style={{ fontFamily: fonts.sans, fontSize: 14, color: c.mutedForeground }}>{log.tags.map(tagLabel).join(", ")}</Text>}
-        {note ? <Text style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 25, color: c.foreground }}>{note}</Text> : null}
+        {shownNote ? <Text style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 25, color: c.foreground }}>{shownNote}</Text> : null}
       </View>
     </View>
   );

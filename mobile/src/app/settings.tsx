@@ -71,11 +71,10 @@ function EraseSheet({ visible, onClose }: { visible: boolean; onClose: () => voi
         onPress={async () => {
           setBusy(true);
           try {
-            await eraseEverything();
-            setWord("");
             onClose();
-            router.replace("/");
-          } finally {
+            // The root layout remounts the app on erase: fresh tabs, back on Today.
+            await eraseEverything();
+          } catch {
             setBusy(false);
           }
         }}

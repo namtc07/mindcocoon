@@ -27,16 +27,18 @@ export function GentleCard({
   continueLabel,
   onContinue,
   onClose,
+  onDismissed,
 }: {
   visible: boolean;
   continueLabel: string;
   onContinue: () => void;
   onClose: () => void;
+  onDismissed?: () => void;
 }) {
   const { t } = useI18n();
   const { c } = useTheme();
   return (
-    <Sheet visible={visible} onClose={onClose} title=" ">
+    <Sheet visible={visible} onClose={onClose} title={t.safety.helpTitle} onDismissed={onDismissed}>
       <View style={styles.body}>
         <HeartHandshake size={30} color={c.primary} />
         <Text style={[styles.message, { color: c.foreground }]}>{t.safety.cardMessage}</Text>
