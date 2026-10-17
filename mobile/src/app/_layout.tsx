@@ -3,6 +3,9 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { useEffect, useState } from "react";
+import { View } from "react-native";
+import { ToastHost } from "@/components/ui/Toast";
+import { appAutoLock } from "@/lib/app-auto-lock";
 import { loadPrefs } from "@/lib/prefs";
 import { useAppFonts } from "@/theme/fonts";
 import { useTheme } from "@/theme/theme";
@@ -19,6 +22,9 @@ export default function RootLayout() {
     loadPrefs().finally(() => setPrefsReady(true));
   }, []);
 
+  // Locks a passcode vault after the chosen idle time, in the background or foreground.
+  useEffect(() => appAutoLock.start(), []);
+
   const ready = fontsReady && prefsReady;
 
   useEffect(() => {
@@ -29,7 +35,8 @@ export default function RootLayout() {
   if (!ready) return null;
 
   return (
-    <>
+    // Any touch counts as activity for the foreground auto-lock (observed, never captured).
+    <View style={{ flex: 1 }} onTouchStart={appAutoLock.markActivity}>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.background } }}>
         <Stack.Screen name="(tabs)" options={{ title: "MindCocoon" }} />
         <Stack.Screen name="settings" />
@@ -37,7 +44,8 @@ export default function RootLayout() {
           <Stack.Screen name="dev/spike" />
         </Stack.Protected>
       </Stack>
+      <ToastHost />
       <StatusBar style={name === "dusk" ? "light" : "dark"} />
-    </>
+    </View>
   );
 }

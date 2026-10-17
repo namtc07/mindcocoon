@@ -106,6 +106,8 @@ export const vi: Dictionary = {
     empty: "Chưa có gì ở đây. Những gì bạn cất từ Trút bỏ sẽ nằm yên ở đây.",
     writeFirst: "Viết gì đó",
     unsupported: "Trình duyệt này không mã hóa được két. Hãy thử Chrome, Safari hoặc Firefox bản mới.",
+    unavailable: "Chưa mở được két lúc này. Nhật ký của bạn vẫn an toàn, thử lại sau giây lát nhé.",
+    retry: "Thử lại",
     lockedTitle: "Két đang khóa",
     passcodeLabel: "Mã khóa",
     unlock: "Mở khóa",

@@ -57,3 +57,5 @@ jest.mock("lucide-react-native", () => {
 
 // Reanimated's official Jest mock (animations resolve immediately; timers drive the dissolve).
 jest.mock("react-native-reanimated", () => require("react-native-reanimated/mock"));
+
+jest.mock("expo-clipboard", () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));

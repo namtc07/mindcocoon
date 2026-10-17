@@ -105,6 +105,8 @@ export const en = {
     empty: "Nothing here yet. Words you save from Vent will rest here.",
     writeFirst: "Go write something",
     unsupported: "This browser can't encrypt your vault. Try a recent Chrome, Safari or Firefox.",
+    unavailable: "We can't open your vault right now. Your entries are safe — try again in a moment.",
+    retry: "Try again",
     lockedTitle: "Your vault is locked",
     passcodeLabel: "Passcode",
     unlock: "Unlock",
