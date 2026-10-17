@@ -56,7 +56,7 @@ Rulings made during implementation (each with its cost if wrong) and deferred re
 - Final: fixed I1 false conflict on launch — 'waits for the vault to be unlocked…' + 'opens the vault itself before deciding' RED→GREEN, suite 153/153
 - Final: fixed I2 note on Today without passcode / locked vault — 3 Today tests RED→GREEN, suite 153/153
 - Final: fixed I3 recovery-code reset never set new passcode — 'sets a new passcode after unlocking with the recovery code' RED→GREEN, suite 153/153
-- Final: Ruling: I4 (plan/spec flaw) — only the recovery wrap is uploaded; restore needs the 12-word code (spec allowed 'or the passcode') because a 4–6 digit PIN wrap stored server-side is offline-brute-forceable, breaking §6.1's promise — keyring/backup tests RED→GREEN — cost if wrong: users who lost the recovery code can't restore with their passcode on a new device. OWNER TO CONFIRM.
+- Final: Ruling: I4 (plan/spec flaw) — only the recovery wrap is uploaded; restore needs the 12-word code (spec allowed 'or the passcode') because a 4–6 digit PIN wrap stored server-side is offline-brute-forceable, breaking §6.1's promise — keyring/backup tests RED→GREEN — cost if wrong: users who lost the recovery code can't restore with their passcode on a new device. CONFIRMED by owner 2026-10-17.
 - Final: fixed I5 risk-phrase gaps — 10 phrase tests RED→GREEN (+2 negatives), suite 153/153
 - Final: fixed I6 no backup off switch — 'lets a signed-in user turn backup off' RED→GREEN, suite 153/153
 - Final: fixed flaky suite (reviewer's minor) — root cause: an overtaken initVault wrote over newer state after a reset (also reachable via wipeVault) — 'ignores an initialisation that was overtaken by a reset' RED→GREEN, suite 5×153/153

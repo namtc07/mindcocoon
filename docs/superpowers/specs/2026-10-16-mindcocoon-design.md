@@ -146,7 +146,7 @@ MindCocoon là một "nơi trú ẩn" số để trút bỏ cảm xúc, viết n
 - **Mã hóa đầu-cuối:** mọi thứ gửi lên (nhật ký, ghi chú cảm xúc, **cả màu cảm xúc và thẻ**) đều được mã hóa trên máy bằng DEK trước khi gửi. Máy chủ chỉ thấy các khối dữ liệu mã hóa + thời điểm cập nhật. Lý do: dữ liệu cảm xúc là dữ liệu sức khỏe nhạy cảm theo Nghị định 13; không đọc được thì không phải xử lý.
 - **Giữ lời hứa "người làm app không đọc được":** máy chủ **không bao giờ** đồng thời có cả bản sao lưu và chìa khóa mở nó.
   - Trên **máy đang dùng**, quên mã → đăng nhập là đặt mã mới ngay (dùng bí mật phía máy chủ + dữ liệu sẵn trên máy).
-  - Trên **máy mới**, khôi phục bản sao lưu = đăng nhập **+ mã khôi phục 12 từ** (hoặc mã khóa két nếu đã đặt). Vì vậy khi đăng nhập lần đầu, người dùng chưa có mã khôi phục sẽ được tạo và nhắc lưu mã khôi phục.
+  - Trên **máy mới**, khôi phục bản sao lưu = đăng nhập **+ mã khôi phục 12 từ**. **[Chủ dự án, 2026-10-17]** Không dùng mã khóa két để khôi phục: bản khóa bằng mã két không bao giờ rời máy, vì mã PIN ngắn có thể bị dò trên máy chủ. Vì vậy khi đăng nhập lần đầu, người dùng chưa có mã khôi phục sẽ được tạo và nhắc lưu mã khôi phục.
   - Mất máy **và** mất mã khôi phục **và** quên mã khóa → không khôi phục được. App nói rõ điều này khi hiện mã khôi phục.
 - **Sao lưu, chưa phải đồng bộ:** v1 tự đẩy bản sao lưu sau mỗi thay đổi (gom lại, có thử lại khi mất mạng) và khôi phục toàn bộ khi đăng nhập trên máy mới. Dùng song song nhiều máy cùng lúc (gộp thay đổi) để v2.
 - Người **dưới 16** không tạo được tài khoản → không có sao lưu đám mây; chỉ có biện pháp giảm nhẹ: khuyến khích cài app lên màn hình chính, xin trình duyệt giữ dữ liệu lâu dài (`navigator.storage.persist()`).
