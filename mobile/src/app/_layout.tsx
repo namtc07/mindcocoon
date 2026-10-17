@@ -7,6 +7,7 @@ import { View } from "react-native";
 import { AdsBootstrap } from "@/components/ads/AdsBootstrap";
 import { FirstRunNotice } from "@/components/FirstRunNotice";
 import { AudioLabelsSync } from "@/components/sanctuary/AudioLabelsSync";
+import { ReminderSync } from "@/components/settings/ReminderSync";
 import { ToastHost } from "@/components/ui/Toast";
 import { appAutoLock } from "@/lib/app-auto-lock";
 import { hydrateAudio, startAudioLifecycle } from "@/lib/audio";
@@ -69,6 +70,7 @@ export default function RootLayout() {
       </Fragment>
       <AudioLabelsSync />
       <AdsBootstrap />
+      <ReminderSync />
       <ToastHost />
       <StatusBar style={name === "dusk" ? "light" : "dark"} />
     </View>

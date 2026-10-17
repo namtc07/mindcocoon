@@ -194,6 +194,10 @@ export const vi: Dictionary = {
     unlockedUntil: "Mở đến {time}",
     adUnavailable: "Chưa có quảng cáo lúc này. Thử lại sau nhé.",
   },
+  reminder: {
+    title: "MindCocoon",
+    body: "Nếu hôm nay nặng nề, ở đây có một góc yên tĩnh cho bạn.",
+  },
   sounds: {
     rain: "Mưa",
     ocean: "Sóng biển",
@@ -211,6 +215,10 @@ export const vi: Dictionary = {
     "piano-letter": "Lá thư",
   },
   settings: {
+    reminderOff: "Tắt",
+    reminderTitle: "Nhắc nhở buổi tối",
+    reminderHint: "Một lời nhắc nhẹ vào buổi tối. Chỉ bật khi bạn muốn.",
+    reminderDenied: "Thông báo của MindCocoon đang tắt trong cài đặt điện thoại.",
     title: "Cài đặt",
     language: "Ngôn ngữ",
     appearance: "Giao diện",

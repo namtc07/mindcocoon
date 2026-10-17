@@ -193,6 +193,10 @@ export const en = {
     unlockedUntil: "Unlocked until {time}",
     adUnavailable: "No ad right now. Try again later.",
   },
+  reminder: {
+    title: "MindCocoon",
+    body: "A quiet place is here if today was heavy.",
+  },
   sounds: {
     rain: "Rain",
     ocean: "Ocean",
@@ -210,6 +214,10 @@ export const en = {
     "piano-letter": "A letter",
   },
   settings: {
+    reminderOff: "Off",
+    reminderTitle: "Evening reminder",
+    reminderHint: "A gentle nudge at night. Off unless you turn it on.",
+    reminderDenied: "Notifications are off for MindCocoon in your phone's settings.",
     title: "Settings",
     language: "Language",
     appearance: "Appearance",

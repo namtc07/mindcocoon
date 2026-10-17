@@ -48,7 +48,8 @@
           "iosAppId": "ca-app-pub-3940256099942544~1458002511",
           "delayAppMeasurementInit": true
         }
-      ]
+      ],
+      "expo-notifications"
     ],
     "scheme": "mindcocoon",
     "backgroundColor": "#0F172A",

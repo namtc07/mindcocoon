@@ -199,3 +199,14 @@ jest.mock("react-native-google-mobile-ads", () => {
     RewardedAdEventType: { LOADED: "rewarded_loaded", EARNED_REWARD: "rewarded_earned_reward" },
   };
 });
+
+jest.mock("expo-notifications", () => ({
+  getPermissionsAsync: jest.fn(() => Promise.resolve({ granted: false, canAskAgain: true, status: "undetermined" })),
+  requestPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true, canAskAgain: true, status: "granted" })),
+  scheduleNotificationAsync: jest.fn(() => Promise.resolve("mindcocoon-evening")),
+  cancelScheduledNotificationAsync: jest.fn(() => Promise.resolve()),
+  setNotificationChannelAsync: jest.fn(() => Promise.resolve(null)),
+  setNotificationHandler: jest.fn(),
+  SchedulableTriggerInputTypes: { DAILY: "daily" },
+  AndroidImportance: { DEFAULT: 3 },
+}));

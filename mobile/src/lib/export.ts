@@ -8,6 +8,7 @@ import { useSyncExternalStore } from "react";
 import * as Sharing from "expo-sharing";
 import { audio } from "./audio";
 import { clearPrefs } from "./prefs";
+import { cancelReminder } from "./reminder";
 
 export interface ExportFile {
   app: "MindCocoon";
@@ -75,6 +76,7 @@ export function useEraseCount() {
 /** Removes every journal entry, check-in, key (incl. the Keychain/Keystore item), preference and export copy. */
 export async function eraseEverything() {
   audio.reset();
+  await cancelReminder().catch(() => {});
   await wipeVault();
   await clearMoods();
   await clearPrefs();

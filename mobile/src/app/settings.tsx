@@ -6,6 +6,7 @@ import { Muted, Screen } from "@/components/Screen";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { TextField } from "@/components/ui/TextField";
+import { ReminderSettings } from "@/components/settings/ReminderSettings";
 import { eraseEverything, shareExport } from "@/lib/export";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
@@ -131,6 +132,9 @@ export default function SettingsScreen() {
             { id: "mist", label: t.settings.themeMist },
           ]}
         />
+        <Section title={t.settings.reminderTitle}>
+          <ReminderSettings />
+        </Section>
         <Section title={t.settings.vault}>
           <Button variant="outline" onPress={() => router.navigate("/vault")}>
             {t.settings.vaultLink}

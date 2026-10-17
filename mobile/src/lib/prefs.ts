@@ -17,6 +17,8 @@ export interface Prefs {
   flags?: CachedFlags;
   /** Premium sound id → epoch ms when its rewarded unlock ends. */
   unlocks?: Record<string, number>;
+  /** Evening reminder hour, or null/undefined when off. */
+  reminder?: { hour: 21 | 22 | 23 } | null;
 }
 
 const KEY = "prefs:v1";
