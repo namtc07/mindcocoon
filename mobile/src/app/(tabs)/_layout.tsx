@@ -36,7 +36,16 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: t.nav.today, tabBarIcon: ({ color, size }) => <Sunrise color={color} size={size} /> }} />
-      <Tabs.Screen name="vent" options={{ title: t.nav.vent, tabBarIcon: ({ color, size }) => <Feather color={color} size={size} /> }} />
+      <Tabs.Screen
+        name="vent"
+        options={{
+          title: t.nav.vent,
+          // Distraction-free: no header, no tab bar while venting (the screen has its own back link).
+          headerShown: false,
+          tabBarStyle: { display: "none" },
+          tabBarIcon: ({ color, size }) => <Feather color={color} size={size} />,
+        }}
+      />
       <Tabs.Screen name="mood" options={{ title: t.nav.mood, tabBarIcon: ({ color, size }) => <Waves color={color} size={size} /> }} />
       <Tabs.Screen name="sanctuary" options={{ title: t.nav.sanctuary, tabBarIcon: ({ color, size }) => <Leaf color={color} size={size} /> }} />
       <Tabs.Screen name="vault" options={{ title: t.nav.vault, tabBarIcon: ({ color, size }) => <BookLock color={color} size={size} /> }} />

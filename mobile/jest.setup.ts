@@ -22,8 +22,8 @@ jest.mock("expo-secure-store", () => {
 });
 
 jest.mock("expo-haptics", () => ({
-  notificationAsync: jest.fn(),
-  impactAsync: jest.fn(),
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  impactAsync: jest.fn(() => Promise.resolve()),
   NotificationFeedbackType: { Success: "success" },
   ImpactFeedbackStyle: { Light: "light" },
 }));
@@ -54,3 +54,6 @@ jest.mock("lucide-react-native", () => {
     { get: (target: Record<string, unknown>, name: string) => (name in target ? target[name] : () => React.createElement(View)) },
   );
 });
+
+// Reanimated's official Jest mock (animations resolve immediately; timers drive the dissolve).
+jest.mock("react-native-reanimated", () => require("react-native-reanimated/mock"));

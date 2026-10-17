@@ -3,6 +3,8 @@ module.exports = {
   preset: "jest-expo",
   testMatch: ["<rootDir>/__tests__/**/*.test.tsx"],
   setupFiles: ["<rootDir>/jest.setup.ts"],
+  // Reanimated 4 / worklets ship a resolver that picks their JS (non-native) builds under Jest.
+  resolver: "react-native-reanimated/jest/resolver",
   moduleNameMapper: { "^@/(.*)$": "<rootDir>/src/$1" },
   // jest-expo's list plus the ESM-only packages core uses (@scure/bip39, @noble/*, idb-keyval).
   transformIgnorePatterns: [

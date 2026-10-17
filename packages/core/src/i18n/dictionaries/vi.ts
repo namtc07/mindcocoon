@@ -74,6 +74,7 @@ export const vi: Dictionary = {
     titleLabel: "Tiêu đề (không bắt buộc)",
     saved: "Đã cất vào két",
     lockedHint: "Két đang khóa. Nhập mã khóa để cất.",
+    privacyCover: "Đã ẩn khi bạn rời đi",
     passcodeLabel: "Mã khóa",
     wrongPasscode: "Mã khóa chưa đúng.",
   },

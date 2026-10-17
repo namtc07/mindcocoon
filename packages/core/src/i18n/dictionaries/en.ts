@@ -73,6 +73,7 @@ export const en = {
     titleLabel: "Title (optional)",
     saved: "Saved to your vault",
     lockedHint: "Your vault is locked. Enter your passcode to save.",
+    privacyCover: "Hidden while you're away",
     passcodeLabel: "Passcode",
     wrongPasscode: "That passcode didn't match.",
   },
