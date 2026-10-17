@@ -123,3 +123,20 @@ describe("live Supabase", () => {
     expect(secrets.data).toEqual([]);
   });
 });
+
+describe("live app_config (migration 0003)", () => {
+  const anon = createClient(url, publishable, { auth: { persistSession: false } });
+
+  it("lets anyone read the remote switches", async () => {
+    const { data, error } = await anon.from("app_config").select("key, value");
+    expect(error).toBeNull();
+    expect(data?.map((r) => r.key).sort()).toEqual(["ads_enabled", "quiet_hours", "rewarded_enabled"]);
+  });
+
+  it("refuses writes from clients", async () => {
+    const insert = await anon.from("app_config").insert({ key: "ads_enabled_x", value: true });
+    expect(insert.error).not.toBeNull();
+    const update = await a.client.from("app_config").update({ value: true }).eq("key", "ads_enabled").select();
+    expect(update.data ?? []).toEqual([]);
+  });
+});

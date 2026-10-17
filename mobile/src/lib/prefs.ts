@@ -1,6 +1,7 @@
 import type { Locale } from "@mindcocoon/core/i18n/config";
 import type { AudioPrefs } from "./audio/engine";
 import { createKvDriver } from "./kv-driver";
+import type { CachedFlags } from "./remote-config-core";
 
 /** Small persisted preferences (language, appearance), readable synchronously after loadPrefs(). */
 export interface Prefs {
@@ -12,6 +13,8 @@ export interface Prefs {
   customTags?: string[];
   /** Sanctuary mixer volumes and loop. */
   audio?: AudioPrefs;
+  /** Last remote flags fetched from app_config. */
+  flags?: CachedFlags;
 }
 
 const KEY = "prefs:v1";

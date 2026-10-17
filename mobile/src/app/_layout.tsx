@@ -11,6 +11,7 @@ import { appAutoLock } from "@/lib/app-auto-lock";
 import { hydrateAudio, startAudioLifecycle } from "@/lib/audio";
 import { useEraseCount } from "@/lib/export";
 import { loadPrefs } from "@/lib/prefs";
+import { startRemoteConfig } from "@/lib/remote-config";
 import { useAppFonts } from "@/theme/fonts";
 import { useTheme } from "@/theme/theme";
 
@@ -33,9 +34,11 @@ export default function RootLayout() {
   useEffect(() => {
     const stopAutoLock = appAutoLock.start();
     const stopAudio = startAudioLifecycle();
+    const stopFlags = startRemoteConfig();
     return () => {
       stopAutoLock();
       stopAudio();
+      stopFlags();
     };
   }, []);
 
