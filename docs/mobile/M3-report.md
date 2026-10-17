@@ -30,9 +30,9 @@ dev client** (`npx expo run:ios`) before testing; a plain Metro reload is not en
 
 ## Tests
 
-- Mobile: Vitest 25 (adapters, auto-lock, install layout…) + Jest 35 (UI: ui, mood-safety, today,
+- Mobile: Vitest 25 (adapters, auto-lock, install layout…) + Jest 43 (UI: ui, mood-safety, today,
   vent, vault, mood, help, settings). `npm test` in `mobile/`.
-- Web: unchanged, 164 passing. Core dictionaries gained `vent.privacyCover`, `vault.unavailable`,
+- Web: 166 passing (core gained `updateMoodDetails`). Core dictionaries gained `vent.privacyCover`, `vault.unavailable`,
   `vault.retry` (vi + en).
 
 ## Owner checklist (iOS simulator)
@@ -65,6 +65,14 @@ From `mobile/`: `npx expo run:ios` (first time after this branch), later `npx ex
 13. Settings → **Erase everything** → button disabled until `erase` is typed → erase → back on Today,
     vault empty, welcome sheet shows again on next launch, language back to the device language.
 14. Settings → switch to Tiếng Việt and Mist; repeat a couple of screens — all copy is translated.
+
+## Device-only checks (final review couldn't judge these in Jest)
+
+15. Vent: release, then shake to undo → nothing comes back.
+16. Vent: type a rare word, release; in Notes the keyboard doesn't suggest it.
+17. Vent / vault: open the app switcher quickly right after typing → the cover is in the snapshot.
+18. Vault settings → set a passcode → the recovery card appears after the sheet slides away.
+19. Vault with 1-min auto-lock: keep tapping inside a sheet for 2 minutes → it doesn't lock.
 
 ## Known gaps
 
