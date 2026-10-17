@@ -48,6 +48,7 @@
           "delayAppMeasurementInit": true
         }
       ],
+      "./plugins/without-push-entitlement",
       "expo-notifications",
       [
         "expo-local-authentication",
