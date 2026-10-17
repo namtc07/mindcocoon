@@ -14,6 +14,7 @@ jest.mock("expo-secure-store", () => {
   const store = new FakeSecureStore();
   return {
     AFTER_FIRST_UNLOCK,
+    WHEN_PASSCODE_SET_THIS_DEVICE_ONLY: 6,
     getItemAsync: store.getItemAsync.bind(store),
     setItemAsync: store.setItemAsync.bind(store),
     deleteItemAsync: store.deleteItemAsync.bind(store),
@@ -209,4 +210,11 @@ jest.mock("expo-notifications", () => ({
   setNotificationHandler: jest.fn(),
   SchedulableTriggerInputTypes: { DAILY: "daily" },
   AndroidImportance: { DEFAULT: 3 },
+}));
+
+jest.mock("expo-local-authentication", () => ({
+  hasHardwareAsync: jest.fn(() => Promise.resolve(true)),
+  isEnrolledAsync: jest.fn(() => Promise.resolve(true)),
+  supportedAuthenticationTypesAsync: jest.fn(() => Promise.resolve([2])),
+  AuthenticationType: { FINGERPRINT: 1, FACIAL_RECOGNITION: 2, IRIS: 3 },
 }));

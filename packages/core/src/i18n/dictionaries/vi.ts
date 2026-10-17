@@ -101,6 +101,12 @@ export const vi: Dictionary = {
     noMood: "Chưa ghi",
   },
   vault: {
+    biometricToggle: "Mở bằng {method}",
+    biometricConfirm: "Nhập mã khóa để bật",
+    biometricEnable: "Bật",
+    biometricFailed: "Không dùng được {method}. Hãy nhập mã khóa.",
+    methodFace: "Face ID",
+    methodFingerprint: "vân tay",
     title: "Két riêng của bạn",
     intro: "Mọi bài viết được mã hóa trên máy này. Chỉ bạn đọc được.",
     empty: "Chưa có gì ở đây. Những gì bạn cất từ Trút bỏ sẽ nằm yên ở đây.",

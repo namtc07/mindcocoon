@@ -10,6 +10,8 @@ import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
+import { disableBiometric } from "@/lib/biometric";
+import { BiometricToggle } from "./BiometricToggle";
 import { PasscodeForm } from "./PasscodeForm";
 
 const AUTO_LOCK_CHOICES = [1, 5, 15, 30];
@@ -47,6 +49,7 @@ export function VaultSettings({
           submitLabel={t.vault.savePasscode}
           onSubmit={async (passcode) => {
             const { recoveryCode } = await setVaultPasscode(passcode);
+            await disableBiometric(); // the stored passcode is now wrong
             toast.show(t.vault.passcodeSet);
             setForm(false);
             onClose();
@@ -79,6 +82,7 @@ export function VaultSettings({
               >
                 {t.vault.regenerateCode}
               </Button>
+              <BiometricToggle />
               <Text style={{ fontFamily: fonts.sansMedium, fontSize: 15, color: c.foreground }}>{t.vault.autoLock}</Text>
               <View style={styles.chips}>
                 {AUTO_LOCK_CHOICES.map((n) => (
@@ -91,6 +95,7 @@ export function VaultSettings({
                 variant="ghost"
                 onPress={async () => {
                   await removeVaultPasscode();
+                  await disableBiometric();
                   toast.show(t.vault.passcodeRemoved);
                 }}
               >

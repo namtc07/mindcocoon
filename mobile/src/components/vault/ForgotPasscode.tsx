@@ -12,6 +12,7 @@ import { TextField } from "@/components/ui/TextField";
 import { toast } from "@/components/ui/Toast";
 import { useNow } from "@/hooks/use-now";
 import { useI18n } from "@/i18n/i18n";
+import { disableBiometric } from "@/lib/biometric";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
@@ -34,7 +35,10 @@ export function ForgotPasscode({ resetReadyAt, onBack }: { resetReadyAt: number 
         <PasscodeForm
           submitLabel={t.vault.savePasscode}
           onSubmit={async (passcode) => {
-            if (await resetPasscodeWithRecoveryCode(verifiedCode, passcode)) toast.show(t.vault.resetDone);
+            if (await resetPasscodeWithRecoveryCode(verifiedCode, passcode)) {
+              await disableBiometric();
+              toast.show(t.vault.resetDone);
+            }
           }}
         />
       </View>
@@ -73,7 +77,10 @@ export function ForgotPasscode({ resetReadyAt, onBack }: { resetReadyAt: number 
           <PasscodeForm
             submitLabel={t.vault.resetNow}
             onSubmit={async (passcode) => {
-              if (await completePasscodeReset(passcode)) toast.show(t.vault.resetDone);
+              if (await completePasscodeReset(passcode)) {
+                await disableBiometric();
+                toast.show(t.vault.resetDone);
+              }
             }}
           />
         ) : (

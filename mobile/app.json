@@ -28,7 +28,6 @@
       "react-native-quick-crypto",
       "expo-router",
       "expo-sqlite",
-      "expo-secure-store",
       "expo-localization",
       "expo-font",
       "expo-splash-screen",
@@ -49,7 +48,19 @@
           "delayAppMeasurementInit": true
         }
       ],
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow MindCocoon to use Face ID to open your private vault."
+        }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "Allow MindCocoon to use Face ID to open your private vault."
+        }
+      ]
     ],
     "scheme": "mindcocoon",
     "backgroundColor": "#0F172A",

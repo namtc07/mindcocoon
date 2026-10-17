@@ -19,6 +19,8 @@ export interface Prefs {
   unlocks?: Record<string, number>;
   /** Evening reminder hour, or null/undefined when off. */
   reminder?: { hour: 21 | 22 | 23 } | null;
+  /** Face ID / fingerprint vault unlock is on (the gated Keychain item can't be probed without a prompt). */
+  biometric?: true;
 }
 
 const KEY = "prefs:v1";

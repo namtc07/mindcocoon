@@ -4,7 +4,9 @@ import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Button } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
+import { useBiometricMethod } from "@/hooks/use-biometric-method";
 import { useI18n } from "@/i18n/i18n";
+import { unlockWithBiometric, useBiometricEnabled } from "@/lib/biometric";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
@@ -16,6 +18,9 @@ export function UnlockPanel({ resetReadyAt }: { resetReadyAt: number | null }) {
   const [passcode, setPasscode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [forgot, setForgot] = useState(resetReadyAt !== null);
+  const method = useBiometricMethod();
+  const biometric = useBiometricEnabled() && method !== null;
+  const methodName = method === "face" ? t.vault.methodFace : t.vault.methodFingerprint;
 
   if (forgot) return <ForgotPasscode resetReadyAt={resetReadyAt} onBack={() => setForgot(false)} />;
 
@@ -52,6 +57,17 @@ export function UnlockPanel({ resetReadyAt }: { resetReadyAt: number | null }) {
         >
           {t.vault.unlock}
         </Button>
+        {biometric && (
+          <Button
+            variant="outline"
+            onPress={async () => {
+              const label = t.vault.biometricToggle.replace("{method}", methodName);
+              if ((await unlockWithBiometric(label)) === "failed") setError(t.vault.biometricFailed.replace("{method}", methodName));
+            }}
+          >
+            {t.vault.biometricToggle.replace("{method}", methodName)}
+          </Button>
+        )}
         <Button variant="ghost" onPress={() => setForgot(true)}>
           {t.vault.forgot}
         </Button>

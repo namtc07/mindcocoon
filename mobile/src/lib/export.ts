@@ -9,6 +9,7 @@ import * as Sharing from "expo-sharing";
 import { audio } from "./audio";
 import { clearPrefs } from "./prefs";
 import { cancelReminder } from "./reminder";
+import { disableBiometric } from "./biometric";
 
 export interface ExportFile {
   app: "MindCocoon";
@@ -77,6 +78,7 @@ export function useEraseCount() {
 export async function eraseEverything() {
   audio.reset();
   await cancelReminder().catch(() => {});
+  await disableBiometric();
   await wipeVault();
   await clearMoods();
   await clearPrefs();

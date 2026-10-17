@@ -100,6 +100,12 @@ export const en = {
     noMood: "No check-in",
   },
   vault: {
+    biometricToggle: "Unlock with {method}",
+    biometricConfirm: "Enter your passcode to turn this on",
+    biometricEnable: "Turn on",
+    biometricFailed: "Couldn't use {method}. Enter your passcode.",
+    methodFace: "Face ID",
+    methodFingerprint: "fingerprint",
     title: "Your vault",
     intro: "Entries are encrypted on this device. Only you can read them.",
     empty: "Nothing here yet. Words you save from Vent will rest here.",
