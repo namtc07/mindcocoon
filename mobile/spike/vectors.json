@@ -1,0 +1,12 @@
+{
+  "dekB64": "AwoRGB8mLTQ7QklQV15lbHN6gYiPlp2kq7K5wMfO1dw=",
+  "envelope": "v1.yMfGxcTDwsHAv769.S1mJdxdUb7SDgOIneMeM61tUNc3K2w==",
+  "saltB64": "AQIDBAUGBwgJCgsMDQ4PEA==",
+  "pbkdf2Hex": "de133776ed4dca1bbbf29e9c3f03c204988718890ffd5c561443b2f5f0cc6950",
+  "recoveryCode": "abandon ability able about above absent absorb abstract absurd abuse access accident",
+  "recovery": {
+    "salt": "AQIDBAUGBwgJCgsMDQ4PEA==",
+    "iterations": 310000,
+    "wrapped": "v1.MjM0NTY3ODk6Ozw9.tRw9rosNTgc33ZbOF0MwQMzcHF/voX/giZu8XP16is6gE4tM3CoeSzCUETIlpsM3"
+  }
+}
