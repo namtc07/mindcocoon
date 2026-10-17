@@ -238,7 +238,7 @@ export const en = {
     ageNoExplain: "Backup needs an account, which is for people 16 and over. Your journal stays on this device, and adding MindCocoon to your home screen helps keep it safe.",
     emailLabel: "Email",
     sendCode: "Send code",
-    codeSent: "We sent a 6-digit code to {email}.",
+    codeSent: "We sent a sign-in code to {email}.",
     codeLabel: "Code",
     verify: "Sign in",
     wrongCode: "That code didn't work. Check it, or send a new one.",

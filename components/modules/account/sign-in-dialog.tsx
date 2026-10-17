@@ -104,12 +104,12 @@ export function SignInDialog({ open, onOpenChange }: { open: boolean; onOpenChan
               autoComplete="one-time-code"
               aria-label={t.account.codeLabel}
               placeholder="123456"
-              maxLength={6}
+              maxLength={10}
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
               autoFocus
             />
-            <Button type="submit" disabled={busy || code.length !== 6}>
+            <Button type="submit" disabled={busy || code.length < 6}>
               {t.account.verify}
             </Button>
           </form>

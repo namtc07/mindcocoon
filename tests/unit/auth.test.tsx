@@ -63,7 +63,11 @@ describe("account", () => {
     expect(client.auth.signInWithOtp).toHaveBeenCalledWith(
       expect.objectContaining({ email: "me@example.com" }),
     );
-    expect(await screen.findByRole("textbox", { name: /code/i })).toBeInTheDocument();
+    const code = await screen.findByRole("textbox", { name: /code/i });
+    // Supabase lets projects use 6–10 digit codes.
+    await user.type(code, "12345678");
+    await user.click(screen.getByRole("button", { name: /^sign in$/i }));
+    expect(client.auth.verifyOtp).toHaveBeenCalledWith({ email: "me@example.com", token: "12345678", type: "email" });
   });
 
   it("lets a signed-in user turn backup off", async () => {

@@ -24,27 +24,35 @@ Vercel project's environment variables:
 
 ## 2. Apply the schema
 
-Open **SQL Editor** in the dashboard, paste `supabase/migrations/0001_init.sql`, run it.
+Open **SQL Editor** in the dashboard and run, in order, `supabase/migrations/0001_init.sql`
+then `0002_tighten_grants.sql` (revokes Supabase's default table-wide grants).
 (With the Supabase CLI: `supabase link --project-ref apqhxpcgtpzayswgdcqw && supabase db push`.)
 
 Then run the advisors (Dashboard → Advisors → Security) and fix anything they flag.
 
 ## 3. Auth providers (Dashboard → Authentication)
 
-1. **Email**: enabled, with "Email OTP" (6-digit code). Keep "Confirm email" on.
+1. **Email**: enabled. The app signs in with a **code**, not a link: in
+   **Authentication → Emails → Templates**, edit "Magic Link" (and "Confirm signup") so the body
+   shows `{{ .Token }}`, e.g. `Your MindCocoon code: {{ .Token }}`. Codes of 6–10 digits work.
 2. **Google**: enable, add the OAuth client id/secret from Google Cloud Console.
 3. **URL configuration** → Redirect URLs:
    - `http://localhost:3000/*/auth/callback`
    - `https://<your-domain>/*/auth/callback`
 4. **SMTP** (before launch): configure a real SMTP sender — the built-in mailer is rate-limited.
 
-## 4. Before launch
+## 4. Verify against the real project
+
+`npm run test:live` creates two throwaway users, checks RLS isolation, server-generated
+secrets, encrypted backup and restore, and cascade deletion — then deletes the users.
+
+## 5. Before launch
 
 - Rotate the service-role key: create a new secret key (`sb_secret_…`), update Vercel, then
   disable the legacy JWT keys. (The current one was shared in a chat session.)
 - Re-run the security advisors.
 
-## 5. Reading the open counts
+## 6. Reading the open counts
 
 Distinct devices that opened the app each night (21:00–05:00 Vietnam time):
 
