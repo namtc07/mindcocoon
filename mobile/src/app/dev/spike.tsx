@@ -2,10 +2,10 @@ import { promptForDay } from "@mindcocoon/core/prompts";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { runSpike, type SpikeResult } from "./spike/run-spike";
+import { runSpike, type SpikeResult } from "../../../spike/run-spike";
 
 /** M1: shows today's prompt from the shared core, then the crypto spike results. */
-export default function App() {
+export default function SpikeScreen() {
   const [results, setResults] = useState<SpikeResult[] | null>(null);
 
   useEffect(() => {

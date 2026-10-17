@@ -35,6 +35,11 @@ E2E specs import `test` from `tests/e2e/fixtures.ts` (skips the first-run dialog
   (Expo app, from M1). Import core as `@mindcocoon/core/<path>`; inside core use relative imports.
   `packages/core/test/purity.test.ts` forbids DOM globals and React/Next imports in core;
   `golden-vectors.test.ts` pins the encryption formats — never change those vectors.
+- `expo-router` is pinned in the **root** devDependencies on purpose: npm otherwise installs it
+  under `mobile/node_modules`, where the hoisted Expo CLI (`node_modules/expo`) cannot resolve
+  `expo-router/internal/testing` and Metro fails to start. Keep its version equal to mobile's.
+- Mobile: run commands from `mobile/` (`npx expo run:ios`, `npx expo start --clear`). Metro's
+  server root is the repo root, so bundle URLs are `/mobile/index.ts.bundle`.
 
 - Next.js 16 App Router with a `[lang]` root segment; `proxy.ts` picks `vi`/`en`.
   `cacheComponents` is on, so hidden routes stay mounted inside `<Activity>`:

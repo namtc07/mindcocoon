@@ -24,9 +24,13 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "react-native-quick-crypto"
+      "react-native-quick-crypto",
+      "expo-router"
     ],
     "scheme": "mindcocoon",
-    "backgroundColor": "#0F172A"
+    "backgroundColor": "#0F172A",
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }
