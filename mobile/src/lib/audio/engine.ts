@@ -20,6 +20,8 @@ export interface AudioState {
   loop: boolean;
   /** Epoch ms when the sleep timer stops everything, or null. */
   sleepEndsAt: number | null;
+  /** The option the sleep timer was set with, or null. */
+  sleepMinutes: SleepMinutes | null;
 }
 
 export interface AudioPrefs {
@@ -90,6 +92,12 @@ export function minutesLeft(ms: number) {
   return Math.max(1, Math.ceil(ms / 60_000));
 }
 
+/** Minutes left on the sleep timer for display; never more than the option chosen (clocks in the UI may lag a few seconds). */
+export function sleepMinutesLeft(state: Pick<AudioState, "sleepEndsAt" | "sleepMinutes">, now: number): number | null {
+  if (state.sleepEndsAt === null || state.sleepMinutes === null) return null;
+  return Math.min(state.sleepMinutes, minutesLeft(state.sleepEndsAt - now));
+}
+
 interface PlayerRecord {
   player: MixPlayer;
   /** What the engine last asked of this player. */
@@ -118,6 +126,7 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
       master: DEFAULT_MASTER,
       loop: true,
       sleepEndsAt: null,
+      sleepMinutes: null,
     };
   }
 
@@ -301,7 +310,7 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
         rec.player.seekTo(0).catch(() => {});
       });
       clearSleep();
-      setState({ playing: [], held: [], sleepEndsAt: null });
+      setState({ playing: [], held: [], sleepEndsAt: null, sleepMinutes: null });
     },
 
     setTrackVolume(id, volume) {
@@ -327,10 +336,10 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
     setSleepTimer(minutes) {
       clearSleep();
       if (minutes === null) {
-        setState({ sleepEndsAt: null });
+        setState({ sleepEndsAt: null, sleepMinutes: null });
         return;
       }
-      setState({ sleepEndsAt: now() + minutes * 60_000 });
+      setState({ sleepEndsAt: now() + minutes * 60_000, sleepMinutes: minutes });
       sleepTimer = setInterval(() => engine.tick(), TICK_MS);
     },
 

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createAudioEngine,
   minutesLeft,
+  sleepMinutesLeft,
   type AudioEngineDeps,
   type AudioPrefs,
   type MixPlayer,
@@ -293,6 +294,19 @@ describe("audio engine", () => {
     await engine.play("rain");
     expect(listener).toHaveBeenCalled();
     off();
+  });
+});
+
+describe("sleepMinutesLeft", () => {
+  it("never shows more than the minutes chosen, even with a slightly stale clock", async () => {
+    const { engine } = setup();
+    engine.setSleepTimer(20);
+    expect(engine.getState().sleepMinutes).toBe(20);
+    expect(sleepMinutesLeft(engine.getState(), clock - 4_000)).toBe(20);
+    expect(sleepMinutesLeft(engine.getState(), clock + 60_500)).toBe(19);
+    engine.setSleepTimer(null);
+    expect(engine.getState().sleepMinutes).toBeNull();
+    expect(sleepMinutesLeft(engine.getState(), clock)).toBeNull();
   });
 });
 
