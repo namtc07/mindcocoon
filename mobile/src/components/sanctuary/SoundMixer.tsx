@@ -14,6 +14,7 @@ import { useUnlocks } from "@/lib/unlocks";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
+import { MixChips } from "./MixChips";
 import { PlayButton } from "./PlayButton";
 import { toggleSound } from "./play";
 
@@ -90,6 +91,7 @@ export function SoundMixer() {
       <Text accessibilityRole="header" style={[styles.title, { color: c.foreground }]}>
         {t.sanctuary.soundsTitle}
       </Text>
+      <MixChips />
       {AMBIENT_TRACKS.map((track) => (
         <TrackRow key={track.id} id={track.id} />
       ))}

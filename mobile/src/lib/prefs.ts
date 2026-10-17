@@ -1,3 +1,4 @@
+import type { SavedMix } from "@mindcocoon/core/audio/mixes";
 import type { BreathPatternId } from "@mindcocoon/core/breathing";
 import type { Locale } from "@mindcocoon/core/i18n/config";
 import type { AudioPrefs } from "./audio/engine";
@@ -24,6 +25,8 @@ export interface Prefs {
   biometric?: true;
   /** Last breathing rhythm and length chosen. */
   breathing?: { pattern: BreathPatternId; minutes: 1 | 3 | 5 };
+  /** Sound mixes the person saved (at most 5). */
+  mixes?: SavedMix[];
 }
 
 const KEY = "prefs:v1";

@@ -350,6 +350,40 @@ describe("restorePrefs", () => {
   });
 });
 
+describe("applyMix", () => {
+  it("stops sounds outside the mix and sets volumes", async () => {
+    const { engine } = setup();
+    await engine.play("ocean");
+    await engine.applyMix({ volumes: { rain: 0.7, "piano-still": 0.3 } }, () => true);
+    expect(engine.getState().playing.sort()).toEqual(["piano-still", "rain"]);
+    expect(p("ocean").calls).toContain("pause");
+    expect(engine.getState().volumes).toMatchObject({ rain: 0.7, "piano-still": 0.3 });
+    expect(p("rain").volume).toBeCloseTo(0.7 * 0.8);
+  });
+
+  it("keeps the sleep timer", async () => {
+    const { engine } = setup();
+    engine.setSleepTimer(20);
+    const endsAt = engine.getState().sleepEndsAt;
+    await engine.applyMix({ volumes: { rain: 0.5 } }, () => true);
+    expect(engine.getState().sleepEndsAt).toBe(endsAt);
+  });
+
+  it("skips sounds that aren't playable", async () => {
+    const { engine } = setup();
+    await engine.applyMix({ volumes: { rain: 0.5, ocean: 0.5 } }, (id) => id !== "ocean");
+    expect(engine.getState().playing).toEqual(["rain"]);
+  });
+
+  it("resumes a held mix as the new mix, not the old one", async () => {
+    const { engine } = setup();
+    await engine.play("ocean");
+    engine.pauseAll();
+    await engine.applyMix({ volumes: { rain: 0.5 } }, () => true);
+    expect(engine.getState()).toMatchObject({ playing: ["rain"], held: [] });
+  });
+});
+
 describe("sleepMinutesLeft", () => {
   it("never shows more than the minutes chosen, even with a slightly stale clock", async () => {
     const { engine } = setup();

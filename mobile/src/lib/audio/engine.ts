@@ -79,6 +79,8 @@ export interface AudioEngine {
   setLabels(labels: { names: Record<string, string>; album: string }): void;
   /** Stops everything, drops the players and returns to defaults (ignoring stored prefs). */
   reset(): void;
+  /** Plays exactly this mix (sounds outside it stop; the sleep timer keeps running); unplayable ids are skipped. */
+  applyMix(mix: { volumes: Record<string, number> }, playable: (id: string) => boolean): Promise<void>;
   /** Re-reads stored prefs (they load asynchronously after the engine is created at startup). */
   restorePrefs(): void;
 }
@@ -366,6 +368,26 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
     setLabels(next) {
       labels = next;
       setState({});
+    },
+
+    async applyMix(mix, playable) {
+      const targets = Object.entries(mix.volumes)
+        .filter(([id, v]) => v > 0 && deps.trackIds.includes(id) && playable(id))
+        .map(([id]) => id);
+      const volumes = { ...state.volumes };
+      targets.forEach((id) => {
+        volumes[id] = mix.volumes[id];
+      });
+      state.playing
+        .filter((id) => !targets.includes(id))
+        .forEach((id) => {
+          const rec = records.get(id);
+          if (rec) command(rec, false);
+        });
+      setState({ volumes, playing: state.playing.filter((id) => targets.includes(id)), held: [] });
+      savePrefs();
+      applyVolumes();
+      await Promise.allSettled(targets.map((id) => engine.play(id)));
     },
 
     restorePrefs() {

@@ -247,3 +247,66 @@ describe("Box breathing", () => {
     expect(screen.getByText("Breathe")).toBeOnTheScreen();
   });
 });
+
+describe("Mixes", () => {
+  beforeEach(async () => {
+    await act(async () => {
+      audio.reset();
+      await setPref("mixes", undefined);
+      await setPref("unlocks", undefined);
+    });
+  });
+
+  it("a preset starts its sounds", async () => {
+    const user = userEvent.setup();
+    await renderWithApp(<SanctuaryScreen />);
+    await user.press(await screen.findByRole("button", { name: "Rainy night" }));
+    await waitFor(() => expect([...audio.getState().playing].sort()).toEqual(["night-wind", "rain"]));
+    expect(audio.getState().volumes.rain).toBe(0.7);
+    expect(screen.getByRole("button", { name: "Rainy night" })).toBeSelected();
+  });
+
+  it('saving the current mix adds "My mix 1"', async () => {
+    const user = userEvent.setup();
+    await act(() => audio.play("ocean"));
+    await renderWithApp(<SanctuaryScreen />);
+    await user.press(await screen.findByRole("button", { name: "Save this mix" }));
+    expect(await screen.findByRole("button", { name: "My mix 1" })).toBeSelected();
+    expect(getPref("mixes")).toHaveLength(1);
+    expect(getPref("mixes")?.[0].mix.volumes).toEqual({ ocean: 0.6 });
+  });
+
+  it("nothing to save when nothing plays", async () => {
+    await renderWithApp(<SanctuaryScreen />);
+    await screen.findByRole("button", { name: "Rainy night" });
+    expect(screen.queryByRole("button", { name: "Save this mix" })).not.toBeOnTheScreen();
+  });
+
+  it("a sixth mix can't be saved", async () => {
+    const saved = [1, 2, 3, 4, 5].map((n) => ({ id: `m${n}`, n, mix: { volumes: { rain: 0.1 * n } }, createdAt: "2026-10-18T00:00:00.000Z" }));
+    await act(async () => {
+      await setPref("mixes", saved);
+      await audio.play("ocean");
+    });
+    await renderWithApp(<SanctuaryScreen />);
+    expect(await screen.findByRole("button", { name: "Save this mix" })).toBeDisabled();
+    expect(screen.getByText("You can keep up to 5 mixes. Remove one first.")).toBeOnTheScreen();
+  });
+
+  it("removing a saved mix", async () => {
+    const user = userEvent.setup();
+    await act(() => setPref("mixes", [{ id: "a", n: 1, mix: { volumes: { rain: 0.5 } }, createdAt: "2026-10-18T00:00:00.000Z" }]));
+    await renderWithApp(<SanctuaryScreen />);
+    await user.press(await screen.findByRole("button", { name: "Remove My mix 1" }));
+    expect(screen.queryByRole("button", { name: "My mix 1" })).not.toBeOnTheScreen();
+    expect(getPref("mixes")).toEqual([]);
+  });
+
+  it("a saved mix with a now-locked premium sound plays the rest", async () => {
+    const user = userEvent.setup();
+    await act(() => setPref("mixes", [{ id: "a", n: 1, mix: { volumes: { rain: 0.5, thunder: 0.5 } }, createdAt: "2026-10-18T00:00:00.000Z" }]));
+    await renderWithApp(<SanctuaryScreen />);
+    await user.press(await screen.findByRole("button", { name: "My mix 1" }));
+    await waitFor(() => expect(audio.getState().playing).toEqual(["rain"]));
+  });
+});
