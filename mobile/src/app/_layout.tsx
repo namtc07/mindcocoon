@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { Fragment, useEffect, useState } from "react";
 import { View } from "react-native";
+import { AdsBootstrap } from "@/components/ads/AdsBootstrap";
 import { FirstRunNotice } from "@/components/FirstRunNotice";
 import { AudioLabelsSync } from "@/components/sanctuary/AudioLabelsSync";
 import { ToastHost } from "@/components/ui/Toast";
@@ -67,6 +68,7 @@ export default function RootLayout() {
       <FirstRunNotice />
       </Fragment>
       <AudioLabelsSync />
+      <AdsBootstrap />
       <ToastHost />
       <StatusBar style={name === "dusk" ? "light" : "dark"} />
     </View>

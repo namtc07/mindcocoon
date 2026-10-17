@@ -40,12 +40,34 @@
           "recordAudioAndroid": false,
           "enableBackgroundPlayback": true
         }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511",
+          "delayAppMeasurementInit": true
+        }
       ]
     ],
     "scheme": "mindcocoon",
     "backgroundColor": "#0F172A",
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "admob": {
+        "ios": {
+          "banner-today": "",
+          "banner-mood": "",
+          "rewarded": ""
+        },
+        "android": {
+          "banner-today": "",
+          "banner-mood": "",
+          "rewarded": ""
+        }
+      }
     }
   }
 }

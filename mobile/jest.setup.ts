@@ -163,3 +163,39 @@ jest.mock("@react-native-community/slider", () => {
   }
   return { __esModule: true, default: Slider };
 });
+
+// AdMob: a shared fake SDK; tests drive rewarded ads through `__rewarded.emit(type, payload)`.
+jest.mock("react-native-google-mobile-ads", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  const sdk = { setRequestConfiguration: jest.fn(() => Promise.resolve()), initialize: jest.fn(() => Promise.resolve([])) };
+  const rewardedListeners = new Map<string, Set<(p?: unknown) => void>>();
+  const rewarded = {
+    load: jest.fn(),
+    show: jest.fn(() => Promise.resolve()),
+    addAdEventListener: jest.fn((type: string, cb: (p?: unknown) => void) => {
+      if (!rewardedListeners.has(type)) rewardedListeners.set(type, new Set());
+      rewardedListeners.get(type)!.add(cb);
+      return () => rewardedListeners.get(type)?.delete(cb);
+    }),
+    removeAllListeners: jest.fn(() => rewardedListeners.clear()),
+    emit: (type: string, payload?: unknown) => [...(rewardedListeners.get(type) ?? [])].forEach((cb) => cb(payload)),
+  };
+  function BannerAd(props: Record<string, unknown>) {
+    return React.createElement(View, { testID: "admob-banner", ...props });
+  }
+  return {
+    __esModule: true,
+    default: () => sdk,
+    __sdk: sdk,
+    __rewarded: rewarded,
+    AdsConsent: { gatherConsent: jest.fn(() => Promise.resolve({ canRequestAds: true })) },
+    MaxAdContentRating: { G: "G", PG: "PG", T: "T", MA: "MA" },
+    TestIds: { ADAPTIVE_BANNER: "test-adaptive-banner", REWARDED: "test-rewarded" },
+    BannerAd,
+    BannerAdSize: { ANCHORED_ADAPTIVE_BANNER: "ANCHORED_ADAPTIVE_BANNER" },
+    RewardedAd: { createForAdRequest: jest.fn(() => rewarded) },
+    AdEventType: { LOADED: "loaded", ERROR: "error", OPENED: "opened", CLOSED: "closed" },
+    RewardedAdEventType: { LOADED: "rewarded_loaded", EARNED_REWARD: "rewarded_earned_reward" },
+  };
+});
