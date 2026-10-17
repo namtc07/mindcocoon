@@ -4,7 +4,7 @@
  */
 import { sealSnapshot, openSnapshot, buildSnapshot } from "@mindcocoon/core/backup/snapshot";
 import { decryptString, encryptString, fromBase64, importDek, isEnvelope } from "@mindcocoon/core/crypto";
-import { setStorage } from "@mindcocoon/core/storage/index";
+import { getStorage, setStorage } from "@mindcocoon/core/storage/index";
 import { createMemoryDriver } from "@mindcocoon/core/storage/driver";
 import { createLocalAdapter } from "@mindcocoon/core/storage/local";
 import { unlockWithRecoveryCode } from "@mindcocoon/core/vault/keyring";
@@ -54,6 +54,8 @@ function assert(condition: unknown, message: string): asserts condition {
 /** Runs every check in order; later checks still run when earlier ones fail. */
 export async function runSpike(): Promise<SpikeResult[]> {
   const results: SpikeResult[] = [];
+  // Checks 6–7 use a throwaway in-memory vault; the app's real (SQLite) vault is restored after.
+  const realStorage = getStorage();
 
   results.push(
     await check("1. crypto.subtle + getRandomValues", async () => {
@@ -136,5 +138,8 @@ export async function runSpike(): Promise<SpikeResult[]> {
     }),
   );
 
+  setStorage(realStorage);
+  __resetVaultForTests();
+  await initVault();
   return results;
 }

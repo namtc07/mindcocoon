@@ -1,10 +1,37 @@
 import { promptForDay } from "@mindcocoon/core/prompts";
 import { StatusBar } from "expo-status-bar";
+import { saveVaultEntry } from "@mindcocoon/core/vault/session";
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useVault } from "@/hooks/use-vault";
+import { useI18n } from "@/i18n/i18n";
+import { useTheme } from "@/theme/theme";
 import { runSpike, type SpikeResult } from "../../../spike/run-spike";
 
 /** M1: shows today's prompt from the shared core, then the crypto spike results. */
+/** M2 persistence check: real (SQLite + Keychain) vault, language and theme survive a relaunch. */
+function Persistence() {
+  const vault = useVault();
+  const { locale } = useI18n();
+  const { name } = useTheme();
+  return (
+    <View style={styles.persist}>
+      <Text style={styles.heading}>Persistence</Text>
+      <Text style={styles.result}>
+        vault: {vault.status} · entries: {vault.entries.length} · locale: {locale} · theme: {name}
+      </Text>
+      <Pressable
+        accessibilityRole="button"
+        disabled={vault.status !== "unlocked"}
+        onPress={() => void saveVaultEntry({ body: `m2 persistence ${new Date().toISOString()}` })}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Add test entry</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 export default function SpikeScreen() {
   const [results, setResults] = useState<SpikeResult[] | null>(null);
 
@@ -36,6 +63,7 @@ export default function SpikeScreen() {
             ) : null}
           </View>
         ))}
+        {results && <Persistence />}
         {results && (
           <Text style={[styles.verdict, { color: allPass ? "#7FB5A8" : "#E08A7E" }]}>
             {allPass ? "ALL PASS" : "FAILED"}
@@ -57,5 +85,8 @@ const styles = StyleSheet.create({
   result: { fontSize: 14 },
   detail: { color: "#94A3B8", fontSize: 11, marginTop: 2, fontFamily: "Menlo" },
   muted: { color: "#64748B", fontSize: 12 },
+  persist: { marginTop: 24, gap: 8 },
+  button: { alignSelf: "flex-start", borderColor: "#7FB5A8", borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6 },
+  buttonText: { color: "#7FB5A8", fontSize: 14 },
   verdict: { fontSize: 20, fontWeight: "700", marginTop: 16 },
 });
