@@ -5,17 +5,18 @@ import { radius, space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 
 /** Toggleable pill (tags, options). */
-export function Chip({ children, selected, onPress }: { children: ReactNode; selected: boolean; onPress: () => void }) {
+export function Chip({ children, selected, onPress, disabled }: { children: ReactNode; selected: boolean; onPress: () => void; disabled?: boolean }) {
   const { c } = useTheme();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ selected }}
+      accessibilityState={{ selected, disabled: !!disabled }}
+      disabled={disabled}
       onPress={onPress}
       hitSlop={6}
       style={[
         styles.chip,
-        { borderColor: selected ? c.primary : c.border, backgroundColor: selected ? c.surface : "transparent" },
+        { borderColor: selected ? c.primary : c.border, backgroundColor: selected ? c.surface : "transparent", opacity: disabled ? 0.5 : 1 },
       ]}
     >
       <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: selected ? c.foreground : c.mutedForeground }}>

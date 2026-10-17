@@ -1,3 +1,4 @@
+import type { BreathPatternId } from "@mindcocoon/core/breathing";
 import type { Locale } from "@mindcocoon/core/i18n/config";
 import type { AudioPrefs } from "./audio/engine";
 import { createKvDriver } from "./kv-driver";
@@ -21,6 +22,8 @@ export interface Prefs {
   reminder?: { hour: 21 | 22 | 23 } | null;
   /** Face ID / fingerprint vault unlock is on (the gated Keychain item can't be probed without a prompt). */
   biometric?: true;
+  /** Last breathing rhythm and length chosen. */
+  breathing?: { pattern: BreathPatternId; minutes: 1 | 3 | 5 };
 }
 
 const KEY = "prefs:v1";

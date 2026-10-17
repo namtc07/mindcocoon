@@ -1,6 +1,6 @@
-import { breathAt, BREATH_PHASES } from "@mindcocoon/core/breathing";
+import { breathAt, breathAtPattern, BREATH_PATTERNS, BREATH_PHASES } from "@mindcocoon/core/breathing";
 import { describe, expect, it } from "vitest";
-import { breathAtWorklet, dotPosition, innerScale, PAD, SIZE } from "../src/lib/breath-geometry";
+import { breathAtPatternWorklet, breathAtWorklet, breathScale, dotPosition, innerScale, PAD, SIZE } from "../src/lib/breath-geometry";
 
 describe("box-breathing geometry", () => {
   it("the dot climbs the left side on inhale", () => {
@@ -29,5 +29,22 @@ describe("box-breathing geometry", () => {
       expect(BREATH_PHASES[w.phaseIndex]).toBe(core.phase);
       expect(w.progress).toBeCloseTo(core.progress);
     }
+  });
+
+  it("breathAtPatternWorklet agrees with core for 4-7-8", () => {
+    const p = BREATH_PATTERNS.relax;
+    for (const ms of [0, 3_999, 4_000, 10_999, 11_000, 18_999, 19_000, 30_500]) {
+      const core = breathAtPattern(p, 3, ms);
+      const w = breathAtPatternWorklet(p.phases, ms);
+      expect(p.phases[w.phaseIndex].phase).toBe(core.phase);
+      expect(w.progress).toBeCloseTo(core.progress);
+    }
+  });
+
+  it("breathScale grows on inhale, holds, shrinks on exhale", () => {
+    expect(breathScale("inhale", 0.5)).toBeCloseTo(0.8);
+    expect(breathScale("hold-in", 0.9)).toBe(1);
+    expect(breathScale("exhale", 0.5)).toBeCloseTo(0.8);
+    expect(breathScale("hold-out", 0.1)).toBe(0.6);
   });
 });

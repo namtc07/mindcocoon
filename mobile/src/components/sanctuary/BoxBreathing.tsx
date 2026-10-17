@@ -1,13 +1,15 @@
-import { breathAt, TOTAL_MS, type BreathPhase } from "@mindcocoon/core/breathing";
+import { breathAtPattern, BREATH_PATTERNS, cyclesFor, totalMsFor, type BreathPatternId, type BreathPhase } from "@mindcocoon/core/breathing";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { AccessibilityInfo, AppState, Platform, StyleSheet, Text, View } from "react-native";
 import Animated, { cancelAnimation, Easing, useAnimatedProps, useReducedMotion, useSharedValue, withTiming } from "react-native-reanimated";
 import Svg, { Circle, Rect } from "react-native-svg";
 import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
 import { useI18n } from "@/i18n/i18n";
-import { breathAtWorklet, dotPosition, INNER_SIDE, innerScale, PAD, phaseOf, SIZE } from "@/lib/breath-geometry";
+import { breathAtPatternWorklet, breathScale, dotPosition, INNER_SIDE, PAD, SIZE } from "@/lib/breath-geometry";
+import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
@@ -16,18 +18,32 @@ const AnimatedRect = Animated.createAnimatedComponent(Rect);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const KEEP_AWAKE_TAG = "breathing";
 const LABEL_TICK_MS = 250;
+const PATTERN_IDS: BreathPatternId[] = ["box", "relax", "calm"];
+const LENGTHS = [1, 3, 5] as const;
+type Choice = { pattern: BreathPatternId; minutes: (typeof LENGTHS)[number] };
+const DEFAULT_CHOICE: Choice = { pattern: "box", minutes: 1 };
+const readChoice = () => getPref("breathing") ?? DEFAULT_CHOICE;
 
-/** Box breathing, about a minute: the square draws on the UI thread; labels follow core `breathAt`. */
+/**
+ * Paced breathing — box, 4-7-8 or slow exhale, for 1, 3 or 5 minutes (remembered). The shape draws
+ * on the UI thread; labels follow core `breathAtPattern`.
+ */
 export function BoxBreathing() {
   const { t } = useI18n();
   const { c } = useTheme();
   const reduceMotion = useReducedMotion();
+  const choice = useSyncExternalStore(subscribePrefs, readChoice, readChoice);
+  const pattern = BREATH_PATTERNS[choice.pattern];
+  const cycles = cyclesFor(pattern, choice.minutes);
+  const totalMs = totalMsFor(pattern, cycles);
+  const phases = pattern.phases;
+  const showDot = pattern.id === "box" && !reduceMotion;
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const clock = useSharedValue(0);
 
   const running = startedAt !== null;
-  const state = breathAt(elapsed);
+  const state = breathAtPattern(pattern, cycles, elapsed);
   const finished = running && state.done;
   const active = running && !finished;
 
@@ -36,13 +52,13 @@ export function BoxBreathing() {
     clock.set(0);
     setStartedAt(null);
     setElapsed(0);
-  }, [clock]);
+  }, [clock, setStartedAt, setElapsed]);
 
   function begin() {
     setElapsed(0);
     setStartedAt(Date.now());
     clock.set(0);
-    clock.set(withTiming(TOTAL_MS, { duration: TOTAL_MS, easing: Easing.linear }));
+    clock.set(withTiming(totalMs, { duration: totalMs, easing: Easing.linear }));
   }
 
   // Labels: a light JS tick (the drawing itself never waits on JS).
@@ -84,17 +100,17 @@ export function BoxBreathing() {
   }, [spoken]);
 
   const innerProps = useAnimatedProps(() => {
-    const on = clock.value > 0 && clock.value < TOTAL_MS;
-    const b = breathAtWorklet(clock.value);
-    const scale = on && !reduceMotion ? innerScale(phaseOf(b.phaseIndex), b.progress) : 0.6;
+    const on = clock.value > 0 && clock.value < totalMs;
+    const b = breathAtPatternWorklet(phases, clock.value);
+    const scale = on && !reduceMotion ? breathScale(phases[b.phaseIndex].phase, b.progress) : 0.6;
     const side = INNER_SIDE * scale;
     return { x: SIZE / 2 - side / 2, y: SIZE / 2 - side / 2, width: side, height: side, opacity: on ? 0.28 + 0.2 * scale : 0.18 };
   });
 
   const dotProps = useAnimatedProps(() => {
-    const on = clock.value > 0 && clock.value < TOTAL_MS;
-    const b = breathAtWorklet(clock.value);
-    const p = dotPosition(phaseOf(b.phaseIndex), b.progress);
+    const on = clock.value > 0 && clock.value < totalMs;
+    const b = breathAtPatternWorklet(phases, clock.value);
+    const p = dotPosition(phases[b.phaseIndex].phase, b.progress);
     return { cx: p.x, cy: p.y, opacity: on ? 1 : 0 };
   });
 
@@ -103,15 +119,31 @@ export function BoxBreathing() {
     <View style={styles.wrap}>
       <View style={styles.head}>
         <Text accessibilityRole="header" style={[styles.title, { color: c.foreground }]}>
-          {t.sanctuary.breatheTitle}
+          {t.sanctuary.breathingTitle}
         </Text>
-        <Text style={[styles.intro, { color: c.mutedForeground }]}>{t.sanctuary.breatheIntro}</Text>
+        <Text style={[styles.intro, { color: c.mutedForeground }]}>{t.sanctuary.breathingIntro}</Text>
       </View>
+      <View style={styles.chips}>
+        {PATTERN_IDS.map((id) => (
+          <Chip key={id} selected={choice.pattern === id} disabled={running && !finished} onPress={() => void setPref("breathing", { ...choice, pattern: id })}>
+            {t.sanctuary.patterns[id]}
+          </Chip>
+        ))}
+      </View>
+      <View style={styles.chips}>
+        <Text style={[styles.intro, { color: c.mutedForeground }]}>{t.sanctuary.lengthLabel}</Text>
+        {LENGTHS.map((n) => (
+          <Chip key={n} selected={choice.minutes === n} disabled={running && !finished} onPress={() => void setPref("breathing", { ...choice, minutes: n })}>
+            {t.sanctuary.minutes.replace("{n}", String(n))}
+          </Chip>
+        ))}
+      </View>
+      <Text style={[styles.intro, { color: c.mutedForeground }]}>{t.sanctuary.patternHints[choice.pattern]}</Text>
       <View style={[styles.card, { backgroundColor: c.surface }]}>
         <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} accessible={false} importantForAccessibility="no-hide-descendants">
           <Rect x={PAD} y={PAD} width={SIZE - PAD * 2} height={SIZE - PAD * 2} rx={18} fill="none" stroke={c.border} strokeWidth={2} />
           <AnimatedRect animatedProps={innerProps} rx={14} fill={c.primary} />
-          {!reduceMotion && <AnimatedCircle animatedProps={dotProps} r={7} fill={c.primary} />}
+          {showDot && <AnimatedCircle animatedProps={dotProps} r={7} fill={c.primary} />}
         </Svg>
         <View accessibilityLiveRegion="polite" style={styles.status}>
           {finished ? (
@@ -136,6 +168,7 @@ export function BoxBreathing() {
 const styles = StyleSheet.create({
   wrap: { gap: space.lg },
   head: { gap: space.xs },
+  chips: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space.sm },
   title: { fontFamily: fonts.serif, fontSize: 24, lineHeight: 30 },
   intro: { fontFamily: fonts.sans, fontSize: 15 },
   card: { borderRadius: radius.lg, padding: space.xl, alignItems: "center", gap: space.lg },

@@ -11,6 +11,7 @@ import { ToastHost } from "@/components/ui/Toast";
 import { audio } from "@/lib/audio";
 import { fakePlayer } from "@/test-utils/audio";
 import { captureFocusEffects } from "@/test-utils/focus";
+import { getPref, setPref } from "@/lib/prefs";
 import { renderWithApp } from "@/test-utils/render";
 
 beforeEach(async () => {
@@ -197,8 +198,52 @@ describe("Box breathing", () => {
     AppState.addEventListener = original;
   });
 
+  it("choosing 4-7-8 shows Hold for 7 seconds after Breathe in", async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await renderWithApp(<BoxBreathing />);
+    await user.press(screen.getByRole("button", { name: "4-7-8" }));
+    await user.press(screen.getByRole("button", { name: "Begin" }));
+    await act(async () => jest.advanceTimersByTime(4_100));
+    expect(screen.getByText("Hold")).toBeOnTheScreen();
+    expect(screen.getByText("7", { includeHiddenElements: true })).toBeOnTheScreen();
+    await act(async () => jest.advanceTimersByTime(6_500));
+    expect(screen.getByText("Hold")).toBeOnTheScreen();
+    await act(async () => jest.advanceTimersByTime(1_000));
+    expect(screen.getByText("Breathe out")).toBeOnTheScreen();
+  });
+
+  it("the chosen pattern and length are remembered", async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await renderWithApp(<BoxBreathing />);
+    await user.press(screen.getByRole("button", { name: "Slow exhale" }));
+    await user.press(screen.getByRole("button", { name: "3 min" }));
+    expect(getPref("breathing")).toEqual({ pattern: "calm", minutes: 3 });
+    await renderWithApp(<BoxBreathing />, { keepState: true });
+    expect(screen.getByRole("button", { name: "Slow exhale" })).toBeSelected();
+    expect(screen.getByRole("button", { name: "3 min" })).toBeSelected();
+    await act(() => setPref("breathing", undefined));
+  });
+
+  it("choices are locked while breathing", async () => {
+    await begin();
+    expect(screen.getByRole("button", { name: "4-7-8" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "5 min" })).toBeDisabled();
+  });
+
+  it("a 3-minute box session ends after 3 minutes, not 1", async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await renderWithApp(<BoxBreathing />);
+    await user.press(screen.getByRole("button", { name: "3 min" }));
+    await user.press(screen.getByRole("button", { name: "Begin" }));
+    await act(async () => jest.advanceTimersByTime(64_500));
+    expect(screen.getByRole("button", { name: "Stop" })).toBeOnTheScreen();
+    await act(async () => jest.advanceTimersByTime(180_000 - 64_500 + 500));
+    expect(screen.getByText("Well done. Notice how you feel now.")).toBeOnTheScreen();
+    await act(() => setPref("breathing", undefined));
+  });
+
   it("is on the Sanctuary screen", async () => {
     await renderWithApp(<SanctuaryScreen />);
-    expect(screen.getByText("Box breathing")).toBeOnTheScreen();
+    expect(screen.getByText("Breathe")).toBeOnTheScreen();
   });
 });

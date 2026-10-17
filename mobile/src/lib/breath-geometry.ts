@@ -25,12 +25,28 @@ export function dotPosition(phase: BreathPhase, progress: number) {
   }
 }
 
-export function innerScale(phase: BreathPhase, progress: number) {
+/** How large the breathing shape is: grows on inhale, rests full while holding in, shrinks on exhale. */
+export function breathScale(phase: BreathPhase, progress: number) {
   "worklet";
   if (phase === "inhale") return 0.6 + 0.4 * progress;
   if (phase === "hold-in") return 1;
   if (phase === "exhale") return 1 - 0.4 * progress;
   return 0.6;
+}
+
+export const innerScale = breathScale;
+
+/** Phase index and progress for any pattern (phases passed as plain data so this runs on the UI thread). */
+export function breathAtPatternWorklet(phases: { phase: BreathPhase; ms: number }[], elapsedMs: number) {
+  "worklet";
+  let cycle = 0;
+  for (let i = 0; i < phases.length; i++) cycle += phases[i].ms;
+  let within = Math.max(0, elapsedMs) % cycle;
+  for (let i = 0; i < phases.length; i++) {
+    if (within < phases[i].ms) return { phaseIndex: i, progress: within / phases[i].ms };
+    within -= phases[i].ms;
+  }
+  return { phaseIndex: phases.length - 1, progress: 1 };
 }
 
 export function breathAtWorklet(elapsedMs: number) {
