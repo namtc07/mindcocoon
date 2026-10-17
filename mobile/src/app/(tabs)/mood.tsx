@@ -1,6 +1,7 @@
 import type { DayCell } from "@mindcocoon/core/mood/selectors";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { AdBanner } from "@/components/ads/AdBanner";
 import { Screen } from "@/components/Screen";
 import { CheckinForm } from "@/components/mood/CheckinForm";
 import { DayDetail } from "@/components/mood/DayDetail";
@@ -30,6 +31,7 @@ export default function MoodScreen() {
         <MoodHistory logs={logs} />
       </View>
       <DayDetail day={selected} logs={logs} onClose={() => setSelected(null)} />
+      <AdBanner placement="mood" />
     </Screen>
   );
 }

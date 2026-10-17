@@ -1,6 +1,7 @@
 import { formatDay, partOfDay } from "@mindcocoon/core/dates";
 import { Link } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
+import { AdBanner } from "@/components/ads/AdBanner";
 import { Screen } from "@/components/Screen";
 import { HeavyNudge } from "@/components/safety/HeavyNudge";
 import { EntryLinks } from "@/components/today/EntryLinks";
@@ -30,6 +31,7 @@ export default function TodayScreen() {
           </Link>
         )}
       </View>
+      <AdBanner placement="today" />
     </Screen>
   );
 }
