@@ -24,3 +24,15 @@ describe("reflection prompts", () => {
     expect(promptForDay(day, "en", 1)).not.toBe(promptForDay(day, "en"));
   });
 });
+
+describe("promptAt", () => {
+  it("wraps and matches the lists", async () => {
+    const { PROMPT_COUNT, promptAt, REFLECTION_PROMPTS } = await import("@mindcocoon/core/prompts");
+    expect(PROMPT_COUNT).toBe(REFLECTION_PROMPTS.en.length);
+    expect(PROMPT_COUNT).toBe(REFLECTION_PROMPTS.vi.length);
+    expect(promptAt("en", 0)).toBe(REFLECTION_PROMPTS.en[0]);
+    expect(promptAt("vi", 3)).toBe(REFLECTION_PROMPTS.vi[3]);
+    expect(promptAt("en", PROMPT_COUNT + 2)).toBe(REFLECTION_PROMPTS.en[2]);
+    expect(promptAt("en", -1)).toBe(REFLECTION_PROMPTS.en[PROMPT_COUNT - 1]);
+  });
+});

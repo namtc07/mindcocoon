@@ -1,4 +1,4 @@
-import { promptForDay } from "@mindcocoon/core/prompts";
+import { promptAt, promptForDay } from "@mindcocoon/core/prompts";
 import { checkText } from "@mindcocoon/core/safety/detect";
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
@@ -37,7 +37,7 @@ export default function VentScreen() {
   const insets = useSafeAreaInsets();
   const appState = useAppState();
   const now = useNow();
-  const params = useLocalSearchParams<{ prompt?: string }>();
+  const params = useLocalSearchParams<{ prompt?: string; promptIndex?: string }>();
   const [text, setText] = useState("");
   const [phase, setPhase] = useState<Phase>("writing");
   const [plan, setPlan] = useState<DissolvePlan | null>(null);
@@ -82,7 +82,13 @@ export default function VentScreen() {
     setPhase("released");
   }, []);
 
-  const prompt = params.prompt !== undefined ? promptForDay(now, locale, Number(params.prompt) || 0) : null;
+  // From the library: a fixed index, so switching language keeps the same prompt. From Today: the day's prompt.
+  const prompt =
+    params.promptIndex !== undefined
+      ? promptAt(locale, Number(params.promptIndex) || 0)
+      : params.prompt !== undefined
+        ? promptForDay(now, locale, Number(params.prompt) || 0)
+        : null;
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={[styles.fill, { backgroundColor: c.background, paddingTop: insets.top }]}>

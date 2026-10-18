@@ -9,6 +9,7 @@ import VentScreen from "@/app/(tabs)/vent";
 import HelpScreen from "@/app/help";
 import PracticeScreen from "@/app/practices/[id]";
 import PracticesScreen from "@/app/practices/index";
+import PromptsScreen from "@/app/prompts";
 import SettingsScreen from "@/app/settings";
 import { AfterRelease } from "@/components/vent/AfterRelease";
 import { __resetAdsForTests, startAds } from "@/lib/ads/admob";
@@ -86,6 +87,7 @@ describe("Banner", () => {
     ["after release", <AfterRelease key="a" onWriteAgain={() => {}} />],
     ["Gentle practices", <PracticesScreen key="p" />],
     ["a practice", <PracticeScreen key="pp" />],
+    ["the prompt library", <PromptsScreen key="pr" />],
   ])("never on %s", async (_name, ui) => {
     await adsAt(12);
     await show(ui);

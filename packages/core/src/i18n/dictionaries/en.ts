@@ -39,6 +39,7 @@ export const en = {
     },
     promptLabel: "Today's prompt",
     promptAnother: "Another prompt",
+    promptMore: "More prompts",
     promptWrite: "Write about this",
     checkinQuestion: "How are you, right now?",
     saved: "Saved for today",
@@ -237,6 +238,12 @@ export const en = {
     letGo: "Let it go",
     timeLeft: "{n}s",
     open: "Open",
+  },
+  prompts: {
+    title: "Prompts",
+    intro: "Pick one that speaks to you tonight, or let one find you.",
+    surprise: "Surprise me",
+    write: "Write about: {prompt}",
   },
   sounds: {
     rain: "Rain",

@@ -22,6 +22,9 @@ export function ReflectionPrompt({ now }: { now: Date }) {
           <RefreshCw size={15} color={c.mutedForeground} />
           <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground }}>{t.today.promptAnother}</Text>
         </Pressable>
+        <Pressable accessibilityRole="link" accessibilityLabel={t.today.promptMore} hitSlop={8} onPress={() => router.push("/prompts")} style={styles.another}>
+          <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground, textDecorationLine: "underline" }}>{t.today.promptMore}</Text>
+        </Pressable>
       </View>
     </View>
   );

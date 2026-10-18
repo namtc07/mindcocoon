@@ -89,3 +89,11 @@ export function promptForDay(date: Date, locale: Locale, offset = 0): string {
   for (const ch of dayKey(date)) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
   return list[(hash + offset) % list.length];
 }
+
+export const PROMPT_COUNT = REFLECTION_PROMPTS.en.length;
+
+/** The prompt at a fixed index (same meaning in every language); wraps around both ways. */
+export function promptAt(locale: Locale, index: number): string {
+  const list = REFLECTION_PROMPTS[locale];
+  return list[((index % list.length) + list.length) % list.length];
+}

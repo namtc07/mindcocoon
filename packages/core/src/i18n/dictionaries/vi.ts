@@ -40,6 +40,7 @@ export const vi: Dictionary = {
     },
     promptLabel: "Câu gợi mở hôm nay",
     promptAnother: "Câu khác",
+    promptMore: "Thêm câu gợi mở",
     promptWrite: "Viết về điều này",
     checkinQuestion: "Lúc này bạn thấy thế nào?",
     saved: "Đã lưu cho hôm nay",
@@ -238,6 +239,12 @@ export const vi: Dictionary = {
     letGo: "Buông đi",
     timeLeft: "{n} giây",
     open: "Mở",
+  },
+  prompts: {
+    title: "Câu gợi mở",
+    intro: "Chọn một câu chạm đến bạn tối nay, hoặc để một câu tự tìm đến.",
+    surprise: "Chọn ngẫu nhiên",
+    write: "Viết về: {prompt}",
   },
   sounds: {
     rain: "Mưa",
