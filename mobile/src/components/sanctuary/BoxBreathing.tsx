@@ -54,6 +54,12 @@ export function BoxBreathing() {
     setElapsed(0);
   }, [clock, setStartedAt, setElapsed]);
 
+  /** A new rhythm or length after finishing starts from the beginning, not mid-session. */
+  function choose(next: Choice) {
+    if (running) stop();
+    void setPref("breathing", next);
+  }
+
   function begin() {
     setElapsed(0);
     setStartedAt(Date.now());
@@ -61,12 +67,12 @@ export function BoxBreathing() {
     clock.set(withTiming(totalMs, { duration: totalMs, easing: Easing.linear }));
   }
 
-  // Labels: a light JS tick (the drawing itself never waits on JS).
+  // Labels: a light JS tick (the drawing itself never waits on JS); it stops once the session is done.
   useEffect(() => {
-    if (startedAt === null) return;
+    if (startedAt === null || finished) return;
     const id = setInterval(() => setElapsed(Date.now() - startedAt), LABEL_TICK_MS);
     return () => clearInterval(id);
-  }, [startedAt]);
+  }, [startedAt, finished]);
 
   // A minute is longer than many auto-lock settings: keep the screen on while breathing.
   useEffect(() => {
@@ -125,7 +131,7 @@ export function BoxBreathing() {
       </View>
       <View style={styles.chips}>
         {PATTERN_IDS.map((id) => (
-          <Chip key={id} selected={choice.pattern === id} disabled={running && !finished} onPress={() => void setPref("breathing", { ...choice, pattern: id })}>
+          <Chip key={id} selected={choice.pattern === id} disabled={running && !finished} onPress={() => choose({ ...choice, pattern: id })}>
             {t.sanctuary.patterns[id]}
           </Chip>
         ))}
@@ -133,7 +139,7 @@ export function BoxBreathing() {
       <View style={styles.chips}>
         <Text style={[styles.intro, { color: c.mutedForeground }]}>{t.sanctuary.lengthLabel}</Text>
         {LENGTHS.map((n) => (
-          <Chip key={n} selected={choice.minutes === n} disabled={running && !finished} onPress={() => void setPref("breathing", { ...choice, minutes: n })}>
+          <Chip key={n} selected={choice.minutes === n} disabled={running && !finished} onPress={() => choose({ ...choice, minutes: n })}>
             {t.sanctuary.minutes.replace("{n}", String(n))}
           </Chip>
         ))}

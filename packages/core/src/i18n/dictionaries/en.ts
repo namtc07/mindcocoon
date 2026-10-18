@@ -53,6 +53,7 @@ export const en = {
       ventBody: "Write freely, then release it or keep it.",
       breatheTitle: "Breathe for a minute",
       breatheBody: "Four slow boxes of breath.",
+      breatheChoicesBody: "Box, 4-7-8 or a slow exhale.",
       musicTitle: "Tonight's music",
       musicBody: "Soft piano for how you feel.",
       practicesTitle: "Gentle practices",
@@ -237,7 +238,6 @@ export const en = {
     keep: "Keep in my vault",
     letGo: "Let it go",
     timeLeft: "{n}s",
-    open: "Open",
   },
   prompts: {
     title: "Prompts",
@@ -354,6 +354,7 @@ export const en = {
     callLine: "Call a support line",
     continueRelease: "Continue releasing",
     continueSave: "Continue saving",
+    continuePractice: "Continue",
     helpTitle: "You don't have to carry this alone",
     helpIntro: "If you are in danger right now, call your local emergency number.",
     openNow: "Answering now",

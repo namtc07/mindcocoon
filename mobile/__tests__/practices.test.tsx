@@ -2,6 +2,9 @@ import { getStorage } from "@mindcocoon/core/storage/index";
 import { getVaultState, initVault } from "@mindcocoon/core/vault/session";
 import { act, screen, userEvent, waitFor } from "@testing-library/react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
+import { AccessibilityInfo } from "react-native";
+import { __resetGentleCardForTests } from "@/components/safety/GentleCard";
 import PracticeScreen from "@/app/practices/[id]";
 import PracticesScreen from "@/app/practices/index";
 import { ToastHost } from "@/components/ui/Toast";
@@ -106,6 +109,46 @@ describe("Gentle practices", () => {
       expect(screen.getByText(/You don't have to fix it/)).toBeOnTheScreen();
     } finally {
       focus.restore();
+    }
+  });
+
+  it("a timed step lets the screen sleep once its time is up", async () => {
+    jest.useFakeTimers();
+    try {
+      (useLocalSearchParams as jest.Mock).mockReturnValue({ id: "body-scan" });
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      await renderWithApp(<PracticeScreen />);
+      await user.press(screen.getByRole("button", { name: "Next" }));
+      expect(activateKeepAwakeAsync).toHaveBeenCalledWith("practice");
+      expect(deactivateKeepAwake).not.toHaveBeenCalled();
+      await act(async () => jest.advanceTimersByTime(31_000));
+      expect(deactivateKeepAwake).toHaveBeenCalledWith("practice");
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("heavy words in a practice get the same gentle card and help link as Vent", async () => {
+    __resetGentleCardForTests();
+    const user = await openPractice("kind-letter");
+    await user.press(screen.getByRole("button", { name: "Next" }));
+    expect(screen.getByRole("link", { name: "Need to talk to someone now?" })).toBeOnTheScreen();
+    await user.type(screen.getByLabelText("Your answer"), "I want to die");
+    await user.press(screen.getByRole("button", { name: "Next" }));
+    await user.press(screen.getByRole("button", { name: "Finish" }));
+    expect(await screen.findByText(/sounds really heavy/i)).toBeOnTheScreen();
+    await user.press(screen.getByRole("button", { name: "Continue" }));
+    expect(await screen.findByText("Keep what you wrote?")).toBeOnTheScreen();
+  });
+
+  it("VoiceOver hears each new step", async () => {
+    const announce = jest.spyOn(AccessibilityInfo, "announceForAccessibility").mockImplementation(() => {});
+    try {
+      const user = await openPractice("grounding");
+      await user.press(screen.getByRole("button", { name: "Next" }));
+      expect(announce).toHaveBeenLastCalledWith(expect.stringMatching(/five things you can see/));
+    } finally {
+      announce.mockRestore();
     }
   });
 });

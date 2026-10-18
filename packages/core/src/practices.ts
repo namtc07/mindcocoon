@@ -84,7 +84,7 @@ const en: Practice[] = [
 const vi: Practice[] = [
   {
     id: "grounding",
-    title: "Neo lại 5-4-3-2-1",
+    title: "Về với hiện tại 5-4-3-2-1",
     summary: "Trở về với căn phòng qua các giác quan.",
     minutes: 2,
     steps: [

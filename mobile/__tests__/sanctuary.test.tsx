@@ -242,6 +242,16 @@ describe("Box breathing", () => {
     await act(() => setPref("breathing", undefined));
   });
 
+  it("changing the length after finishing starts fresh instead of resuming", async () => {
+    const user = await begin();
+    await act(async () => jest.advanceTimersByTime(64_500));
+    expect(screen.getByRole("button", { name: "Again" })).toBeOnTheScreen();
+    await user.press(screen.getByRole("button", { name: "5 min" }));
+    expect(screen.getByRole("button", { name: "Begin" })).toBeOnTheScreen();
+    expect(screen.queryByText("Breathe in")).not.toBeOnTheScreen();
+    await act(() => setPref("breathing", undefined));
+  });
+
   it("is on the Sanctuary screen", async () => {
     await renderWithApp(<SanctuaryScreen />);
     expect(screen.getByText("Breathe")).toBeOnTheScreen();

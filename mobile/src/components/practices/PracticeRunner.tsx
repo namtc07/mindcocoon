@@ -2,7 +2,10 @@ import type { Practice } from "@mindcocoon/core/practices";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { checkText } from "@mindcocoon/core/safety/detect";
+import { AccessibilityInfo, Platform, StyleSheet, Text, View } from "react-native";
+import { claimGentleCard, GentleCard } from "@/components/safety/GentleCard";
+import { HelpLink } from "@/components/safety/HelpLink";
 import { Button } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
 import { SaveSheet } from "@/components/vent/SaveSheet";
@@ -14,19 +17,24 @@ import { useTheme } from "@/theme/theme";
 
 const KEEP_AWAKE_TAG = "practice";
 
-/** A quiet countdown for timed steps; it never moves on by itself. */
+/**
+ * A quiet countdown for timed steps; it never moves on by itself. The screen stays on only while
+ * it counts — people often fall asleep mid-practice, and a lit phone must not stay on all night.
+ */
 function StepTimer({ seconds }: { seconds: number }) {
   const { t } = useI18n();
   const { c } = useTheme();
   const [left, setLeft] = useState(seconds);
+  const counting = left > 0;
   useEffect(() => {
+    if (!counting) return;
     const id = setInterval(() => setLeft((n) => Math.max(0, n - 1)), 1000);
     activateKeepAwakeAsync(KEEP_AWAKE_TAG).catch(() => {});
     return () => {
       clearInterval(id);
       deactivateKeepAwake(KEEP_AWAKE_TAG).catch(() => {});
     };
-  }, []);
+  }, [counting]);
   return (
     <Text accessibilityElementsHidden importantForAccessibility="no" style={[styles.timer, { color: c.mutedForeground }]}>
       {t.practices.timeLeft.replace("{n}", String(left))}
@@ -46,13 +54,15 @@ export function PracticeRunner({ practice }: { practice: Practice }) {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [choosing, setChoosing] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
+  const [gentle, setGentle] = useState(false);
 
   const reset = useCallback(() => {
     setStep(0);
     setAnswers({});
     setChoosing(false);
     setSaveOpen(false);
-  }, [setStep, setAnswers, setChoosing, setSaveOpen]);
+    setGentle(false);
+  }, [setStep, setAnswers, setChoosing, setSaveOpen, setGentle]);
   useFocusEffect(useCallback(() => reset, [reset]));
 
   const current = practice.steps[step];
@@ -61,9 +71,16 @@ export function PracticeRunner({ practice }: { practice: Practice }) {
     .map((s, i) => (s.input && answers[i]?.trim() ? `${s.text}\n${answers[i].trim()}` : null))
     .filter((x): x is string => x !== null);
 
+  // iOS has no live regions: announce each new step for VoiceOver.
+  useEffect(() => {
+    if (!choosing && Platform.OS === "ios") AccessibilityInfo.announceForAccessibility(current.text);
+  }, [current.text, choosing]);
+
   function finish() {
-    if (written.length) setChoosing(true);
-    else router.back();
+    if (!written.length) return router.back();
+    // Same safety check as Vent: heavy words get the gentle card (once per session) before anything else.
+    if (checkText(written.join("\n")).flagged && claimGentleCard()) setGentle(true);
+    else setChoosing(true);
   }
 
   function letGo() {
@@ -83,6 +100,7 @@ export function PracticeRunner({ practice }: { practice: Practice }) {
           <Button variant="ghost" onPress={letGo}>
             {t.practices.letGo}
           </Button>
+          <HelpLink />
         </View>
       ) : (
         <View style={styles.body}>
@@ -114,6 +132,7 @@ export function PracticeRunner({ practice }: { practice: Practice }) {
             )}
             <Button onPress={() => (last ? finish() : setStep(step + 1))}>{last ? t.practices.finish : t.practices.next}</Button>
           </View>
+          {practice.steps.some((s) => s.input) && <HelpLink />}
         </View>
       )}
 
@@ -123,6 +142,16 @@ export function PracticeRunner({ practice }: { practice: Practice }) {
         </View>
       )}
 
+      <GentleCard
+        visible={gentle}
+        continueLabel={t.safety.continuePractice}
+        onContinue={() => {
+          setGentle(false);
+          setChoosing(true);
+        }}
+        onClose={() => setGentle(false)}
+        onDismissed={() => {}}
+      />
       <SaveSheet
         visible={saveOpen}
         body={written.join("\n\n")}

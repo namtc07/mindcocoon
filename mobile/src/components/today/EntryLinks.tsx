@@ -30,7 +30,7 @@ export function EntryLinks() {
   return (
     <View style={[styles.card, { backgroundColor: c.surface }]}>
       <Entry first href="/vent" Icon={Feather} title={t.today.tiles.ventTitle} body={t.today.tiles.ventBody} />
-      <Entry href={{ pathname: "/sanctuary", params: { section: "breathe" } }} Icon={Wind} title={t.today.tiles.breatheTitle} body={t.today.tiles.breatheBody} />
+      <Entry href={{ pathname: "/sanctuary", params: { section: "breathe" } }} Icon={Wind} title={t.today.tiles.breatheTitle} body={t.today.tiles.breatheChoicesBody} />
       <Entry href={{ pathname: "/sanctuary", params: { section: "tonight" } }} Icon={Music2} title={t.today.tiles.musicTitle} body={t.today.tiles.musicBody} />
       <Entry href="/practices" Icon={Flower2} title={t.today.tiles.practicesTitle} body={t.today.tiles.practicesBody} />
     </View>

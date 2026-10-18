@@ -88,10 +88,14 @@ describe("Banner", () => {
     ["Gentle practices", <PracticesScreen key="p" />],
     ["a practice", <PracticeScreen key="pp" />],
     ["the prompt library", <PromptsScreen key="pr" />],
-  ])("never on %s", async (_name, ui) => {
+  ])("never on %s", async (name, ui) => {
     await adsAt(12);
+    (jest.requireMock("expo-router") as { useLocalSearchParams: jest.Mock }).useLocalSearchParams.mockReturnValue(
+      name === "a practice" ? { id: "kind-letter" } : {},
+    );
     await show(ui);
     expect(screen.queryByTestId("ad-banner")).not.toBeOnTheScreen();
     expect(screen.queryByTestId("admob-banner")).not.toBeOnTheScreen();
+    if (name === "a practice") expect(screen.getByText("A kind letter to yourself")).toBeOnTheScreen();
   });
 });
