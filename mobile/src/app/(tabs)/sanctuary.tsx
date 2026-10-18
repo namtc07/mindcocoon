@@ -2,19 +2,24 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { View, type LayoutChangeEvent, type ScrollViewInstance } from "react-native";
 import { Muted, Screen } from "@/components/Screen";
+import { PracticeList } from "@/components/practices/PracticeList";
 import { BoxBreathing } from "@/components/sanctuary/BoxBreathing";
 import { SleepTimer } from "@/components/sanctuary/SleepTimer";
 import { SoundMixer } from "@/components/sanctuary/SoundMixer";
 import { TonightCard } from "@/components/sanctuary/TonightCard";
 import { useNow } from "@/hooks/use-now";
 import { useI18n } from "@/i18n/i18n";
+import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
+import { useTheme } from "@/theme/theme";
+import { Text } from "react-native";
 
 type Section = "breathe" | "tonight";
 
 /** Sanctuary: breathe for a minute, tonight's music, ambient sounds, sleep timer. No ads, ever. */
 export default function SanctuaryScreen() {
   const { t } = useI18n();
+  const { c } = useTheme();
   const now = useNow();
   const { section } = useLocalSearchParams<{ section?: Section }>();
   const scrollRef = useRef<ScrollViewInstance>(null);
@@ -49,6 +54,12 @@ export default function SanctuaryScreen() {
       </View>
       <View style={{ marginTop: space.xl }}>
         <SleepTimer />
+      </View>
+      <View style={{ marginTop: space.xl, gap: space.md }}>
+        <Text accessibilityRole="header" style={{ fontFamily: fonts.serif, fontSize: 24, lineHeight: 30, color: c.foreground }}>
+          {t.practices.title}
+        </Text>
+        <PracticeList />
       </View>
     </Screen>
   );

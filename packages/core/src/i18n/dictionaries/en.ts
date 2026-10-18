@@ -54,6 +54,8 @@ export const en = {
       breatheBody: "Four slow boxes of breath.",
       musicTitle: "Tonight's music",
       musicBody: "Soft piano for how you feel.",
+      practicesTitle: "Gentle practices",
+      practicesBody: "Grounding, a body scan, three good things.",
     },
   },
   vent: {
@@ -221,6 +223,20 @@ export const en = {
   reminder: {
     title: "MindCocoon",
     body: "A quiet place is here if today was heavy.",
+  },
+  practices: {
+    title: "Gentle practices",
+    intro: "Short, quiet exercises for the end of the day. Nothing is measured.",
+    next: "Next",
+    back: "Back",
+    finish: "Finish",
+    answerLabel: "Your answer",
+    keepTitle: "Keep what you wrote?",
+    keepHint: "If you keep it, it's encrypted in your vault. Otherwise nothing is saved.",
+    keep: "Keep in my vault",
+    letGo: "Let it go",
+    timeLeft: "{n}s",
+    open: "Open",
   },
   sounds: {
     rain: "Rain",

@@ -1,5 +1,5 @@
 import { LOCALES, type Locale } from "@mindcocoon/core/i18n/config";
-import { router, Stack } from "expo-router";
+import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Muted, Screen } from "@/components/Screen";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { TextField } from "@/components/ui/TextField";
 import { ReminderSettings } from "@/components/settings/ReminderSettings";
+import { StackHeader } from "@/components/StackHeader";
 import { showAdPrivacyOptions, useAdPrivacyRequired } from "@/lib/ads/admob";
 import { eraseEverything, shareExport } from "@/lib/export";
 import { useI18n } from "@/i18n/i18n";
@@ -102,22 +103,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 /** Language, appearance, vault, your data (export / erase) and about. Account & backup arrive in M5. */
 export default function SettingsScreen() {
   const { t, locale, setLocale } = useI18n();
-  const { name, c, setTheme } = useTheme();
+  const { name, setTheme } = useTheme();
   const [eraseOpen, setEraseOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const adPrivacy = useAdPrivacyRequired();
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          title: "",
-          headerStyle: { backgroundColor: c.background },
-          headerShadowVisible: false,
-          headerTintColor: c.foreground,
-          headerBackButtonDisplayMode: "minimal",
-        }}
-      />
+      <StackHeader />
       <Screen title={t.settings.title}>
         <Choice
           label={t.settings.language}

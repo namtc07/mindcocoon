@@ -11,7 +11,20 @@ import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 
-export function SaveSheet({ visible, body, onClose, onSaved }: { visible: boolean; body: string; onClose: () => void; onSaved: () => void }) {
+export function SaveSheet({
+  visible,
+  body,
+  onClose,
+  onSaved,
+  defaultTitle = "",
+}: {
+  visible: boolean;
+  body: string;
+  onClose: () => void;
+  onSaved: () => void;
+  /** Used when the title field is left empty. */
+  defaultTitle?: string;
+}) {
   const { t } = useI18n();
   const { c } = useTheme();
   const vault = useVault();
@@ -30,7 +43,7 @@ export function SaveSheet({ visible, body, onClose, onSaved }: { visible: boolea
         setError(t.vent.wrongPasscode);
         return;
       }
-      await saveVaultEntry({ title, body });
+      await saveVaultEntry({ title: title.trim() || defaultTitle, body });
       toast.show(t.vent.saved);
       setTitle("");
       setPasscode("");

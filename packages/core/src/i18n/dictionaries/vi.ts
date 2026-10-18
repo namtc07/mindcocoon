@@ -55,6 +55,8 @@ export const vi: Dictionary = {
       breatheBody: "Bốn nhịp thở hộp thật chậm.",
       musicTitle: "Nhạc của đêm nay",
       musicBody: "Piano nhẹ hợp với cảm xúc của bạn.",
+      practicesTitle: "Bài tập nhẹ nhàng",
+      practicesBody: "Neo lại, thả lỏng cơ thể, ba điều tốt.",
     },
   },
   vent: {
@@ -222,6 +224,20 @@ export const vi: Dictionary = {
   reminder: {
     title: "MindCocoon",
     body: "Nếu hôm nay nặng nề, ở đây có một góc yên tĩnh cho bạn.",
+  },
+  practices: {
+    title: "Bài tập nhẹ nhàng",
+    intro: "Vài bài tập ngắn, yên tĩnh cho cuối ngày. Không đo đếm gì cả.",
+    next: "Tiếp",
+    back: "Quay lại",
+    finish: "Xong",
+    answerLabel: "Câu trả lời của bạn",
+    keepTitle: "Giữ lại những gì bạn viết?",
+    keepHint: "Nếu giữ lại, nó được mã hóa trong két của bạn. Nếu không, sẽ không có gì được lưu.",
+    keep: "Cất vào két",
+    letGo: "Buông đi",
+    timeLeft: "{n} giây",
+    open: "Mở",
   },
   sounds: {
     rain: "Mưa",

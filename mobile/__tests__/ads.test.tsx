@@ -7,6 +7,8 @@ import SanctuaryScreen from "@/app/(tabs)/sanctuary";
 import VaultScreen from "@/app/(tabs)/vault";
 import VentScreen from "@/app/(tabs)/vent";
 import HelpScreen from "@/app/help";
+import PracticeScreen from "@/app/practices/[id]";
+import PracticesScreen from "@/app/practices/index";
 import SettingsScreen from "@/app/settings";
 import { AfterRelease } from "@/components/vent/AfterRelease";
 import { __resetAdsForTests, startAds } from "@/lib/ads/admob";
@@ -82,6 +84,8 @@ describe("Banner", () => {
     ["Help", <HelpScreen key="h" />],
     ["Settings", <SettingsScreen key="se" />],
     ["after release", <AfterRelease key="a" onWriteAgain={() => {}} />],
+    ["Gentle practices", <PracticesScreen key="p" />],
+    ["a practice", <PracticeScreen key="pp" />],
   ])("never on %s", async (_name, ui) => {
     await adsAt(12);
     await show(ui);

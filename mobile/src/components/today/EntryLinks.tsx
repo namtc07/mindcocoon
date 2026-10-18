@@ -1,5 +1,5 @@
 import { router, type Href } from "expo-router";
-import { Feather, Music2, Wind, type LucideIcon } from "lucide-react-native";
+import { Feather, Flower2, Music2, Wind, type LucideIcon } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
@@ -32,6 +32,7 @@ export function EntryLinks() {
       <Entry first href="/vent" Icon={Feather} title={t.today.tiles.ventTitle} body={t.today.tiles.ventBody} />
       <Entry href={{ pathname: "/sanctuary", params: { section: "breathe" } }} Icon={Wind} title={t.today.tiles.breatheTitle} body={t.today.tiles.breatheBody} />
       <Entry href={{ pathname: "/sanctuary", params: { section: "tonight" } }} Icon={Music2} title={t.today.tiles.musicTitle} body={t.today.tiles.musicBody} />
+      <Entry href="/practices" Icon={Flower2} title={t.today.tiles.practicesTitle} body={t.today.tiles.practicesBody} />
     </View>
   );
 }
