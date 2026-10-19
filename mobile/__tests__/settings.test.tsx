@@ -1,7 +1,7 @@
 import { addMood } from "@mindcocoon/core/mood/store";
 import { getStorage } from "@mindcocoon/core/storage/index";
 import { initVault, saveVaultEntry } from "@mindcocoon/core/vault/session";
-import { act, screen, userEvent, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, screen, userEvent, waitFor } from "@testing-library/react-native";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import SettingsScreen from "@/app/settings";
@@ -81,6 +81,15 @@ it("erase everything stops sound and resets volumes", async () => {
   await waitFor(() => expect(audio.getState().playing).toEqual([]));
   expect(fakePlayer("rain")?.lockScreen.active).toBe(false);
   expect(audio.getState().volumes.rain).toBe(0.6);
+});
+
+it("release sounds can be turned off in Settings", async () => {
+  await act(() => setPref("releaseSound", undefined));
+  await renderWithApp(<SettingsScreen />);
+  const toggle = await screen.findByLabelText("Sound when letting go");
+  expect(toggle.props.value).toBe(true);
+  await act(async () => fireEvent(toggle, "valueChange", false));
+  expect(getPref("releaseSound")).toBe(false);
 });
 
 describe("First-run notice", () => {

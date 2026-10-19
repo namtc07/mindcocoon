@@ -10,6 +10,9 @@ import { renderWithApp } from "@/test-utils/render";
 import { planDissolve } from "@/components/vent/Dissolve";
 import { getPref, setPref } from "@/lib/prefs";
 import * as Reanimated from "react-native-reanimated";
+import { createAudioPlayer } from "expo-audio";
+import { SFX_SOURCES } from "@/lib/release-sound";
+import { captureFocusEffects } from "@/test-utils/focus";
 import { createMemoryDriver } from "@mindcocoon/core/storage/driver";
 import { createLocalAdapter } from "@mindcocoon/core/storage/local";
 
@@ -176,6 +179,51 @@ describe("Vent", () => {
         expect(await screen.findByText("Let go.")).toBeOnTheScreen();
       } finally {
         reduce.mockRestore();
+      }
+    });
+  });
+
+  describe("release sounds", () => {
+    const sfxPlayer = (ritual: keyof typeof SFX_SOURCES) =>
+      (jest.requireMock("expo-audio") as { __players: Map<unknown, { calls: string[] }> }).__players.get(SFX_SOURCES[ritual]);
+
+    beforeEach(() => jest.clearAllMocks());
+    afterEach(async () => {
+      await act(async () => {
+        await setPref("ritual", undefined);
+        await setPref("releaseSound", undefined);
+      });
+    });
+
+    it("releasing plays that ritual's sound once", async () => {
+      await act(() => setPref("ritual", "float"));
+      const user = await setup();
+      await user.type(screen.getByLabelText("Write what's on your mind"), SECRET);
+      await user.press(screen.getByRole("button", { name: "Release into the void" }));
+      expect(createAudioPlayer).toHaveBeenCalledWith(SFX_SOURCES.float);
+      expect(sfxPlayer("float")?.calls.filter((c) => c === "play")).toHaveLength(1);
+      await act(async () => jest.advanceTimersByTime(4_500));
+      expect((createAudioPlayer as jest.Mock).mock.calls.filter(([src]) => src === SFX_SOURCES.float)).toHaveLength(1);
+    });
+
+    it("the setting turns release sounds off", async () => {
+      await act(() => setPref("releaseSound", false));
+      const user = await setup();
+      await user.type(screen.getByLabelText("Write what's on your mind"), SECRET);
+      await user.press(screen.getByRole("button", { name: "Release into the void" }));
+      expect(createAudioPlayer).not.toHaveBeenCalledWith(SFX_SOURCES.burn);
+    });
+
+    it("leaving Vent mid-release stops the sound", async () => {
+      const focus = captureFocusEffects();
+      try {
+        const user = await setup();
+        await user.type(screen.getByLabelText("Write what's on your mind"), SECRET);
+        await user.press(screen.getByRole("button", { name: "Release into the void" }));
+        await act(async () => focus.blur());
+        expect(sfxPlayer("burn")?.calls).toContain("remove");
+      } finally {
+        focus.restore();
       }
     });
   });

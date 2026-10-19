@@ -26,7 +26,7 @@ jest.mock("expo-haptics", () => ({
   notificationAsync: jest.fn(() => Promise.resolve()),
   impactAsync: jest.fn(() => Promise.resolve()),
   NotificationFeedbackType: { Success: "success" },
-  ImpactFeedbackStyle: { Light: "light" },
+  ImpactFeedbackStyle: { Light: "light", Medium: "medium", Soft: "soft" },
 }));
 
 jest.mock("expo-router", () => {

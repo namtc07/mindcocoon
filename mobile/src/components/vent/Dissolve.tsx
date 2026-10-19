@@ -4,6 +4,7 @@ import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, w
 import * as Haptics from "expo-haptics";
 import { fonts } from "@/theme/fonts";
 import { useTheme } from "@/theme/theme";
+import { playReleaseSound, releaseHaptics } from "@/lib/release-sound";
 
 /** How the words leave: burn to embers (default), float away on water, scatter in the wind, or fade into the night. */
 export type Ritual = "burn" | "float" | "scatter" | "fade";
@@ -136,6 +137,13 @@ export function Dissolve({ plan, onDone }: { plan: DissolvePlan; onDone: () => v
     }, total);
     return () => clearTimeout(id);
   }, [fade, onDone, reduceMotion, total]);
+
+  // Sound and touch start with the release (the sound may outlive a short Reduce Motion fade).
+  useEffect(() => {
+    playReleaseSound(plan.ritual);
+    const timers = releaseHaptics(plan.ritual);
+    return () => timers.forEach(clearTimeout);
+  }, [plan]);
 
   const restStyle = useAnimatedStyle(() => ({ opacity: fade.value }));
 

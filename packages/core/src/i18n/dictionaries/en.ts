@@ -295,6 +295,7 @@ export const en = {
   },
   settings: {
     adPrivacy: "Ad privacy choices",
+    releaseSound: "Sound when letting go",
     reminderOff: "Off",
     reminderTitle: "Evening reminder",
     reminderHint: "A gentle nudge at night. Off unless you turn it on.",

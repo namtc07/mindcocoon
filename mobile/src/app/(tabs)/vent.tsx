@@ -1,6 +1,6 @@
 import { promptAt, promptForDay } from "@mindcocoon/core/prompts";
 import { checkText } from "@mindcocoon/core/safety/detect";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { useCallback, useState, useSyncExternalStore } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
@@ -12,6 +12,7 @@ import { AfterRelease } from "@/components/vent/AfterRelease";
 import { Dissolve, planDissolve, RITUALS, type DissolvePlan } from "@/components/vent/Dissolve";
 import { Chip } from "@/components/ui/Chip";
 import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
+import { stopReleaseSound } from "@/lib/release-sound";
 import { SaveSheet } from "@/components/vent/SaveSheet";
 import { useAppState } from "@/hooks/use-app-state";
 import { appAutoLock } from "@/lib/app-auto-lock";
@@ -76,6 +77,9 @@ export default function VentScreen() {
     if (action === "release") doRelease();
     else if (action === "save") setSaveAfterCard(true);
   }
+
+  // Leaving Vent silences a release sound that is still playing.
+  useFocusEffect(useCallback(() => stopReleaseSound, []));
 
   const finishDissolve = useCallback(() => {
     setPlan(null);

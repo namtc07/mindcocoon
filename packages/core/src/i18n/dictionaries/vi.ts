@@ -296,6 +296,7 @@ export const vi: Dictionary = {
   },
   settings: {
     adPrivacy: "Lựa chọn quyền riêng tư quảng cáo",
+    releaseSound: "Âm thanh khi buông",
     reminderOff: "Tắt",
     reminderTitle: "Nhắc nhở buổi tối",
     reminderHint: "Một lời nhắc nhẹ vào buổi tối. Chỉ bật khi bạn muốn.",

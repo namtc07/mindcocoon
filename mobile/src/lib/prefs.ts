@@ -31,6 +31,8 @@ export interface Prefs {
   ritual?: "burn" | "float" | "scatter" | "fade";
   /** Day key on which "Not now" hid the suggestion card. */
   suggestHiddenOn?: string;
+  /** Play a short sound when letting go in Vent (on unless set to false). */
+  releaseSound?: boolean;
 }
 
 const KEY = "prefs:v1";
