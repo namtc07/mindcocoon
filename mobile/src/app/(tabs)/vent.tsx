@@ -13,6 +13,8 @@ import { Dissolve, planDissolve, RITUALS, type DissolvePlan } from "@/components
 import { Chip } from "@/components/ui/Chip";
 import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
 import { stopReleaseSound } from "@/lib/release-sound";
+import { addWorry } from "@/lib/worries";
+import { toast } from "@/components/ui/Toast";
 import { SaveSheet } from "@/components/vent/SaveSheet";
 import { useAppState } from "@/hooks/use-app-state";
 import { appAutoLock } from "@/lib/app-auto-lock";
@@ -44,7 +46,7 @@ export default function VentScreen() {
   const [plan, setPlan] = useState<DissolvePlan | null>(null);
   const [inputKey, setInputKey] = useState(0);
   const [saveOpen, setSaveOpen] = useState(false);
-  const [pending, setPending] = useState<"release" | "save" | null>(null);
+  const [pending, setPending] = useState<"release" | "save" | "worry" | null>(null);
   // The save sheet opens only once the gentle card has gone (iOS won't stack modals mid-animation).
   const [saveAfterCard, setSaveAfterCard] = useState(false);
   const empty = text.trim().length === 0;
@@ -61,13 +63,25 @@ export default function VentScreen() {
     setPhase("dissolving");
   }
 
-  function attempt(action: "release" | "save") {
+  /** Worry box: rests (encrypted) until morning. A locked vault can't encrypt it, so the words stay. */
+  async function doWorry() {
+    try {
+      await addWorry(text);
+      clearEditor();
+      toast.show(t.worries.setDownDone);
+    } catch {
+      toast.show(t.worries.lockedHint);
+    }
+  }
+
+  function attempt(action: "release" | "save" | "worry") {
     if (empty) return;
     if (checkText(text).flagged && claimGentleCard()) {
       setPending(action);
       return;
     }
     if (action === "release") doRelease();
+    else if (action === "worry") void doWorry();
     else setSaveOpen(true);
   }
 
@@ -75,6 +89,7 @@ export default function VentScreen() {
     const action = pending;
     setPending(null);
     if (action === "release") doRelease();
+    else if (action === "worry") void doWorry();
     else if (action === "save") setSaveAfterCard(true);
   }
 
@@ -160,6 +175,9 @@ export default function VentScreen() {
             <Button variant="ghost" onPress={() => attempt("save")} disabled={empty}>
               {t.vent.saveToVault}
             </Button>
+            <Button variant="ghost" onPress={() => attempt("worry")} disabled={empty}>
+              {t.worries.setDown}
+            </Button>
           </View>
           <HelpLink />
         </View>
@@ -173,7 +191,7 @@ export default function VentScreen() {
 
       <GentleCard
         visible={pending !== null}
-        continueLabel={pending === "save" ? t.safety.continueSave : t.safety.continueRelease}
+        continueLabel={pending === "save" ? t.safety.continueSave : pending === "worry" ? t.safety.continuePractice : t.safety.continueRelease}
         onContinue={continuePending}
         onClose={() => setPending(null)}
         onDismissed={() => {

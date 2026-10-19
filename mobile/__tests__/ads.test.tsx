@@ -11,6 +11,7 @@ import PracticeScreen from "@/app/practices/[id]";
 import PracticesScreen from "@/app/practices/index";
 import PromptsScreen from "@/app/prompts";
 import WindDownScreen from "@/app/wind-down";
+import WorriesScreen from "@/app/worries";
 import SettingsScreen from "@/app/settings";
 import { AfterRelease } from "@/components/vent/AfterRelease";
 import { __resetAdsForTests, startAds } from "@/lib/ads/admob";
@@ -90,6 +91,7 @@ describe("Banner", () => {
     ["a practice", <PracticeScreen key="pp" />],
     ["the prompt library", <PromptsScreen key="pr" />],
     ["wind down", <WindDownScreen key="wd" />],
+    ["the worry box", <WorriesScreen key="wo" />],
   ])("never on %s", async (name, ui) => {
     await adsAt(12);
     (jest.requireMock("expo-router") as { useLocalSearchParams: jest.Mock }).useLocalSearchParams.mockReturnValue(

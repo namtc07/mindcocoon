@@ -10,6 +10,7 @@ import { audio } from "./audio";
 import { clearPrefs } from "./prefs";
 import { cancelReminder } from "./reminder";
 import { disableBiometric } from "./biometric";
+import { clearWorries } from "./worries";
 
 export interface ExportFile {
   app: "MindCocoon";
@@ -81,6 +82,7 @@ export async function eraseEverything() {
   await disableBiometric();
   await wipeVault();
   await clearMoods();
+  await clearWorries();
   await clearPrefs();
   deleteLeftoverExports();
   eraseCount++;

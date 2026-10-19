@@ -7,6 +7,7 @@ import { HeavyNudge } from "@/components/safety/HeavyNudge";
 import { EntryLinks } from "@/components/today/EntryLinks";
 import { QuickCheckin } from "@/components/today/QuickCheckin";
 import { SuggestionCard } from "@/components/today/SuggestionCard";
+import { WorryReadyLine } from "@/components/today/WorryReadyLine";
 import { ReflectionPrompt } from "@/components/today/ReflectionPrompt";
 import { useNow } from "@/hooks/use-now";
 import { useI18n } from "@/i18n/i18n";
@@ -24,6 +25,7 @@ export default function TodayScreen() {
       <View style={styles.sections}>
         <HeavyNudge now={now} />
         <ReflectionPrompt now={now} />
+        <WorryReadyLine now={now} />
         <QuickCheckin />
         <SuggestionCard now={now} />
         <EntryLinks />
