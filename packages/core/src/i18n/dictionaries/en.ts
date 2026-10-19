@@ -1,4 +1,4 @@
-/** Source of truth for UI copy. `vi.ts` must mirror every key. */
+/** Source of truth for UI copy. `vi.ts` and `id.ts` must mirror every key. */
 export const en = {
   meta: {
     title: "MindCocoon",

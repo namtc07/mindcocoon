@@ -6,7 +6,7 @@ import { useNow } from "@/hooks/use-now";
 import type { Locale } from "@mindcocoon/core/i18n/config";
 import { FIND_A_HELPLINE_URL, HOTLINES, isOpenNow, telHref, type Hotline } from "@mindcocoon/core/safety/hotlines";
 
-const HOME_COUNTRY: Record<Locale, string | null> = { vi: "VN", en: null };
+const HOME_COUNTRY: Record<Locale, string | null> = { vi: "VN", en: null, id: "ID" };
 
 function HotlineItem({ line, now }: { line: Hotline; now: Date | null }) {
   const { t, locale } = useI18n();

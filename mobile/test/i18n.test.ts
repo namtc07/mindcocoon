@@ -19,6 +19,8 @@ describe("deviceLocale", () => {
   it.each([
     [[{ languageCode: "vi" }], "vi"],
     [[{ languageCode: "en" }], "en"],
+    [[{ languageCode: "id" }], "id"],
+    [[{ languageCode: "fr" }, { languageCode: "id" }], "id"],
     [[{ languageCode: "fr" }, { languageCode: "vi" }], "vi"],
     [[{ languageCode: "fr" }], "en"],
     [[], "en"],

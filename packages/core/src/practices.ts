@@ -278,7 +278,130 @@ const vi: Practice[] = [
   },
 ];
 
-const PRACTICES: Record<Locale, Practice[]> = { en, vi };
+const id: Practice[] = [
+  {
+    id: "grounding",
+    title: "Membumi 5-4-3-2-1",
+    summary: "Kembali ke ruangan ini lewat pancaindramu.",
+    minutes: 2,
+    steps: [
+      { text: "Tetap di posisimu sekarang, duduk atau berbaring. Tidak ada cara yang salah untuk melakukan ini." },
+      { text: "Lihat sekeliling. Temukan lima hal yang bisa kamu lihat: satu warna, satu bentuk, satu cahaya kecil.", seconds: 20 },
+      { text: "Rasakan empat hal yang bisa kamu sentuh: selimut, kakimu, udara di kulitmu.", seconds: 20 },
+      { text: "Dengarkan tiga suara, yang dekat atau yang jauh.", seconds: 20 },
+      { text: "Temukan dua hal yang bisa kamu cium, atau bayangkan dua aroma yang kamu suka.", seconds: 20 },
+      { text: "Rasakan satu hal yang bisa kamu kecap, atau minum seteguk air pelan-pelan.", seconds: 20 },
+      { text: "Kamu ada di sini, sekarang. Itu sudah cukup." },
+    ],
+  },
+  {
+    id: "body-scan",
+    title: "Memindai tubuh",
+    summary: "Kendurkan yang sedang kamu tahan, dari kaki sampai wajah.",
+    minutes: 4,
+    steps: [
+      { text: "Cari posisi yang nyaman, dan pejamkan mata kalau terasa baik." },
+      { text: "Arahkan perhatianmu ke kaki. Biarkan terasa berat.", seconds: 30 },
+      { text: "Naik ke tungkaimu. Biarkan ototnya melunak, satu napas demi satu napas.", seconds: 30 },
+      { text: "Rasakan perutmu naik dan turun. Tidak perlu mengubah apa pun.", seconds: 30 },
+      { text: "Rasakan dadamu. Biarkan setiap napas pelan dan ringan.", seconds: 30 },
+      { text: "Biarkan bahumu turun, menjauh dari telinga.", seconds: 30 },
+      { text: "Lepaskan rahangmu. Lembutkan mata dan dahimu.", seconds: 30 },
+      { text: "Tetaplah di sini selama kamu mau. Tubuhmu sudah membawa banyak hal hari ini." },
+    ],
+  },
+  {
+    id: "three-good-things",
+    title: "Tiga hal baik",
+    summary: "Tutup hari dengan hal kecil yang berjalan lumayan.",
+    minutes: 3,
+    steps: [
+      { text: "Ingat lagi hari ini. Bahkan hari yang berat pun punya momen kecil yang lumayan." },
+      { text: "Satu hal baik, sekecil apa pun:", input: "line" },
+      { text: "Yang kedua:", input: "line" },
+      { text: "Dan yang ketiga:", input: "line" },
+      { text: "Simpan ketiganya sebentar. Hal-hal itu juga terjadi." },
+    ],
+  },
+  {
+    id: "kind-letter",
+    title: "Surat yang baik untuk dirimu",
+    summary: "Menulis untuk dirimu seperti menulis untuk seorang teman.",
+    minutes: 5,
+    steps: [
+      { text: "Pikirkan apa yang membebanimu malam ini. Kamu tidak harus menyelesaikannya." },
+      { text: "Tulis untuk dirimu sendiri, seperti untuk sahabat yang sedang merasakan hal yang sama. Pelan-pelan dan lembut.", input: "letter" },
+      { text: "Baca lagi pelan-pelan. Kamu juga layak mendapat kebaikan ini." },
+    ],
+  },
+  {
+    id: "unsent-letter",
+    title: "Surat yang tak dikirim",
+    summary: "Sampaikan yang tak sempat kamu sampaikan pada seseorang, tanpa mengirimnya.",
+    minutes: 5,
+    steps: [
+      { text: "Pikirkan seseorang yang ingin kamu ajak bicara: yang kamu rindukan, yang pernah menyakitimu, yang kamu sayangi." },
+      { text: "Tulis untuknya. Katakan seperti yang selama ini ingin kamu katakan. Tidak ada orang lain yang akan membacanya.", input: "letter" },
+      { text: "Kamu tidak harus mengirimnya. Bisa mengungkapkannya saja sudah berarti." },
+    ],
+  },
+  {
+    id: "safe-place",
+    title: "Tempat yang aman",
+    summary: "Bayangkan tempat di mana kamu merasa benar-benar tenang.",
+    minutes: 3,
+    steps: [
+      { text: "Pejamkan mata kalau terasa baik. Pikirkan satu tempat, nyata atau khayalan, di mana kamu merasa aman." },
+      { text: "Lihat sekelilingnya. Ada warna dan cahaya apa di sana?", seconds: 30 },
+      { text: "Dengarkan. Suara apa yang ada di tempat ini?", seconds: 30 },
+      { text: "Rasakan udaranya, suhunya, apa yang ada di bawah kaki atau tanganmu.", seconds: 30 },
+      { text: "Biarkan bahumu turun. Tidak ada yang menuntut apa pun darimu di sini.", seconds: 30 },
+      { text: "Tempat ini milikmu. Kamu bisa kembali ke sini kapan saja." },
+    ],
+  },
+  {
+    id: "muscle-release",
+    title: "Tegang lalu lepas",
+    summary: "Kencangkan, lalu lepaskan, satu bagian tubuh demi satu bagian.",
+    minutes: 4,
+    steps: [
+      { text: "Di setiap langkah, kencangkan pelan selama beberapa napas, lalu lepaskan semuanya. Jangan sampai terasa sakit." },
+      { text: "Tekuk jari kakimu dan kencangkan telapak kaki. Tahan… lalu lepaskan.", seconds: 20 },
+      { text: "Kencangkan kakimu. Tahan… lalu biarkan terasa berat.", seconds: 20 },
+      { text: "Kepalkan kedua tanganmu. Tahan… lalu buka pelan-pelan.", seconds: 20 },
+      { text: "Angkat bahumu ke arah telinga. Tahan… lalu turunkan.", seconds: 20 },
+      { text: "Kerutkan wajahmu. Tahan… lalu biarkan melunak sepenuhnya.", seconds: 20 },
+      { text: "Rasakan bedanya antara menahan dan melepaskan. Kamu selalu bisa kembali ke sini." },
+    ],
+  },
+  {
+    id: "self-compassion",
+    title: "Jeda yang lembut",
+    summary: "Tiga kalimat tenang untuk saat yang sulit.",
+    minutes: 2,
+    steps: [
+      { text: "Letakkan tangan di dadamu, atau di mana saja yang terasa menenangkan. Rasakan hangatnya." },
+      { text: "Katakan pelan pada dirimu: ini saat yang sulit. Tidak apa-apa menyadari bahwa ini menyakitkan.", seconds: 20 },
+      { text: "Ingatkan dirimu: orang lain juga pernah merasa begini. Kamu tidak sendirian, dan kamu tidak salah merasa begini.", seconds: 20 },
+      { text: "Tanyakan: apa yang akan kukatakan pada orang yang kusayangi kalau dia merasa begini? Katakan itu pada dirimu sekarang.", seconds: 30 },
+      { text: "Tarik satu napas pelan. Kamu bisa kembali ke jeda ini kapan saja." },
+    ],
+  },
+  {
+    id: "brain-dump",
+    title: "Kosongkan kepalamu",
+    summary: "Tuliskan semua yang berdengung di kepala, supaya pikiranmu tidak perlu menyimpannya lagi.",
+    minutes: 3,
+    steps: [
+      { text: "Pikiranmu tidak harus mengingat semuanya malam ini. Ayo taruh dulu di tempat lain sebentar." },
+      { text: "Tulis semua yang ada di pikiranmu, urutannya bebas. Tugas, kekhawatiran, pikiran setengah jadi. Tidak perlu dirapikan.", input: "letter" },
+      { text: "Lihat daftarnya. Ada satu hal kecil yang bisa kamu lakukan besok? Tulis yang satu itu saja.", input: "line" },
+      { text: "Sisanya bisa menunggu. Semuanya sudah tertulis, jadi kamu tidak perlu membawanya ke tempat tidur." },
+    ],
+  },
+];
+
+const PRACTICES: Record<Locale, Practice[]> = { en, vi, id };
 
 export function getPractices(locale: Locale): Practice[] {
   return PRACTICES[locale];

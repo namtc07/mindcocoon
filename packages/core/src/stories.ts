@@ -117,6 +117,57 @@ const vi: Story[] = [
   },
 ];
 
-export const STORIES: Record<Locale, Story[]> = { en, vi };
+const id: Story[] = [
+  {
+    id: "lighthouse",
+    title: "Kucing penjaga mercusuar",
+    summary: "Seekor kucing abu-abu, lampu yang hangat, dan laut yang membisikkan hal yang sama sepanjang malam.",
+    minutes: 4,
+    paragraphs: [
+      "Di sebuah pulau kecil di ujung peta ada sebuah mercusuar, dan di mercusuar itu tinggal seekor kucing abu-abu bernama Lumut.",
+      "Setiap sore, saat langit berubah warna seperti teh encer, penjaga mercusuar menaiki tangga melingkar dan menyalakan lampu besar. Lumut mengikuti dari belakang, satu anak tangga demi satu, pelan sekali, lalu meringkuk di atas batu hangat dekat jendela.",
+      "Di luar, laut menarik napas dan mengembuskannya. Ombak naik ke pantai, lalu turun lagi. Laut sudah begitu sejak lama sebelum mercusuar itu ada, dan ia sama sekali tidak terburu-buru.",
+      "Lampu itu berputar, dan lengan cahayanya yang panjang dan keemasan menyapu permukaan air. Satu putaran. Satu putaran lagi. Lumut memandangi cahaya yang lewat di atas ombak, dan matanya mulai berat.",
+      "Jauh di tengah laut, sebuah perahu nelayan melihat cahaya itu dan tahu jalan pulang. Lumut tidak perlu melakukan apa-apa. Cahaya itu bekerja dengan sendirinya.",
+      "Penjaga mercusuar membuat secangkir minuman hangat dan duduk di kursi tuanya. Ketel berdetik pelan saat mendingin. Angin bersenandung rendah di sekeliling menara, nada yang sama yang selalu ia senandungkan.",
+      "Lumut menyelipkan kakinya di bawah dada. Batunya hangat, cahayanya terus berputar, dan laut terus bernapas, masuk dan keluar, masuk dan keluar, makin pelan sekarang.",
+      "Tidak ada yang perlu terjadi malam ini. Cahaya itu akan berjaga. Lumut memejamkan mata, dan kamu juga boleh.",
+    ],
+  },
+  {
+    id: "night-train",
+    title: "Kereta malam yang pelan",
+    summary: "Gerbong tidur, selimut tebal, dan kota-kota kecil yang lewat dalam gelap.",
+    minutes: 4,
+    paragraphs: [
+      "Ada sebuah kereta yang hanya berjalan di malam hari. Kereta itu tidak cepat. Ia mengambil jalan memutar, melewati lembah dan kota-kota yang sedang tidur, dan tidak ada penumpang yang terburu-buru.",
+      "Gerbongmu punya ranjang sempit dengan selimut wol yang tebal, sebuah lampu kecil, dan jendela dengan tirai yang setengah tertutup. Kereta bergoyang pelan, ke kiri dan ke kanan, seperti ayunan.",
+      "Di luar, sebuah stasiun lewat perlahan. Satu lampu kuning, satu bangku kosong, satu jam dinding yang tidak dilihat siapa pun. Lalu stasiun itu hilang, dan yang ada hanya gelap lagi.",
+      "Roda-roda berbunyi dengan irama yang tenang di atas rel. Tak-tuk, tak-tuk. Tak-tuk, tak-tuk. Kamu tidak perlu menghitungnya. Irama itu menghitung dirinya sendiri.",
+      "Di ujung lorong, sebuah pintu tertutup pelan. Seseorang mengucapkan selamat tidur dengan suara rendah. Lampu di gerbongmu bersinar seperti bulan kecil.",
+      "Kamu menarik selimut sampai ke dagu. Apa pun yang menunggumu hari ini akan tetap ada besok pagi, dan semua itu bisa menunggu. Malam ini kamu hanya sedang berjalan.",
+      "Kereta melintasi jembatan panjang di atas sungai yang lebar dan gelap. Sebentar suaranya berubah, lebih dalam dan bergema, lalu iramanya kembali, tenang seperti detak jantung.",
+      "Tak-tuk, tak-tuk. Lampu-lampu kota sudah jauh di belakang. Kereta ini tahu jalannya. Yang perlu kamu lakukan hanya beristirahat.",
+    ],
+  },
+  {
+    id: "tea-hills",
+    title: "Hujan di bukit teh",
+    summary: "Sore di kebun teh di lereng bukit, saat hujan lembut datang dan pergi.",
+    minutes: 4,
+    paragraphs: [
+      "Tinggi di perbukitan, tanaman teh tumbuh dalam barisan hijau yang panjang, melengkung mengikuti lereng seperti garis-garis sidik jari.",
+      "Sore hari, para pemetik teh sudah pulang. Keranjang mereka ditumpuk di dekat pintu sebuah rumah kayu kecil, dan di dalamnya sebuah lampu sudah dinyalakan.",
+      "Lalu hujan datang. Bukan badai, hanya hujan lembut, jenis hujan yang berbisik. Hujan jatuh di daun teh, di atap seng, di jalan setapak, semuanya bersamaan dan pelan sekali.",
+      "Di dalam rumah, sepanci air menghangat di atas api kecil. Kaca jendela sedikit berembun di pinggirnya. Bau tanah basah dan daun hijau masuk lewat celah-celah.",
+      "Di kaki bukit, sebuah sungai kecil mulai penuh dan bercakap sendiri di antara batu-batu. Seekor katak bersuara sekali, lalu sepertinya memutuskan itu tidak terlalu penting.",
+      "Hujan makin reda, lalu makin deras, lalu reda lagi, seperti seseorang yang bernapas dalam tidurnya. Tidak perlu mendengarkan baik-baik. Hujan akan terus turun dengan sendirinya.",
+      "Lampu dikecilkan. Selimutnya tebal dan samar-samar berbau matahari. Bukit teh sekarang sudah gelap, dan setiap helai daun sedang memegang setetes kecil air hujan.",
+      "Istirahatlah di sini sebentar. Malam ini hujan yang akan menjaga bukit-bukit itu, dan pagi akan datang pelan-pelan, saat ia sudah siap.",
+    ],
+  },
+];
+
+export const STORIES: Record<Locale, Story[]> = { en, vi, id };
 
 export const getStory = (locale: Locale, id: string) => STORIES[locale].find((s) => s.id === id) ?? null;

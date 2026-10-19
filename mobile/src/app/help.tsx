@@ -12,7 +12,7 @@ import { radius, space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 
 /** Without a region from the system, the language is the best hint we have. */
-const LANGUAGE_COUNTRY: Record<Locale, string | null> = { vi: "VN", en: null };
+const LANGUAGE_COUNTRY: Record<Locale, string | null> = { vi: "VN", en: null, id: "ID" };
 
 function HotlineItem({ line, now, first }: { line: Hotline; now: Date; first: boolean }) {
   const { t, locale } = useI18n();

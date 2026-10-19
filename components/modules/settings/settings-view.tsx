@@ -15,7 +15,7 @@ import { downloadExport, eraseEverything } from "@/lib/data";
 import { LOCALES, type Locale } from "@mindcocoon/core/i18n/config";
 import { cn } from "@/lib/utils";
 
-const LANGUAGE_NAMES: Record<Locale, string> = { vi: "Tiếng Việt", en: "English" };
+const LANGUAGE_NAMES: Record<Locale, string> = { vi: "Tiếng Việt", en: "English", id: "Bahasa Indonesia" };
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="space-y-4 border-t border-border pt-8 first:border-t-0 first:pt-0">

@@ -1,4 +1,5 @@
 import { yearGrid } from "@mindcocoon/core/mood/selectors";
+import { LOCALE_TAGS } from "@mindcocoon/core/i18n/config";
 import type { MoodLog } from "@mindcocoon/core/types";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -19,7 +20,7 @@ export function YearPixels({ logs, now, onOpenMonth }: { logs: MoodLog[]; now: D
   const months = yearGrid(logs, year);
   // Squares shrink so a 31-day month always fits on one line, whatever the phone width.
   const [cell, setCell] = useState(MAX_CELL);
-  const tag = locale === "vi" ? "vi-VN" : "en-US";
+  const tag = LOCALE_TAGS[locale];
   const monthName = (m: number) => new Date(year, m, 1).toLocaleDateString(tag, { month: "short" });
   const monthLong = (m: number) => new Date(year, m, 1).toLocaleDateString(tag, { month: "long" });
   return (

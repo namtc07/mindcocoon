@@ -30,7 +30,9 @@ import { radius, space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 import type { ThemeName } from "@/theme/tokens";
 
-const LANGUAGE_NAMES: Record<Locale, string> = { vi: "Tiếng Việt", en: "English" };
+const LANGUAGE_NAMES: Record<Locale, string> = { vi: "Tiếng Việt", en: "English", id: "Bahasa Indonesia" };
+/** Shorter pill text so three languages fit on one row; the full name stays the accessible name. */
+const LANGUAGE_PILLS: Record<Locale, string> = { ...LANGUAGE_NAMES, id: "Indonesia" };
 
 /** A setting with a few options, as a row: the name on the left, the options as small pills. */
 function Choice<T extends string>({
@@ -41,7 +43,7 @@ function Choice<T extends string>({
 }: {
   label: string;
   value: T;
-  options: { id: T; label: string }[];
+  options: { id: T; label: string; accessibilityLabel?: string }[];
   onChange: (id: T) => void;
 }) {
   const { c } = useTheme();
@@ -55,6 +57,7 @@ function Choice<T extends string>({
             <Pressable
               key={o.id}
               accessibilityRole="radio"
+              accessibilityLabel={o.accessibilityLabel}
               accessibilityState={{ checked }}
               onPress={() => onChange(o.id)}
               style={[styles.pill, checked && { backgroundColor: c.card, borderColor: c.border }]}
@@ -138,7 +141,7 @@ export default function SettingsScreen() {
               label={t.settings.language}
               value={locale}
               onChange={(l) => void setLocale(l)}
-              options={LOCALES.map((l) => ({ id: l, label: LANGUAGE_NAMES[l] }))}
+              options={LOCALES.map((l) => ({ id: l, label: LANGUAGE_PILLS[l], accessibilityLabel: LANGUAGE_NAMES[l] }))}
             />
             <Choice<ThemeName>
               label={t.settings.theme}
@@ -208,7 +211,7 @@ const styles = StyleSheet.create({
   you: { flexDirection: "row", alignItems: "center", gap: space.md },
   choice: { flexDirection: "row", alignItems: "center", gap: space.md, minHeight: 44, flexWrap: "wrap" },
   rowLabel: { flex: 1, fontFamily: fonts.sans, fontSize: 16 },
-  pills: { flexDirection: "row", borderRadius: radius.full, padding: 3, gap: 2 },
+  pills: { flexDirection: "row", flexWrap: "wrap", flexShrink: 1, borderRadius: radius.full, padding: 3, gap: 2 },
   pill: { borderRadius: radius.full, borderWidth: 1, borderColor: "transparent", paddingHorizontal: space.md, paddingVertical: 6 },
   version: { fontFamily: fonts.sans, fontSize: 12, textAlign: "center", marginTop: space.sm },
 });

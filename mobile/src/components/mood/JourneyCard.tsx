@@ -1,4 +1,5 @@
 import { dayKeyFromISO } from "@mindcocoon/core/dates";
+import { LOCALE_TAGS } from "@mindcocoon/core/i18n/config";
 import { monthGrid } from "@mindcocoon/core/mood/selectors";
 import type { MoodLog } from "@mindcocoon/core/types";
 import * as Sharing from "expo-sharing";
@@ -43,7 +44,7 @@ export function JourneyCard({ logs, now }: { logs: MoodLog[]; now: Date }) {
   const month = now.getMonth();
   const cells = monthGrid(logs, year, month);
   const words = topFeelings(logs, year, month);
-  const title = new Date(year, month, 1).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", { month: "long", year: "numeric" });
+  const title = new Date(year, month, 1).toLocaleDateString(LOCALE_TAGS[locale], { month: "long", year: "numeric" });
 
   async function share() {
     setBusy(true);

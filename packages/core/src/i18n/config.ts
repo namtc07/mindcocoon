@@ -1,5 +1,8 @@
-export const LOCALES = ["vi", "en"] as const;
+export const LOCALES = ["vi", "en", "id"] as const;
 export type Locale = (typeof LOCALES)[number];
+
+/** BCP 47 tag for dates and speech in each language. */
+export const LOCALE_TAGS: Record<Locale, string> = { vi: "vi-VN", en: "en-US", id: "id-ID" };
 export const DEFAULT_LOCALE: Locale = "en";
 export const LOCALE_COOKIE = "mc-locale";
 

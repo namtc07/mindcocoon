@@ -27,7 +27,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "vn-ngay-mai",
     country: "VN",
-    name: { vi: "Đường dây nóng Ngày Mai (trầm cảm, khủng hoảng tâm lý)", en: "Ngày Mai helpline (depression & emotional crisis)" },
+    name: { vi: "Đường dây nóng Ngày Mai (trầm cảm, khủng hoảng tâm lý)", en: "Ngày Mai helpline (depression & emotional crisis)", id: "Layanan Ngày Mai (depresi & krisis emosional)" },
     phone: "096 306 1414",
     hours: { tz: "Asia/Ho_Chi_Minh", open: "13:00", close: "20:30", days: [3, 4, 5, 6, 0] },
     audience: "all",
@@ -36,7 +36,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "vn-111",
     country: "VN",
-    name: { vi: "Tổng đài quốc gia bảo vệ trẻ em", en: "National child protection hotline" },
+    name: { vi: "Tổng đài quốc gia bảo vệ trẻ em", en: "National child protection hotline", id: "Layanan nasional perlindungan anak" },
     phone: "111",
     hours: "24/7",
     audience: "youth",
@@ -45,7 +45,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "vn-115",
     country: "VN",
-    name: { vi: "Cấp cứu y tế", en: "Medical emergency" },
+    name: { vi: "Cấp cứu y tế", en: "Medical emergency", id: "Gawat darurat medis" },
     phone: "115",
     hours: "24/7",
     audience: "all",
@@ -54,7 +54,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "us-988",
     country: "US",
-    name: { vi: "988 Suicide & Crisis Lifeline", en: "988 Suicide & Crisis Lifeline" },
+    name: { vi: "988 Suicide & Crisis Lifeline", en: "988 Suicide & Crisis Lifeline", id: "988 Suicide & Crisis Lifeline" },
     phone: "988",
     hours: "24/7",
     audience: "all",
@@ -63,7 +63,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "ca-988",
     country: "CA",
-    name: { vi: "9-8-8 Suicide Crisis Helpline", en: "9-8-8 Suicide Crisis Helpline" },
+    name: { vi: "9-8-8 Suicide Crisis Helpline", en: "9-8-8 Suicide Crisis Helpline", id: "9-8-8 Suicide Crisis Helpline" },
     phone: "9-8-8",
     hours: "24/7",
     audience: "all",
@@ -72,7 +72,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "ca-kids-help-phone",
     country: "CA",
-    name: { vi: "Kids Help Phone", en: "Kids Help Phone" },
+    name: { vi: "Kids Help Phone", en: "Kids Help Phone", id: "Kids Help Phone" },
     phone: "1-800-668-6868",
     hours: "24/7",
     audience: "youth",
@@ -81,7 +81,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "gb-samaritans",
     country: "GB",
-    name: { vi: "Samaritans", en: "Samaritans" },
+    name: { vi: "Samaritans", en: "Samaritans", id: "Samaritans" },
     phone: "116 123",
     hours: "24/7",
     audience: "all",
@@ -90,7 +90,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "gb-childline",
     country: "GB",
-    name: { vi: "Childline", en: "Childline" },
+    name: { vi: "Childline", en: "Childline", id: "Childline" },
     phone: "0800 1111",
     hours: "24/7",
     audience: "youth",
@@ -99,7 +99,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "ie-samaritans",
     country: "IE",
-    name: { vi: "Samaritans Ireland", en: "Samaritans Ireland" },
+    name: { vi: "Samaritans Ireland", en: "Samaritans Ireland", id: "Samaritans Ireland" },
     phone: "116 123",
     hours: "24/7",
     audience: "all",
@@ -108,7 +108,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "ie-pieta",
     country: "IE",
-    name: { vi: "Pieta", en: "Pieta crisis helpline" },
+    name: { vi: "Pieta", en: "Pieta crisis helpline", id: "Pieta" },
     phone: "1800 247 247",
     hours: "24/7",
     audience: "all",
@@ -117,7 +117,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "ie-childline",
     country: "IE",
-    name: { vi: "Childline (ISPCC)", en: "Childline (ISPCC)" },
+    name: { vi: "Childline (ISPCC)", en: "Childline (ISPCC)", id: "Childline (ISPCC)" },
     phone: "1800 66 66 66",
     hours: "24/7",
     audience: "youth",
@@ -126,7 +126,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "au-lifeline",
     country: "AU",
-    name: { vi: "Lifeline Australia", en: "Lifeline Australia" },
+    name: { vi: "Lifeline Australia", en: "Lifeline Australia", id: "Lifeline Australia" },
     phone: "13 11 14",
     hours: "24/7",
     audience: "all",
@@ -135,7 +135,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "au-kids-helpline",
     country: "AU",
-    name: { vi: "Kids Helpline", en: "Kids Helpline" },
+    name: { vi: "Kids Helpline", en: "Kids Helpline", id: "Kids Helpline" },
     phone: "1800 55 1800",
     hours: "24/7",
     audience: "youth",
@@ -144,7 +144,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "nz-1737",
     country: "NZ",
-    name: { vi: "1737 Need to talk?", en: "1737 Need to talk?" },
+    name: { vi: "1737 Need to talk?", en: "1737 Need to talk?", id: "1737 Need to talk?" },
     phone: "1737",
     hours: "24/7",
     audience: "all",
@@ -153,7 +153,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "nz-youthline",
     country: "NZ",
-    name: { vi: "Youthline", en: "Youthline" },
+    name: { vi: "Youthline", en: "Youthline", id: "Youthline" },
     phone: "0800 376 633",
     hours: "24/7",
     audience: "youth",
@@ -162,7 +162,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "sg-sos",
     country: "SG",
-    name: { vi: "Samaritans of Singapore", en: "Samaritans of Singapore" },
+    name: { vi: "Samaritans of Singapore", en: "Samaritans of Singapore", id: "Samaritans of Singapore" },
     phone: "1767",
     hours: "24/7",
     audience: "all",
@@ -171,7 +171,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "sg-mindline",
     country: "SG",
-    name: { vi: "National mindline 1771", en: "National mindline 1771" },
+    name: { vi: "National mindline 1771", en: "National mindline 1771", id: "National mindline 1771" },
     phone: "1771",
     hours: "24/7",
     audience: "all",
@@ -180,7 +180,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "my-befrienders",
     country: "MY",
-    name: { vi: "Befrienders Kuala Lumpur", en: "Befrienders Kuala Lumpur" },
+    name: { vi: "Befrienders Kuala Lumpur", en: "Befrienders Kuala Lumpur", id: "Befrienders Kuala Lumpur" },
     phone: "03-7627 2929",
     hours: "24/7",
     audience: "all",
@@ -189,7 +189,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "my-heal",
     country: "MY",
-    name: { vi: "Talian HEAL 15555", en: "HEAL Line 15555 (Ministry of Health)" },
+    name: { vi: "Talian HEAL 15555", en: "HEAL Line 15555 (Ministry of Health)", id: "Talian HEAL 15555 (Kementerian Kesihatan Malaysia)" },
     phone: "15555",
     hours: { tz: "Asia/Kuala_Lumpur", open: "08:00", close: "00:00" },
     audience: "all",
@@ -198,7 +198,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "ph-ncmh",
     country: "PH",
-    name: { vi: "NCMH Crisis Hotline", en: "NCMH Crisis Hotline" },
+    name: { vi: "NCMH Crisis Hotline", en: "NCMH Crisis Hotline", id: "NCMH Crisis Hotline" },
     phone: "1553",
     hours: "24/7",
     audience: "all",
@@ -207,7 +207,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "id-healing119",
     country: "ID",
-    name: { vi: "Healing119 (Bộ Y tế Indonesia)", en: "Healing119 (Ministry of Health)" },
+    name: { vi: "Healing119 (Bộ Y tế Indonesia)", en: "Healing119 (Ministry of Health)", id: "Healing119 (Kementerian Kesehatan)" },
     phone: "119 ext. 8",
     hours: "24/7",
     audience: "all",
@@ -216,7 +216,7 @@ export const HOTLINES: Hotline[] = [
   line({
     id: "in-tele-manas",
     country: "IN",
-    name: { vi: "Tele-MANAS", en: "Tele-MANAS (national mental health line)" },
+    name: { vi: "Tele-MANAS", en: "Tele-MANAS (national mental health line)", id: "Tele-MANAS (layanan kesehatan jiwa nasional)" },
     phone: "14416",
     hours: "24/7",
     audience: "all",
@@ -225,18 +225,18 @@ export const HOTLINES: Hotline[] = [
 ];
 
 export const COUNTRY_NAMES: Record<string, Record<Locale, string>> = {
-  VN: { vi: "Việt Nam", en: "Vietnam" },
-  US: { vi: "Hoa Kỳ", en: "United States" },
-  CA: { vi: "Canada", en: "Canada" },
-  GB: { vi: "Vương quốc Anh", en: "United Kingdom" },
-  IE: { vi: "Ireland", en: "Ireland" },
-  AU: { vi: "Úc", en: "Australia" },
-  NZ: { vi: "New Zealand", en: "New Zealand" },
-  SG: { vi: "Singapore", en: "Singapore" },
-  MY: { vi: "Malaysia", en: "Malaysia" },
-  PH: { vi: "Philippines", en: "Philippines" },
-  ID: { vi: "Indonesia", en: "Indonesia" },
-  IN: { vi: "Ấn Độ", en: "India" },
+  VN: { vi: "Việt Nam", en: "Vietnam", id: "Vietnam" },
+  US: { vi: "Hoa Kỳ", en: "United States", id: "Amerika Serikat" },
+  CA: { vi: "Canada", en: "Canada", id: "Kanada" },
+  GB: { vi: "Vương quốc Anh", en: "United Kingdom", id: "Inggris Raya" },
+  IE: { vi: "Ireland", en: "Ireland", id: "Irlandia" },
+  AU: { vi: "Úc", en: "Australia", id: "Australia" },
+  NZ: { vi: "New Zealand", en: "New Zealand", id: "Selandia Baru" },
+  SG: { vi: "Singapore", en: "Singapore", id: "Singapura" },
+  MY: { vi: "Malaysia", en: "Malaysia", id: "Malaysia" },
+  PH: { vi: "Philippines", en: "Philippines", id: "Filipina" },
+  ID: { vi: "Indonesia", en: "Indonesia", id: "Indonesia" },
+  IN: { vi: "Ấn Độ", en: "India", id: "India" },
 };
 
 /** The person's own country's lines (in listed order) and everyone else's. */

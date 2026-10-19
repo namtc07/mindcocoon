@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { LOCALES } from "@mindcocoon/core/i18n/config";
 import { REFLECTION_PROMPTS, promptForDay } from "@mindcocoon/core/prompts";
 
 describe("reflection prompts", () => {
-  it("exist in both languages with the same count", () => {
-    expect(REFLECTION_PROMPTS.vi.length).toBe(REFLECTION_PROMPTS.en.length);
+  it.each(LOCALES)("exist in %s with the same count, none empty", (locale) => {
+    expect(REFLECTION_PROMPTS[locale].length).toBe(REFLECTION_PROMPTS.en.length);
+    for (const p of REFLECTION_PROMPTS[locale]) expect(p.trim()).not.toBe("");
     expect(REFLECTION_PROMPTS.en.length).toBeGreaterThanOrEqual(35);
   });
 
@@ -16,7 +18,7 @@ describe("reflection prompts", () => {
   it("match across languages for the same day", () => {
     const day = new Date(2026, 9, 16);
     const index = REFLECTION_PROMPTS.en.indexOf(promptForDay(day, "en"));
-    expect(REFLECTION_PROMPTS.vi[index]).toBe(promptForDay(day, "vi"));
+    for (const locale of LOCALES) expect(REFLECTION_PROMPTS[locale][index]).toBe(promptForDay(day, locale));
   });
 
   it("change with the offset", () => {
@@ -29,7 +31,7 @@ describe("promptAt", () => {
   it("wraps and matches the lists", async () => {
     const { PROMPT_COUNT, promptAt, REFLECTION_PROMPTS } = await import("@mindcocoon/core/prompts");
     expect(PROMPT_COUNT).toBe(REFLECTION_PROMPTS.en.length);
-    expect(PROMPT_COUNT).toBe(REFLECTION_PROMPTS.vi.length);
+    for (const locale of LOCALES) expect(PROMPT_COUNT).toBe(REFLECTION_PROMPTS[locale].length);
     expect(promptAt("en", 0)).toBe(REFLECTION_PROMPTS.en[0]);
     expect(promptAt("vi", 3)).toBe(REFLECTION_PROMPTS.vi[3]);
     expect(promptAt("en", PROMPT_COUNT + 2)).toBe(REFLECTION_PROMPTS.en[2]);
@@ -60,6 +62,7 @@ describe("prompt voice", () => {
   it("every prompt is short and plain, like something a friend would ask", () => {
     for (const p of REFLECTION_PROMPTS.en) expect(p.length, p).toBeLessThanOrEqual(70);
     for (const p of REFLECTION_PROMPTS.vi) expect(p.length, p).toBeLessThanOrEqual(80);
+    for (const p of REFLECTION_PROMPTS.id) expect(p.length, p).toBeLessThanOrEqual(80);
   });
 
   it("no quoted words, no lofty therapy phrasing", () => {

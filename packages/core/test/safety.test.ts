@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { LOCALES } from "@mindcocoon/core/i18n/config";
 import { checkText, normalizeForMatch } from "@mindcocoon/core/safety/detect";
 import { COUNTRY_NAMES, HOTLINES, isOpenNow, linesFor, type Hotline } from "@mindcocoon/core/safety/hotlines";
 
@@ -53,7 +54,7 @@ describe("hotlines", () => {
   const line: Hotline = {
     id: "test",
     country: "VN",
-    name: { vi: "Thử", en: "Test" },
+    name: { vi: "Thử", en: "Test", id: "Uji" },
     phone: "000",
     hours: { tz: "Asia/Ho_Chi_Minh", open: "08:00", close: "22:00" },
     audience: "all",
@@ -84,8 +85,9 @@ describe("hotlines", () => {
   it("covers the countries we serve, each line with where and when it was checked", () => {
     for (const country of ["VN", "US", "CA", "GB", "IE", "AU", "NZ", "SG", "MY", "PH", "ID", "IN"]) {
       expect(HOTLINES.some((h) => h.country === country), country).toBe(true);
-      expect(COUNTRY_NAMES[country]?.en && COUNTRY_NAMES[country]?.vi, country).toBeTruthy();
+      for (const locale of LOCALES) expect(COUNTRY_NAMES[country]?.[locale], `${country} ${locale}`).toBeTruthy();
     }
+    for (const h of HOTLINES) for (const locale of LOCALES) expect(h.name[locale]?.trim(), `${h.id} ${locale}`).toBeTruthy();
     for (const h of HOTLINES) {
       expect(h.source, h.id).toMatch(/^https:\/\//);
       expect(h.checkedOn, h.id).toMatch(/^\d{4}-\d{2}-\d{2}$/);

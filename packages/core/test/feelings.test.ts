@@ -3,6 +3,7 @@ import { PRESET_MIXES } from "@mindcocoon/core/audio/mixes";
 import { BREATH_PATTERNS } from "@mindcocoon/core/breathing";
 import { FEELINGS, MAX_FEELINGS, suggestionFor } from "@mindcocoon/core/feelings";
 import { en } from "@mindcocoon/core/i18n/dictionaries/en";
+import { id as idDict } from "@mindcocoon/core/i18n/dictionaries/id";
 import { vi } from "@mindcocoon/core/i18n/dictionaries/vi";
 import { MOODS } from "@mindcocoon/core/moods";
 import { getPractice } from "@mindcocoon/core/practices";
@@ -15,6 +16,7 @@ describe("feelings", () => {
       for (const word of FEELINGS[id]) {
         expect(en.feelings.words[word as keyof typeof en.feelings.words]).toBeTruthy();
         expect(vi.feelings.words[word as keyof typeof vi.feelings.words]).toBeTruthy();
+        expect(idDict.feelings.words[word as keyof typeof idDict.feelings.words]).toBeTruthy();
       }
     }
     const all = MOODS.flatMap((m) => FEELINGS[m.id]);
@@ -28,7 +30,7 @@ describe("feelings", () => {
 
   it("has ten moods, from heavier to lighter, each named in both languages", () => {
     expect(MOODS.map((m) => m.id)).toEqual(["angry", "confused", "anxious", "alone", "heavy", "numb", "peaceful", "hopeful", "thankful", "joyful"]);
-    for (const d of [en, vi]) for (const { id } of MOODS) expect(d.mood.states[id].label && d.mood.states[id].description).toBeTruthy();
+    for (const d of [en, vi, idDict]) for (const { id } of MOODS) expect(d.mood.states[id].label && d.mood.states[id].description).toBeTruthy();
   });
 
   it("suggestionFor covers every mood with real presets, practices and patterns", () => {

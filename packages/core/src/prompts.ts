@@ -3,8 +3,8 @@ import type { Locale } from "./i18n/config";
 
 /**
  * Writing ideas: short, plain, everyday questions — what a friend might ask, never therapy-speak.
- * The Vietnamese is written natively, not translated. Index i in `vi` matches index i in `en`
- * (same theme, see PROMPT_THEME_OF); keep both lists in step.
+ * The Vietnamese is written natively, not translated. Index i in `vi` and `id` matches index i in `en`
+ * (same theme, see PROMPT_THEME_OF); keep all lists in step.
  */
 export const REFLECTION_PROMPTS: Record<Locale, string[]> = {
   en: [
@@ -81,9 +81,46 @@ export const REFLECTION_PROMPTS: Record<Locale, string[]> = {
     "Bạn đang cố làm vừa lòng ai?",
     "Cuối tuần này, nếu không phải lo điểm số, bạn muốn làm gì?",
   ],
+  id: [
+    "Apa yang paling membebanimu hari ini?",
+    "Gimana rasanya badanmu sekarang? Pegal, tegang, atau baik-baik saja?",
+    "Kalau temanmu merasa seperti kamu sekarang, apa yang akan kamu bilang?",
+    "Minggu ini kamu butuh apa yang belum kamu dapat?",
+    "Ada satu hal kecil yang berjalan lumayan hari ini?",
+    "Ada sesuatu yang sedang kamu coba untuk tidak pikirkan?",
+    "Gambarkan hari ini dalam tiga kata.",
+    "Akhir-akhir ini kamu kangen siapa, atau apa?",
+    "Obrolan mana yang terus terulang di kepalamu?",
+    "Apa yang bisa bikin kamu benar-benar istirahat malam ini?",
+    "Apa yang kamu lakukan dengan baik hari ini, tapi tidak ada yang sadar?",
+    "Ada saat hari ini kamu berharap tadi bilang tidak?",
+    "Apa yang belum kamu ucapkan sampai sekarang?",
+    "Apa yang pelan-pelan membaik, walau sedikit?",
+    "Dengan siapa kamu paling merasa nyaman? Kenapa?",
+    "Kalau tahu semuanya akan baik-baik saja, apa yang mau kamu lepas?",
+    "Bagian terbaik dan terburuk hari ini?",
+    "Akhir-akhir ini apa yang paling bikin kamu capek?",
+    "Ceritakan satu tempat yang bikin kamu merasa tenang.",
+    "Apa kamu sedang terlalu menuntut diri sendiri di suatu hal?",
+    "Satu hal baik apa yang bisa kamu lakukan untuk dirimu dalam sejam ke depan?",
+    "Ada yang bikin kamu sedih, walau kelihatannya kecil?",
+    "Kapan terakhir kali kamu tertawa lepas?",
+    "Tulis pesan yang tidak akan pernah kamu kirim.",
+    "Hari ini, sejauh mana sudah cukup?",
+    "Ada yang sedang kamu nantikan, walau sedikit?",
+    "Pikiran apa yang terus kembali hari ini?",
+    "Kalimat apa yang ingin kamu dengar dari seseorang sekarang?",
+    "Akhir-akhir ini kamu menyadari apa tentang dirimu?",
+    "Apa yang kamu khawatirkan? Tulis dalam satu kalimat.",
+    "Ujian atau tenggat mana yang paling sering kamu pikirkan?",
+    "Apa yang kamu harap orang tuamu pahami tentang dirimu?",
+    "Ada pertemanan yang terasa berbeda akhir-akhir ini?",
+    "Harapan siapa yang sedang kamu coba penuhi?",
+    "Akhir pekan ini, kalau tidak ada yang dinilai, kamu mau ngapain?",
+  ],
 };
 
-/** Stable prompt for a given day (same index in both languages). */
+/** Stable prompt for a given day (same index in every language). */
 export function promptForDay(date: Date, locale: Locale, offset = 0): string {
   const list = REFLECTION_PROMPTS[locale];
   let hash = 0;

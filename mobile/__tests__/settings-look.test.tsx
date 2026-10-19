@@ -17,6 +17,8 @@ describe("Settings, grouped like a phone's own settings", () => {
     await renderWithApp(<SettingsScreen />);
     const appearance = screen.getByTestId("group-appearance");
     expect(within(appearance).getByRole("radio", { name: "English" })).toBeOnTheScreen();
+    expect(within(appearance).getByRole("radio", { name: "Tiếng Việt" })).toBeOnTheScreen();
+    expect(within(appearance).getByRole("radio", { name: "Bahasa Indonesia" })).toBeOnTheScreen();
     expect(within(appearance).getByRole("radio", { name: "Mist" })).toBeOnTheScreen();
     expect(within(appearance).getByRole("switch", { name: "Dim after 10 pm" })).toBeOnTheScreen();
     const using = screen.getByTestId("group-using");

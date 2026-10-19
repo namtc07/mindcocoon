@@ -1,14 +1,16 @@
 import { describe, expect, it } from "vitest";
+import { LOCALES } from "@mindcocoon/core/i18n/config";
 import { getPractice, getPractices } from "@mindcocoon/core/practices";
 
 describe("practices", () => {
-  it("every practice has the same steps in en and vi", () => {
+  it.each(LOCALES)("every practice has the same steps in en and %s", (locale) => {
     const en = getPractices("en");
-    const vi = getPractices("vi");
-    expect(vi.map((p) => p.id)).toEqual(en.map((p) => p.id));
+    const other = getPractices(locale);
+    expect(other.map((p) => p.id)).toEqual(en.map((p) => p.id));
     en.forEach((p, i) => {
-      expect(vi[i].minutes).toBe(p.minutes);
-      expect(vi[i].steps.map((s) => [s.seconds, s.input])).toEqual(p.steps.map((s) => [s.seconds, s.input]));
+      expect(other[i].minutes).toBe(p.minutes);
+      expect(other[i].steps.map((s) => [s.seconds, s.input])).toEqual(p.steps.map((s) => [s.seconds, s.input]));
+      for (const text of [other[i].title, other[i].summary, ...other[i].steps.map((s) => s.text)]) expect(text.trim()).not.toBe("");
     });
   });
 

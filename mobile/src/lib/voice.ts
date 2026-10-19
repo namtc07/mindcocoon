@@ -1,9 +1,9 @@
-import type { Locale } from "@mindcocoon/core/i18n/config";
+import { LOCALE_TAGS, type Locale } from "@mindcocoon/core/i18n/config";
 import * as Speech from "expo-speech";
 import { getPref } from "./prefs";
 
 /** BCP 47 tags for the device voices. */
-const LANGUAGE: Record<Locale, string> = { vi: "vi-VN", en: "en-US" };
+const LANGUAGE: Record<Locale, string> = LOCALE_TAGS;
 
 /** The nicest installed voice per language (an "Enhanced" one if the person downloaded it). */
 const best = new Map<string, string | undefined>();
