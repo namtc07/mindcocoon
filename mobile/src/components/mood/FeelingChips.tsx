@@ -1,6 +1,7 @@
 import { FEELINGS, MAX_FEELINGS } from "@mindcocoon/core/feelings";
 import type { MoodType } from "@mindcocoon/core/types";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
@@ -18,7 +19,8 @@ export function FeelingChips({ mood, value, onChange }: { mood: MoodType; value:
     else if (value.length < MAX_FEELINGS) onChange([...value, word]);
   }
   return (
-    <View style={styles.wrap}>
+    // Fades in after a mood lands on the arc, instead of popping in.
+    <Animated.View entering={FadeIn.duration(240)} style={styles.wrap}>
       <Text style={[styles.label, { color: c.mutedForeground }]}>{t.feelings.prompt}</Text>
       <View style={styles.row}>
         {FEELINGS[mood].map((word) => {
@@ -44,7 +46,7 @@ export function FeelingChips({ mood, value, onChange }: { mood: MoodType; value:
           );
         })}
       </View>
-    </View>
+    </Animated.View>
   );
 }
 

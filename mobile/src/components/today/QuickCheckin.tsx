@@ -6,6 +6,7 @@ import { VaultLockedError, unlockWithPasscode } from "@mindcocoon/core/vault/ses
 import { Check } from "lucide-react-native";
 import { useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { FeelingChips, useFeelingLabels } from "@/components/mood/FeelingChips";
 import { MoodPicker } from "@/components/mood/MoodPicker";
 import { Button } from "@/components/ui/Button";
@@ -130,12 +131,12 @@ export function QuickCheckin() {
           <MoodPicker variant="orbs" value={draftMood} onChange={choose} label={t.today.checkinQuestion} />
           {draftMood && <FeelingChips mood={draftMood} value={draftFeelings} onChange={setDraftFeelings} />}
           {draftMood && (
-            <View style={styles.row}>
+            <Animated.View entering={FadeIn.duration(240)} style={styles.row}>
               <Button onPress={save}>{t.today.saveMood}</Button>
               <Button variant="ghost" onPress={cancelChange}>
                 {t.common.cancel}
               </Button>
-            </View>
+            </Animated.View>
           )}
         </>
       ) : (

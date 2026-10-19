@@ -1,6 +1,6 @@
 import { MOODS } from "@mindcocoon/core/moods";
 import type { MoodType } from "@mindcocoon/core/types";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, type ScrollViewInstance, StyleSheet, Text, View } from "react-native";
 import * as Haptics from "expo-haptics";
 import Animated, {
@@ -111,7 +111,7 @@ const ORB = 52;
 /** Width of one orb's slot on the arc (the scroll snaps to it). */
 export const ARC_ITEM = 76;
 /** The ten moods repeat this many times so the arc never runs out; the middle copy is the "real" one. */
-const ARC_COPIES = 7;
+const ARC_COPIES = 5;
 export const ARC_MIDDLE = Math.floor(ARC_COPIES / 2);
 const N = MOODS.length;
 const SLOTS = Array.from({ length: N * ARC_COPIES }, (_, i) => ({ slot: i, mood: MOODS[i % N], copy: Math.floor(i / N) }));
@@ -150,13 +150,72 @@ function Pop({ on, children }: { on: boolean; children: ReactNode }) {
   return <Animated.View style={style}>{children}</Animated.View>;
 }
 
-const GLIDE_MS = 480;
+type ArcItemProps = {
+  slot: number;
+  moodId: MoodType;
+  copy: number;
+  checked: boolean;
+  color: string;
+  labelColor: string;
+  scrollX: SharedValue<number>;
+  onPressSlot: (slot: number) => void;
+};
+
+/**
+ * One orb on the arc. Memoised: choosing a mood re-renders only the two orbs whose state changed,
+ * not all fifty (each is an SVG), so the glide never stutters.
+ */
+const ArcItem = memo(function ArcItem({ slot, moodId, copy, checked, color, labelColor, scrollX, onPressSlot }: ArcItemProps) {
+  const { t } = useI18n();
+  const words = t.mood.states[moodId];
+  // Screen readers get each mood once (the middle copy); the repeats are for swiping.
+  const repeat = copy !== ARC_MIDDLE;
+  return (
+    <ArcOrb index={slot} scrollX={scrollX}>
+      <Pressable
+        accessibilityRole="radio"
+        accessibilityLabel={words.label}
+        accessibilityHint={words.description}
+        accessibilityState={{ checked }}
+        accessibilityElementsHidden={repeat}
+        importantForAccessibility={repeat ? "no-hide-descendants" : "auto"}
+        onPress={() => onPressSlot(slot)}
+        style={styles.cell}
+      >
+        <ArcScale index={slot} scrollX={scrollX}>
+          <Pop on={checked}>
+            <View style={styles.halo}>
+              {checked && (
+                <Animated.View
+                  entering={FadeIn.duration(260)}
+                  exiting={FadeOut.duration(200)}
+                  style={[StyleSheet.absoluteFill, styles.glow, { backgroundColor: color + "40" }]}
+                />
+              )}
+              <Orb color={color} size={ORB} />
+            </View>
+          </Pop>
+        </ArcScale>
+        <Text numberOfLines={1} style={[styles.orbLabel, { color: labelColor }]}>
+          {words.label}
+        </Text>
+      </Pressable>
+    </ArcOrb>
+  );
+});
+
+const GLIDE_MS = 420;
+
 
 function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
   const { t } = useI18n();
   const { c } = useTheme();
-  const radio = useMoodRadio(value, onChange);
   const reduceMotion = useReducedMotion();
+  // Latest onChange without re-creating the (memoised) orbs' press handler.
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
   // The animated ref drives the eased glide on the UI thread; the plain one settles exactly (and serves tests).
   const animatedRef = useAnimatedRef<Animated.ScrollView>();
   const jsRef = useRef<ScrollViewInstance | null>(null);
@@ -187,19 +246,30 @@ function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
     },
   );
 
-  /** Ease the orb at `slot` into the middle (or jump there under Reduce Motion). */
-  function glideTo(slot: number) {
-    if (reduceMotion) return jump(slot);
-    cancelAnimation(glideX);
-    glideX.set(scrollX.get());
-    gliding.set(true);
-    glideX.set(
-      withTiming(slot * ARC_ITEM, { duration: GLIDE_MS, easing: Easing.out(Easing.cubic) }, (finished) => {
-        gliding.set(false);
-        if (finished) runOnJS(jump)(slot);
-      }),
-    );
-  }
+  /** Choose the mood once its orb has landed, so the rest of the screen changes after the glide, not during it. */
+  const land = (slot: number) => {
+    jump(slot);
+    onChangeRef.current(MOODS[slot % N].id);
+  };
+
+  /** Ease the orb at `slot` into the middle (or jump there under Reduce Motion), then choose it. */
+  const pressSlot = useCallback(
+    (slot: number) => {
+      tick();
+      if (reduceMotion) return land(slot);
+      cancelAnimation(glideX);
+      glideX.set(scrollX.get());
+      gliding.set(true);
+      glideX.set(
+        withTiming(slot * ARC_ITEM, { duration: GLIDE_MS, easing: Easing.out(Easing.cubic) }, () => {
+          gliding.set(false);
+          runOnJS(land)(slot);
+        }),
+      );
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [reduceMotion],
+  );
 
   // A choice made elsewhere (or on first layout) starts in the middle.
   useEffect(() => {
@@ -235,45 +305,19 @@ function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
         contentContainerStyle={{ paddingHorizontal: side, paddingTop: RISE, paddingBottom: BELOW }}
       >
         <View accessibilityRole="radiogroup" accessibilityLabel={label} style={styles.arc}>
-          {SLOTS.map(({ slot, mood: m, copy }) => {
-            const checked = m.id === value;
-            const { onPress, ...a11y } = radio(m.id);
-            // Screen readers get each mood once (the middle copy); the repeats are for swiping.
-            const repeat = copy !== ARC_MIDDLE;
-            return (
-              <ArcOrb key={slot} index={slot} scrollX={scrollX}>
-                <Pressable
-                  {...a11y}
-                  accessibilityElementsHidden={repeat}
-                  importantForAccessibility={repeat ? "no-hide-descendants" : "auto"}
-                  onPress={() => {
-                    tick();
-                    onPress();
-                    glideTo(slot);
-                  }}
-                  style={styles.cell}
-                >
-                  <ArcScale index={slot} scrollX={scrollX}>
-                    <Pop on={checked}>
-                      <View style={styles.halo}>
-                        {checked && (
-                          <Animated.View
-                            entering={FadeIn.duration(260)}
-                            exiting={FadeOut.duration(200)}
-                            style={[StyleSheet.absoluteFill, styles.glow, { backgroundColor: c.mood[m.id] + "40" }]}
-                          />
-                        )}
-                        <Orb color={c.mood[m.id]} size={ORB} />
-                      </View>
-                    </Pop>
-                  </ArcScale>
-                  <Text numberOfLines={1} style={[styles.orbLabel, { color: checked ? c.foreground : c.mutedForeground }]}>
-                    {t.mood.states[m.id].label}
-                  </Text>
-                </Pressable>
-              </ArcOrb>
-            );
-          })}
+          {SLOTS.map(({ slot, mood: m, copy }) => (
+            <ArcItem
+              key={slot}
+              slot={slot}
+              moodId={m.id}
+              copy={copy}
+              checked={m.id === value}
+              color={c.mood[m.id]}
+              labelColor={m.id === value ? c.foreground : c.mutedForeground}
+              scrollX={scrollX}
+              onPressSlot={pressSlot}
+            />
+          ))}
         </View>
       </Animated.ScrollView>
       <Animated.Text
@@ -299,5 +343,6 @@ const styles = StyleSheet.create({
   halo: { borderRadius: ORB, padding: 6 },
   glow: { borderRadius: ORB },
   orbLabel: { fontFamily: fonts.sansMedium, fontSize: 12 },
-  caption: { fontFamily: fonts.serif, fontSize: 17, lineHeight: 23, textAlign: "center" },
+  // Two lines are always reserved, so a longer description never pushes the page down.
+  caption: { minHeight: 46, fontFamily: fonts.serif, fontSize: 17, lineHeight: 23, textAlign: "center" },
 });
