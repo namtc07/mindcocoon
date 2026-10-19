@@ -18,7 +18,8 @@ async function schedule(hour: ReminderHour, t: Dictionary) {
   }
   await Notifications.scheduleNotificationAsync({
     identifier: ID,
-    content: { title: t.reminder.title, body: t.reminder.body },
+    // Tapping it opens the bedtime flow directly (see NotificationRouter).
+    content: { title: t.reminder.title, body: t.reminder.body, data: { url: "/wind-down" } },
     trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour, minute: 0, channelId: CHANNEL },
   });
 }

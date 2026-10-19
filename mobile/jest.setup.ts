@@ -218,6 +218,8 @@ jest.mock("expo-notifications", () => ({
   setNotificationChannelAsync: jest.fn(() => Promise.resolve(null)),
   setNotificationHandler: jest.fn(),
   SchedulableTriggerInputTypes: { DAILY: "daily" },
+  useLastNotificationResponse: jest.fn(() => undefined),
+  DEFAULT_ACTION_IDENTIFIER: "expo.modules.notifications.actions.DEFAULT",
   AndroidImportance: { DEFAULT: 3 },
 }));
 

@@ -2,6 +2,7 @@ import { act, screen, userEvent, waitFor } from "@testing-library/react-native";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import SettingsScreen from "@/app/settings";
+import { NotificationRouter } from "@/components/settings/NotificationRouter";
 import { eraseEverything } from "@/lib/export";
 import { getPref, setPref } from "@/lib/prefs";
 import { renderWithApp } from "@/test-utils/render";
@@ -35,7 +36,7 @@ describe("Evening reminder", () => {
     expect(Notifications.requestPermissionsAsync).toHaveBeenCalledWith({ ios: { allowAlert: true, allowSound: true, allowBadge: false } });
     expect(schedule).toHaveBeenCalledWith({
       identifier: "mindcocoon-evening",
-      content: { title: "MindCocoon", body: "A quiet place is here if today was heavy." },
+      content: { title: "MindCocoon", body: "A quiet place is here if today was heavy.", data: { url: "/wind-down" } },
       trigger: { type: "daily", hour: 22, minute: 0, channelId: "evening" },
     });
     expect(getPref("reminder")).toEqual({ hour: 22 });
@@ -94,6 +95,23 @@ describe("Evening reminder", () => {
       expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith("evening", expect.objectContaining({ showBadge: false }));
     } finally {
       os.restore();
+    }
+  });
+
+  it("tapping the reminder opens wind-down once", async () => {
+    const { router } = jest.requireMock("expo-router") as { router: { push: jest.Mock } };
+    const response = {
+      actionIdentifier: "expo.modules.notifications.actions.DEFAULT",
+      notification: { request: { identifier: "mindcocoon-evening", content: { data: { url: "/wind-down" } } }, date: 1 },
+    };
+    (Notifications.useLastNotificationResponse as jest.Mock).mockReturnValue(response);
+    try {
+      const view = await renderWithApp(<NotificationRouter />);
+      await view.rerender(<NotificationRouter />);
+      await waitFor(() => expect(router.push).toHaveBeenCalledWith("/wind-down"));
+      expect(router.push).toHaveBeenCalledTimes(1);
+    } finally {
+      (Notifications.useLastNotificationResponse as jest.Mock).mockReturnValue(undefined);
     }
   });
 });
