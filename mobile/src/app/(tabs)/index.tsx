@@ -11,6 +11,8 @@ import { Screen } from "@/components/Screen";
 import { HeavyNudge } from "@/components/safety/HeavyNudge";
 import { EntryLinks } from "@/components/today/EntryLinks";
 import { LetterCard } from "@/components/today/LetterCard";
+import { FutureLetterLine } from "@/components/today/FutureLetterLine";
+import { MomentReturn } from "@/components/today/MomentReturn";
 import { QuickCheckin } from "@/components/today/QuickCheckin";
 import { SuggestionCard } from "@/components/today/SuggestionCard";
 import { WorryReadyLine } from "@/components/today/WorryReadyLine";
@@ -50,6 +52,7 @@ export default function TodayScreen() {
     <View testID="today-checkin" style={styles.group}>
       <QuickCheckin />
       <SuggestionCard now={now} />
+      <MomentReturn now={now} />
     </View>
   );
   const entries = (
@@ -75,6 +78,7 @@ export default function TodayScreen() {
       <View style={styles.sections}>
         <HeavyNudge now={now} />
         <LetterCard now={now} />
+        <FutureLetterLine now={now} />
         {/* One keyed list, so blocks move (not remount) when 18:00 / 05:00 comes — a note being typed survives. */}
         {todayOrder(evening, intents)
           .filter((key) => ideas || key !== "prompt")

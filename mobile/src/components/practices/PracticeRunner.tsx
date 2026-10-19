@@ -11,6 +11,9 @@ import { TextField } from "@/components/ui/TextField";
 import { SaveSheet } from "@/components/vent/SaveSheet";
 import { useAppState } from "@/hooks/use-app-state";
 import { guide, hush } from "@/lib/voice";
+import { moments } from "@/lib/moments";
+import { toast } from "@/components/ui/Toast";
+import { VaultLockedError } from "@mindcocoon/core/vault/session";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
@@ -90,6 +93,18 @@ export function PracticeRunner({ practice }: { practice: Practice }) {
     else setChoosing(true);
   }
 
+  /** Three good things: each answer becomes a light moment in the jar (encrypted). */
+  async function toJar() {
+    try {
+      for (const [i, s] of practice.steps.entries()) if (s.input && answers[i]?.trim()) await moments.add(answers[i]);
+      toast.show(t.moments.kept);
+      reset();
+      router.back();
+    } catch (e) {
+      toast.show(e instanceof VaultLockedError ? t.today.noteLocked : t.vault.unavailable);
+    }
+  }
+
   function letGo() {
     reset();
     router.back();
@@ -103,7 +118,12 @@ export function PracticeRunner({ practice }: { practice: Practice }) {
             {t.practices.keepTitle}
           </Text>
           <Text style={[styles.hint, { color: c.mutedForeground }]}>{t.practices.keepHint}</Text>
-          <Button onPress={() => setSaveOpen(true)}>{t.practices.keep}</Button>
+          {practice.id === "three-good-things" && (
+            <Button onPress={() => void toJar()}>{t.moments.putThem}</Button>
+          )}
+          <Button variant={practice.id === "three-good-things" ? "outline" : "primary"} onPress={() => setSaveOpen(true)}>
+            {t.practices.keep}
+          </Button>
           <Button variant="ghost" onPress={letGo}>
             {t.practices.letGo}
           </Button>

@@ -11,6 +11,8 @@ import { clearPrefs } from "./prefs";
 import { cancelReminder } from "./reminder";
 import { disableBiometric } from "./biometric";
 import { clearWorries } from "./worries";
+import { futureLetters } from "./future-letters";
+import { moments } from "./moments";
 
 export interface ExportFile {
   app: "MindCocoon";
@@ -83,6 +85,8 @@ export async function eraseEverything() {
   await wipeVault();
   await clearMoods();
   await clearWorries();
+  await moments.clear();
+  await futureLetters.clear();
   await clearPrefs();
   deleteLeftoverExports();
   eraseCount++;

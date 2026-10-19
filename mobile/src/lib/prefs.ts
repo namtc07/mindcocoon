@@ -60,6 +60,8 @@ export interface Prefs {
   letterReadOn?: string;
   /** Writing ideas, stories and practices published after this version (from Supabase). */
   remoteContent?: CachedContent;
+  /** Day key on which Kén last brought back a light moment (at most once a day). */
+  momentShownOn?: string;
   /** Which part of Sanctuary was open last. */
   sanctuaryTab?: "sounds" | "breathe" | "practices";
   /** Optional name for the greeting (device only). */

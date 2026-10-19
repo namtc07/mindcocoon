@@ -1,5 +1,5 @@
 import { router, type Href } from "expo-router";
-import { Feather, Flower2, Moon, Music2, Wind, type LucideIcon } from "lucide-react-native";
+import { Feather, Flower2, Mail, Moon, Music2, Wind, type LucideIcon } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
@@ -34,6 +34,7 @@ export function EntryLinks({ evening = false }: { evening?: boolean }) {
     { key: "breathe", href: { pathname: "/sanctuary", params: { section: "breathe" } } as Href, Icon: Wind, title: t.today.tiles.breatheTitle, body: t.today.tiles.breatheChoicesBody },
     { key: "practices", href: "/practices" as Href, Icon: Flower2, title: t.today.tiles.practicesTitle, body: t.today.tiles.practicesBody },
     { key: "music", href: { pathname: "/sanctuary", params: { section: "tonight" } } as Href, Icon: Music2, title: t.today.tiles.musicTitle, body: t.today.tiles.musicBody },
+    { key: "letter", href: "/future-letters" as Href, Icon: Mail, title: t.futureLetters.entryTitle, body: t.futureLetters.entryBody },
   ];
   const entries = evening ? [windDown, ...rest] : [...rest, windDown];
   return (

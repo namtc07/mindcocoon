@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import type { DayCell } from "@mindcocoon/core/mood/selectors";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -12,6 +13,7 @@ import { MonthHeatmap, type MonthView } from "@/components/mood/MonthHeatmap";
 import { MoodHistory } from "@/components/mood/MoodHistory";
 import { WeekStrip } from "@/components/mood/WeekStrip";
 import { YearPixels } from "@/components/mood/YearPixels";
+import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { useMoodLogs } from "@/hooks/use-mood-logs";
 import { useNow } from "@/hooks/use-now";
@@ -65,6 +67,15 @@ export default function MoodScreen() {
           <MoodLegend />
           <JourneyCard logs={logs} now={now} />
         </View>
+        <View style={[styles.jar, { backgroundColor: c.surface }]}>
+          <Text accessibilityRole="header" style={{ fontFamily: fonts.sansMedium, fontSize: 16, color: c.foreground }}>
+            {t.moments.title}
+          </Text>
+          <Text style={{ fontFamily: fonts.sans, fontSize: 14, color: c.mutedForeground }}>{t.moments.jarBody}</Text>
+          <Button variant="outline" onPress={() => router.push("/moments")}>
+            {t.moments.open}
+          </Button>
+        </View>
         <View testID="mood-history">
           <MoodHistory logs={logs} />
         </View>
@@ -76,6 +87,7 @@ export default function MoodScreen() {
 }
 
 const styles = StyleSheet.create({
+  jar: { borderRadius: 16, padding: space.lg, gap: space.sm },
   sections: { gap: space.xxl, marginTop: space.xl },
   view: { gap: space.md },
   toggle: { flexDirection: "row", gap: space.sm },
