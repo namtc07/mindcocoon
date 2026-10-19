@@ -21,12 +21,12 @@ describe("Mood meter", () => {
 
   it("names its two directions", async () => {
     await renderWithApp(<MoodPicker variant="meter" value={null} onChange={() => {}} label="How are you?" />);
-    for (const text of ["More energy", "Less energy", "Unpleasant", "Pleasant"]) expect(screen.getByText(text)).toBeOnTheScreen();
+    for (const text of ["More energy", "Less energy", "Unpleasant", "Pleasant"]) expect(screen.getByText(text, { includeHiddenElements: true })).toBeOnTheScreen();
   });
 
   it("Today checks in on the meter", async () => {
     await renderWithApp(<TodayScreen />);
-    expect(screen.getByTestId("mood-meter")).toBeOnTheScreen();
+    expect(screen.getByTestId("feelings-meter")).toBeOnTheScreen();
   });
 
   it("feeling tiles are tinted with the mood and still capped at three", async () => {
@@ -46,7 +46,7 @@ describe("Mood meter", () => {
 
 it("the meter's side labels shrink instead of pushing orbs out at large text sizes", async () => {
   await renderWithApp(<MoodPicker variant="meter" value={null} onChange={() => {}} label="How are you?" />);
-  const side = screen.getByText("Pleasant");
+  const side = screen.getByText("Pleasant", { includeHiddenElements: true });
   expect(side).toHaveStyle({ flex: 1 });
   expect(side.props.maxFontSizeMultiplier).toBeLessThanOrEqual(1.3);
   expect(screen.getByRole("radio", { name: "Numb" })).toHaveStyle({ flexShrink: 0, maxWidth: 104 });

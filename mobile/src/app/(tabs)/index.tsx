@@ -19,6 +19,7 @@ import { todayOrder } from "@/lib/today-order";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
+import { ScreenActive } from "@/components/art/activity";
 
 const NO_INTENTS: never[] = [];
 const readIntents = () => getPref("intents") ?? NO_INTENTS;
@@ -32,7 +33,7 @@ export default function TodayScreen() {
   const intents = useSyncExternalStore(subscribePrefs, readIntents, readIntents);
   const name = useSyncExternalStore(subscribePrefs, readName, readName);
   const part = partOfDay(now);
-  const greeting = name ? t.today.greetingNamed[part].replace("{name}", name) : t.today.greeting[part];
+  const greeting = name ? t.today.greetingNamed[part].split("{name}").join(name) : t.today.greeting[part];
   const prompt = (
     <View testID="today-prompt">
       <ReflectionPrompt now={now} />
@@ -51,6 +52,7 @@ export default function TodayScreen() {
   );
   const blocks = { checkin, worry: <WorryReadyLine now={now} />, entries, prompt };
   return (
+    <ScreenActive>
     <Screen title={greeting} hero={
         <View>
           <Sky part={part} />
@@ -74,6 +76,7 @@ export default function TodayScreen() {
       </View>
       <AdBanner placement="today" />
     </Screen>
+    </ScreenActive>
   );
 }
 

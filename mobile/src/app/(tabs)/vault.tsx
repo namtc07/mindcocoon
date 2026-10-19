@@ -13,6 +13,7 @@ import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
+import { ScreenActive } from "@/components/art/activity";
 
 export default function VaultScreen() {
   const { t } = useI18n();
@@ -60,6 +61,7 @@ export default function VaultScreen() {
   }
 
   return (
+    <ScreenActive>
     <Screen title={t.vault.title}>
       <Text style={[styles.p, { color: c.mutedForeground }]}>{t.vault.intro}</Text>
       <View style={styles.body}>{content}</View>
@@ -76,6 +78,7 @@ export default function VaultScreen() {
       />
       <RecoveryCodeCard code={recoveryCode} onClose={() => setRecoveryCode(null)} />
     </Screen>
+    </ScreenActive>
   );
 }
 

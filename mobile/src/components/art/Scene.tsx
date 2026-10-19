@@ -1,5 +1,6 @@
 import { View } from "react-native";
 import Svg, { Circle, Defs, Ellipse, G, Line, LinearGradient, Path, RadialGradient, Rect, Stop } from "react-native-svg";
+import { useSvgId } from "./activity";
 import { decorative, seeded } from "./seeded";
 
 export type SceneKind = "rain" | "fire" | "sea" | "rain-sea";
@@ -40,11 +41,11 @@ function Sea() {
   );
 }
 
-function Fire() {
+function Fire({ glow }: { glow: string }) {
   return (
     <G>
       <Path d={`M0 88 C40 76 90 80 ${W} 86 L${W} ${H} L0 ${H} Z`} fill="#141c30" />
-      <Circle cx={80} cy={86} r={40} fill="url(#ember)" />
+      <Circle cx={80} cy={86} r={40} fill={`url(#${glow})`} />
       <Rect x={60} y={90} width={40} height={6} rx={3} fill="#6b4a2f" transform="rotate(-12 80 93)" />
       <Rect x={60} y={90} width={40} height={6} rx={3} fill="#5a3d27" transform="rotate(12 80 93)" />
       <Path d="M80 58 C90 70 94 78 88 88 C84 94 76 94 72 88 C66 78 72 70 80 58 Z" fill="#d9a86c" />
@@ -58,24 +59,25 @@ function Fire() {
  * `fill` takes the full width at the drawing's own shape (nothing cropped); otherwise `height`.
  */
 export function Scene({ kind, height = H, fill = false }: { kind: SceneKind; height?: number; fill?: boolean }) {
+  const id = useSvgId();
   return (
     <View testID={`scene-${kind}`} {...decorative} style={[{ overflow: "hidden" }, fill ? { width: "100%", aspectRatio: W / H } : { height }]}>
       <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice">
         <Defs>
-          <LinearGradient id="scene-sky" x1="0" y1="0" x2="0" y2="1">
+          <LinearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor="#0b1224" />
             <Stop offset="1" stopColor={kind === "fire" ? "#3a2d3f" : "#22345a"} />
           </LinearGradient>
-          <RadialGradient id="ember" cx="50%" cy="50%" r="50%">
+          <RadialGradient id={`${id}-ember`} cx="50%" cy="50%" r="50%">
             <Stop offset="0" stopColor="#d9a86c" stopOpacity={0.55} />
             <Stop offset="1" stopColor="#d9a86c" stopOpacity={0} />
           </RadialGradient>
         </Defs>
-        <Rect width={W} height={H} fill="url(#scene-sky)" />
+        <Rect width={W} height={H} fill={`url(#${id}-sky)`} />
         {kind !== "rain" && kind !== "rain-sea" && STARS.map((s, i) => <Circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#f1f5f9" opacity={0.6} />)}
         {kind === "sea" && <Circle cx={119} cy={30} r={11} fill="#f1f5f9" />}
         {(kind === "sea" || kind === "rain-sea") && <Sea />}
-        {kind === "fire" && <Fire />}
+        {kind === "fire" && <Fire glow={`${id}-ember`} />}
         {(kind === "rain" || kind === "rain-sea") && <Rain />}
         {kind === "rain" && <Path d={`M0 94 C50 84 100 90 ${W} 92 L${W} ${H} L0 ${H} Z`} fill="#141c30" />}
       </Svg>

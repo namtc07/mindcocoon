@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-import Animated, { useAnimatedProps, useReducedMotion, useSharedValue, withDelay, withRepeat, withTiming } from "react-native-reanimated";
+import Animated, { cancelAnimation, useAnimatedProps, useReducedMotion, useSharedValue, withDelay, withRepeat, withTiming } from "react-native-reanimated";
 import Svg, { Circle, Defs, G, LinearGradient, Mask, Path, Rect, Stop } from "react-native-svg";
+import { useAnimationsActive, useSvgId } from "./activity";
 import { decorative, seeded } from "./seeded";
 
 export type PartOfDay = "morning" | "afternoon" | "evening" | "night";
@@ -29,6 +30,10 @@ function TwinkleStar({ x, y, r, delay, still }: { x: number; y: number; r: numbe
   useEffect(() => {
     if (still) return;
     opacity.set(withDelay(delay, withRepeat(withTiming(0.25, { duration: 1600 }), -1, true)));
+    return () => {
+      cancelAnimation(opacity);
+      opacity.set(0.9);
+    };
   }, [delay, opacity, still]);
   const animatedProps = useAnimatedProps(() => ({ opacity: opacity.get() }));
   return <AnimatedCircle testID="star" cx={x} cy={y} r={r} fill="#f1f5f9" animatedProps={animatedProps} />;
@@ -39,7 +44,10 @@ function TwinkleStar({ x, y, r, delay, still }: { x: number; y: number; r: numbe
  * at night. The drawing is always H tall and as wide as the space's shape, so nothing is cropped.
  */
 export function Sky({ part, height = H }: { part: PartOfDay; height?: number }) {
-  const still = useReducedMotion();
+  const reduceMotion = useReducedMotion();
+  const active = useAnimationsActive();
+  const still = reduceMotion || !active;
+  const id = useSvgId();
   const [vw, setVw] = useState(W);
   const s = SKIES[part];
   const sunX = vw * (part === "morning" ? 0.2 : part === "afternoon" ? 0.7 : 0.83);
@@ -57,16 +65,16 @@ export function Sky({ part, height = H }: { part: PartOfDay; height?: number }) 
     >
       <Svg testID="sky-svg" width="100%" height="100%" viewBox={`0 0 ${vw} ${H}`} preserveAspectRatio="xMidYMid slice">
         <Defs>
-          <LinearGradient id={`sky-${part}`} x1="0" y1="0" x2="0" y2="1">
+          <LinearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={s.top} />
             <Stop offset="1" stopColor={s.bottom} />
           </LinearGradient>
-          <Mask id="moon">
+          <Mask id={`${id}-moon`}>
             <Rect width={vw} height={H} fill="white" />
             <Circle cx={moonX + 8} cy={24} r={13} fill="black" />
           </Mask>
         </Defs>
-        <Rect width={vw} height={H} fill={`url(#sky-${part})`} />
+        <Rect width={vw} height={H} fill={`url(#${id}-sky)`} />
         {part === "night" &&
           STARS.map((star, i) =>
             i < TWINKLING ? (
@@ -76,7 +84,7 @@ export function Sky({ part, height = H }: { part: PartOfDay; height?: number }) 
             ),
           )}
         {part === "night" ? (
-          <Circle cx={moonX} cy={30} r={15} fill={s.light} mask="url(#moon)" />
+          <Circle cx={moonX} cy={30} r={15} fill={s.light} mask={`url(#${id}-moon)`} />
         ) : (
           <>
             <Circle cx={sunX} cy={sunY} r={26} fill={s.light} opacity={0.25} />

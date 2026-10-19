@@ -1,7 +1,7 @@
 import { MAX_NAME_LENGTH, ONBOARDING_INTENTS, type OnboardingIntent } from "@mindcocoon/core/onboarding";
 import { usePathname } from "expo-router";
-import { useState, useSyncExternalStore } from "react";
-import { Modal, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Modal, Platform, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ken } from "@/components/art/Ken";
 import { PrivacyCover } from "@/components/PrivacyCover";
@@ -12,6 +12,7 @@ import { TextField } from "@/components/ui/TextField";
 import { useI18n } from "@/i18n/i18n";
 import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
 import { setReminder } from "@/lib/reminder";
+import { setWelcomeOpen } from "@/lib/welcome-state";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
@@ -33,6 +34,16 @@ export function Welcome() {
   const [name, setName] = useState("");
   const [remind, setRemind] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [denied, setDenied] = useState(false);
+  const visible = !seen && pathname !== "/help";
+
+  // Ads wait while this window is up or still fading out (iOS reports the end through onDismiss).
+  const wasVisible = useRef(false);
+  useEffect(() => {
+    if (visible) setWelcomeOpen(true);
+    else if (wasVisible.current && Platform.OS !== "ios") setWelcomeOpen(false);
+    wasVisible.current = visible;
+  }, [visible]);
 
   const skip = () => void setPref("firstRunSeen", true);
   async function begin() {
@@ -41,18 +52,30 @@ export function Welcome() {
       await setPref("intents", intents);
       const trimmed = name.trim().slice(0, MAX_NAME_LENGTH);
       if (trimmed) await setPref("name", trimmed);
-      // A denied permission just means no reminder; it can be turned on later in Settings.
-      if (remind) await setReminder(22, t).catch(() => "denied");
+      if (remind) {
+        const result = await setReminder(22, t).catch(() => "denied" as const);
+        if (result === "denied") {
+          // Say so and turn the switch off; the next "Begin" finishes without a reminder.
+          setRemind(false);
+          setDenied(true);
+          return;
+        }
+      }
+      await setPref("firstRunSeen", true);
+    } catch {
+      // Saving a preference failed: still let the person in (nothing here is required).
+      void setPref("firstRunSeen", true).catch(() => {});
     } finally {
       setBusy(false);
-      await setPref("firstRunSeen", true);
     }
   }
+  /** Android back: one step back; on the first step it closes like Skip. */
+  const back = () => (step > 0 ? setStep(step - 1) : skip());
   const toggle = (i: OnboardingIntent) => setIntents((cur) => (cur.includes(i) ? cur.filter((x) => x !== i) : [...cur, i]));
   const text = [styles.body, { color: c.mutedForeground }];
 
   return (
-    <Modal visible={!seen && pathname !== "/help"} animationType="fade" onRequestClose={skip}>
+    <Modal testID="welcome" visible={visible} animationType="fade" onRequestClose={back} onDismiss={() => setWelcomeOpen(false)}>
       <ScrollView
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
@@ -116,8 +139,19 @@ export function Welcome() {
                 <Text style={[styles.body, { color: c.foreground }]}>{t.welcome.remind}</Text>
                 <Text style={[styles.small, { color: c.mutedForeground }]}>{t.welcome.remindHint}</Text>
               </View>
-              <Switch accessibilityLabel={t.welcome.remind} value={remind} onValueChange={setRemind} trackColor={{ true: c.primary, false: c.muted }} />
+              <Switch
+                accessibilityLabel={t.welcome.remind}
+                value={remind}
+                onValueChange={(v) => {
+                  setRemind(v);
+                  setDenied(false);
+                }} trackColor={{ true: c.primary, false: c.muted }} />
             </View>
+            {denied && (
+              <Text accessibilityLiveRegion="polite" style={[styles.small, { color: c.foreground }]}>
+                {t.settings.reminderDenied}
+              </Text>
+            )}
             <Button disabled={busy} onPress={() => void begin()}>
               {t.welcome.begin}
             </Button>

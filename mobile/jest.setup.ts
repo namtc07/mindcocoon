@@ -45,6 +45,7 @@ jest.mock("expo-router", () => {
     useNavigation: () => navigation,
     __navigation: navigation,
     useFocusEffect: (cb: () => void | (() => void)) => React.useEffect(cb, [cb]),
+    useIsFocused: jest.fn(() => true),
     Stack: { Screen: () => null },
     Redirect: ({ href }: { href: unknown }) => {
       router.replace(href);

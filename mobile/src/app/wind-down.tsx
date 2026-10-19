@@ -1,4 +1,4 @@
-import { PRESET_MIXES, type PresetMixId } from "@mindcocoon/core/audio/mixes";
+import { mixMatches, PRESET_MIXES, type PresetMixId } from "@mindcocoon/core/audio/mixes";
 import { dayKey, dayKeyFromISO } from "@mindcocoon/core/dates";
 import { suggestionFor } from "@mindcocoon/core/feelings";
 import { addMood, changeMood, getMoodState } from "@mindcocoon/core/mood/store";
@@ -42,7 +42,7 @@ export default function WindDownScreen() {
   const [step, setStep] = useState<Step>("checkin");
   const [mood, setMood] = useState<MoodType | null>(null);
   const [mixChoice, setMixChoice] = useState<PresetMixId | "keep" | null>(null);
-  const { playing } = useAudio();
+  const { playing, held, volumes } = useAudio();
   const [minutes, setMinutes] = useState<SleepMinutes>(30);
   const [starting, setStarting] = useState(false);
   // Mood taps are saved one after another on today's check-in as it is by then (never duplicated).
@@ -51,6 +51,9 @@ export default function WindDownScreen() {
   const currentMood = mood ?? todayLog?.mood ?? null;
   const suggestion = currentMood ? suggestionFor(currentMood) : null;
   // If something is already playing, the default is to keep it (Goodnight then only sets the timer).
+  // The goodnight picture shows the ready-made mix that is actually on (paused counts), if any.
+  const sounding = playing.length > 0 ? playing : held;
+  const nightPreset = PRESET_MIXES.find((p) => mixMatches(p.mix, sounding, volumes))?.id;
   const mix = mixChoice ?? (playing.length > 0 ? "keep" : (suggestion?.mix ?? "rainy-night"));
 
   function pickMood(next: MoodType) {
@@ -151,9 +154,9 @@ export default function WindDownScreen() {
 
         {step === "night" && (
           <View style={[styles.step, styles.night]}>
-            {mix !== "keep" && (
+            {nightPreset && (
               <View style={styles.scene}>
-                <Scene kind={SCENE_OF[mix]} fill />
+                <Scene kind={SCENE_OF[nightPreset]} fill />
               </View>
             )}
             <Ken mood="sleepy" size={72} />

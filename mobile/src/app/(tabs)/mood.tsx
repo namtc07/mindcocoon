@@ -18,6 +18,7 @@ import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
+import { ScreenActive } from "@/components/art/activity";
 
 export default function MoodScreen() {
   const { t } = useI18n();
@@ -27,6 +28,7 @@ export default function MoodScreen() {
   const [selected, setSelected] = useState<DayCell | null>(null);
   const [view, setView] = useState<"month" | "year">("month");
   return (
+    <ScreenActive>
     <Screen title={t.moodPage.title}>
       <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground }}>{t.moodPage.intro}</Text>
       <View style={styles.sections}>
@@ -56,6 +58,7 @@ export default function MoodScreen() {
       <DayDetail day={selected} logs={logs} onClose={() => setSelected(null)} />
       <AdBanner placement="mood" />
     </Screen>
+    </ScreenActive>
   );
 }
 

@@ -3,6 +3,7 @@ import { MOODS } from "@mindcocoon/core/moods";
 import type { MoodType } from "@mindcocoon/core/types";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Defs, RadialGradient, Rect, Stop } from "react-native-svg";
+import { useSvgId } from "@/components/art/activity";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
@@ -70,33 +71,37 @@ function lighten(hex: string, amount: number) {
   return `rgb(${ch(16)}, ${ch(8)}, ${ch(0)})`;
 }
 
-function Orb({ color, size, id }: { color: string; size: number; id: string }) {
+function Orb({ color, size }: { color: string; size: number }) {
+  const id = useSvgId();
   return (
     <Svg width={size} height={size}>
       <Defs>
-        <RadialGradient id={`orb-${id}`} cx="38%" cy="34%" r="70%">
+        <RadialGradient id={`${id}-orb`} cx="38%" cy="34%" r="70%">
           <Stop offset="0" stopColor={lighten(color, 0.45)} />
           <Stop offset="1" stopColor={color} />
         </RadialGradient>
       </Defs>
-      <Circle cx={size / 2} cy={size / 2} r={size / 2} fill={`url(#orb-${id})`} />
+      <Circle cx={size / 2} cy={size / 2} r={size / 2} fill={`url(#${id}-orb)`} />
     </Svg>
   );
 }
 
 const ORB = 60;
+/** Side labels sit between the radios; screen readers get the same idea from each mood's hint. */
+const SIDE_LABEL = { accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" } as const;
 
 function MoodMeter({ value, onChange, label }: Props) {
   const { t } = useI18n();
   const { c } = useTheme();
   const radio = useMoodRadio(value, onChange);
+  const gid = useSvgId();
   const at = (energy: number, pleasant: number) => MOODS.find((m) => MOOD_METER[m.id].energy === energy && MOOD_METER[m.id].pleasant === pleasant)!.id;
   const cell = (id: MoodType) => {
     const checked = id === value;
     return (
       <Pressable key={id} {...radio(id)} style={styles.cell}>
         <View style={[styles.orb, checked && { borderColor: c.foreground, transform: [{ scale: 1.1 }] }]}>
-          <Orb color={c.mood[id]} size={ORB} id={id} />
+          <Orb color={c.mood[id]} size={ORB} />
         </View>
         <Text numberOfLines={1} style={[styles.orbLabel, { color: checked ? c.foreground : c.mutedForeground }]}>
           {t.mood.states[id].label}
@@ -107,22 +112,22 @@ function MoodMeter({ value, onChange, label }: Props) {
   const axis = [styles.axis, { color: c.mutedForeground }];
   const AXIS_SCALE = 1.3;
   return (
-    <View testID="mood-meter" style={[styles.meter, { borderColor: c.border }]}>
+    <View testID="feelings-meter" style={[styles.meter, { borderColor: c.border }]}>
       {/* Soft corner glows in each corner mood's colour (decorative). */}
       <View style={StyleSheet.absoluteFill} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         <Svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
           <Defs>
             {(["anxious", "hopeful", "heavy", "peaceful"] as const).map((id) => (
-              <RadialGradient key={id} id={`glow-${id}`} cx="50%" cy="50%" r="50%">
+              <RadialGradient key={id} id={`${gid}-${id}`} cx="50%" cy="50%" r="50%">
                 <Stop offset="0" stopColor={c.mood[id]} stopOpacity={0.28} />
                 <Stop offset="1" stopColor={c.mood[id]} stopOpacity={0} />
               </RadialGradient>
             ))}
           </Defs>
-          <Rect x={-30} y={-30} width={90} height={90} fill="url(#glow-anxious)" />
-          <Rect x={40} y={-30} width={90} height={90} fill="url(#glow-hopeful)" />
-          <Rect x={-30} y={40} width={90} height={90} fill="url(#glow-heavy)" />
-          <Rect x={40} y={40} width={90} height={90} fill="url(#glow-peaceful)" />
+          <Rect x={-30} y={-30} width={90} height={90} fill={`url(#${gid}-anxious)`} />
+          <Rect x={40} y={-30} width={90} height={90} fill={`url(#${gid}-hopeful)`} />
+          <Rect x={-30} y={40} width={90} height={90} fill={`url(#${gid}-heavy)`} />
+          <Rect x={40} y={40} width={90} height={90} fill={`url(#${gid}-peaceful)`} />
         </Svg>
       </View>
       <Text maxFontSizeMultiplier={AXIS_SCALE} style={[axis, styles.center]}>{t.feelings.meter.moreEnergy}</Text>
@@ -132,9 +137,9 @@ function MoodMeter({ value, onChange, label }: Props) {
           {cell(at(1, 1))}
         </View>
         <View style={styles.line}>
-          <Text maxFontSizeMultiplier={AXIS_SCALE} style={[axis, styles.side]}>{t.feelings.meter.unpleasant}</Text>
+          <Text {...SIDE_LABEL} maxFontSizeMultiplier={AXIS_SCALE} style={[axis, styles.side]}>{t.feelings.meter.unpleasant}</Text>
           {cell(at(0, 0))}
-          <Text maxFontSizeMultiplier={AXIS_SCALE} style={[axis, styles.side, { textAlign: "right" }]}>{t.feelings.meter.pleasant}</Text>
+          <Text {...SIDE_LABEL} maxFontSizeMultiplier={AXIS_SCALE} style={[axis, styles.side, { textAlign: "right" }]}>{t.feelings.meter.pleasant}</Text>
         </View>
         <View style={styles.line}>
           {cell(at(-1, -1))}

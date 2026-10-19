@@ -16,3 +16,15 @@ describe("todayOrder", () => {
     expect(todayOrder(false, ["feelings"])).toEqual(["worry", "checkin", "prompt", "entries"]);
   });
 });
+
+describe("todayOrder — every intent counts", () => {
+  it("brings the worry line to the top for people who came for their worries", () => {
+    expect(todayOrder(true, ["worries"])).toEqual(["worry", "checkin", "entries", "prompt"]);
+    expect(todayOrder(true, ["sleep", "worries"])).toEqual(["worry", "entries", "checkin", "prompt"]);
+  });
+
+  it("brings the writing prompt forward for people who came to write", () => {
+    expect(todayOrder(false, ["write"])).toEqual(["prompt", "worry", "checkin", "entries"]);
+    expect(todayOrder(true, ["write"])).toEqual(["checkin", "worry", "prompt", "entries"]);
+  });
+});

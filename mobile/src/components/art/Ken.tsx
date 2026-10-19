@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
+import Animated, { cancelAnimation, Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
 import Svg, { Circle, Defs, Ellipse, G, LinearGradient, Path, Stop, Text as SvgText } from "react-native-svg";
+import { useAnimationsActive, useSvgId } from "./activity";
 import { decorative } from "./seeded";
 
 export type KenMood = "calm" | "sleepy" | "glad";
@@ -42,25 +43,32 @@ function Face({ mood }: { mood: KenMood }) {
  * Floats gently unless Reduce Motion is on.
  */
 export function Ken({ mood = "calm", size = 72 }: { mood?: KenMood; size?: number }) {
-  const still = useReducedMotion();
+  const reduceMotion = useReducedMotion();
+  const active = useAnimationsActive();
+  const still = reduceMotion || !active;
+  const id = useSvgId();
   const y = useSharedValue(0);
   useEffect(() => {
     if (still) return;
     y.set(withRepeat(withTiming(-3, { duration: 1800, easing: Easing.inOut(Easing.sin) }), -1, true));
+    return () => {
+      cancelAnimation(y);
+      y.set(0);
+    };
   }, [still, y]);
   const float = useAnimatedStyle(() => ({ transform: [{ translateY: y.get() }] }));
   return (
     <Animated.View testID={`ken-${mood}`} {...decorative} style={[{ width: size, height: size * 1.2 }, float]}>
       <Svg width="100%" height="100%" viewBox="0 0 100 120">
         <Defs>
-          <LinearGradient id="ken-body" x1="0" y1="0" x2="0" y2="1">
+          <LinearGradient id={`${id}-body`} x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor="#b6dcd2" />
             <Stop offset="0.6" stopColor="#8cc0b3" />
             <Stop offset="1" stopColor="#e2b77f" />
           </LinearGradient>
         </Defs>
         <Path d="M50 0 L50 14" stroke="#7fb5a8" strokeWidth={2} strokeLinecap="round" />
-        <Path d={BODY} fill="url(#ken-body)" />
+        <Path d={BODY} fill={`url(#${id}-body)`} />
         <Path d="M16 48 C36 40 64 54 86 46" stroke="#f1f5f9" strokeOpacity={0.4} strokeWidth={3} strokeLinecap="round" fill="none" />
         <Path d="M14 96 C36 88 64 104 86 94" stroke="#f1f5f9" strokeOpacity={0.35} strokeWidth={3} strokeLinecap="round" fill="none" />
         <Ellipse cx={30} cy={74} rx={6} ry={3.5} fill="#e08a7e" opacity={0.35} />

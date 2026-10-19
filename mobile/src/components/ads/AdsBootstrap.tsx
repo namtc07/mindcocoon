@@ -3,6 +3,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { startAds } from "@/lib/ads/admob";
 import { getPref, subscribePrefs } from "@/lib/prefs";
 import { useFlags } from "@/lib/remote-config";
+import { isWelcomeOpen, subscribeWelcome } from "@/lib/welcome-state";
 
 const seenFirstRun = () => getPref("firstRunSeen") === true;
 
@@ -13,8 +14,9 @@ const AD_SCREENS = new Set(["/", "/mood"]);
 export function AdsBootstrap() {
   const flags = useFlags();
   const firstRunSeen = useSyncExternalStore(subscribePrefs, seenFirstRun, seenFirstRun);
+  const welcomeOpen = useSyncExternalStore(subscribeWelcome, isWelcomeOpen, isWelcomeOpen);
   const onAdScreen = AD_SCREENS.has(usePathname());
-  const wanted = firstRunSeen && onAdScreen && (flags.adsEnabled || flags.rewardedEnabled);
+  const wanted = firstRunSeen && !welcomeOpen && onAdScreen && (flags.adsEnabled || flags.rewardedEnabled);
   useEffect(() => {
     if (wanted) void startAds();
   }, [wanted]);
