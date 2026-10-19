@@ -11,14 +11,14 @@ interface TextFieldProps extends Omit<TextInputProps, "style"> {
 }
 
 export function TextField({ label, showLabel = false, ...props }: TextFieldProps) {
-  const { c, name } = useTheme();
+  const { c, isDark } = useTheme();
   return (
     <View style={styles.wrap}>
       {showLabel && <Text style={[styles.label, { color: c.mutedForeground }]}>{label}</Text>}
       <TextInput
         accessibilityLabel={label}
         placeholderTextColor={c.mutedForeground}
-        keyboardAppearance={name === "dusk" ? "dark" : "light"}
+        keyboardAppearance={isDark ? "dark" : "light"}
         {...props}
         // Keyboard taps never reach the root view's touch handler, so typing marks activity here.
         onChangeText={(text) => {

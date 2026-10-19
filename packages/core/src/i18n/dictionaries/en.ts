@@ -328,6 +328,7 @@ export const en = {
   },
   settings: {
     adPrivacy: "Ad privacy choices",
+    nightDim: "Dim after 10 pm",
     releaseSound: "Sound when letting go",
     reminderOff: "Off",
     reminderTitle: "Evening reminder",

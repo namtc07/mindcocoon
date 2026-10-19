@@ -5,24 +5,36 @@ import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
 import { fonts } from "@/theme/fonts";
 import { useTheme } from "@/theme/theme";
 
-const on = () => getPref("releaseSound") !== false;
+type BoolPref = "releaseSound" | "nightDim";
 
-/** On by default: a short sound when letting go in Vent. */
-export function ReleaseSoundSetting() {
-  const { t } = useI18n();
+/** A Settings row with a switch for an on-by-default preference. */
+function PrefSwitch({ pref, label }: { pref: BoolPref; label: string }) {
   const { c } = useTheme();
-  const enabled = useSyncExternalStore(subscribePrefs, on, on);
+  const read = () => getPref(pref) !== false;
+  const enabled = useSyncExternalStore(subscribePrefs, read, read);
   return (
     <View style={styles.row}>
-      <Text style={[styles.label, { color: c.foreground }]}>{t.settings.releaseSound}</Text>
+      <Text style={[styles.label, { color: c.foreground }]}>{label}</Text>
       <Switch
-        accessibilityLabel={t.settings.releaseSound}
+        accessibilityLabel={label}
         value={enabled}
-        onValueChange={(v) => void setPref("releaseSound", v)}
+        onValueChange={(v) => void setPref(pref, v)}
         trackColor={{ true: c.primary, false: c.muted }}
       />
     </View>
   );
+}
+
+/** On by default: a short sound when letting go in Vent. */
+export function ReleaseSoundSetting() {
+  const { t } = useI18n();
+  return <PrefSwitch pref="releaseSound" label={t.settings.releaseSound} />;
+}
+
+/** On by default: softer midnight colours from 22:00 to 06:00. */
+export function NightDimSetting() {
+  const { t } = useI18n();
+  return <PrefSwitch pref="nightDim" label={t.settings.nightDim} />;
 }
 
 const styles = StyleSheet.create({

@@ -36,7 +36,7 @@ const readRitual = () => getPref("ritual") ?? "burn";
 
 export default function VentScreen() {
   const { t, locale } = useI18n();
-  const { c, name } = useTheme();
+  const { c, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const appState = useAppState();
   const now = useNow();
@@ -149,7 +149,7 @@ export default function VentScreen() {
               spellCheck={false}
               autoComplete="off"
               textContentType="none"
-              keyboardAppearance={name === "dusk" ? "dark" : "light"}
+              keyboardAppearance={isDark ? "dark" : "light"}
               style={[styles.editor, { color: c.foreground }]}
             />
           )}

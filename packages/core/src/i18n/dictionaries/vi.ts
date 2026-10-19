@@ -329,6 +329,7 @@ export const vi: Dictionary = {
   },
   settings: {
     adPrivacy: "Lựa chọn quyền riêng tư quảng cáo",
+    nightDim: "Dịu màn hình sau 22 giờ",
     releaseSound: "Âm thanh khi thả đi",
     reminderOff: "Tắt",
     reminderTitle: "Nhắc nhở buổi tối",

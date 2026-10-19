@@ -33,6 +33,8 @@ export interface Prefs {
   suggestHiddenOn?: string;
   /** Play a short sound when letting go in Vent (on unless set to false). */
   releaseSound?: boolean;
+  /** Softer "midnight" colours from 22:00 to 06:00 (on unless set to false). */
+  nightDim?: boolean;
 }
 
 const KEY = "prefs:v1";

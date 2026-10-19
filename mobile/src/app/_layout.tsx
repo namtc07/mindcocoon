@@ -24,7 +24,7 @@ void SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const fontsReady = useAppFonts();
   const [prefsReady, setPrefsReady] = useState(false);
-  const { name, c } = useTheme();
+  const { isDark, c } = useTheme();
   const eraseCount = useEraseCount();
 
   useEffect(() => {
@@ -74,7 +74,7 @@ export default function RootLayout() {
       <ReminderSync />
       <NotificationRouter />
       <ToastHost />
-      <StatusBar style={name === "dusk" ? "light" : "dark"} />
+      <StatusBar style={isDark ? "light" : "dark"} />
     </View>
   );
 }

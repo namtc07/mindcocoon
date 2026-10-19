@@ -6,7 +6,7 @@ import { Muted, Screen } from "@/components/Screen";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { TextField } from "@/components/ui/TextField";
-import { ReleaseSoundSetting } from "@/components/settings/ReleaseSoundSetting";
+import { NightDimSetting, ReleaseSoundSetting } from "@/components/settings/ReleaseSoundSetting";
 import { ReminderSettings } from "@/components/settings/ReminderSettings";
 import { StackHeader } from "@/components/StackHeader";
 import { showAdPrivacyOptions, useAdPrivacyRequired } from "@/lib/ads/admob";
@@ -130,6 +130,7 @@ export default function SettingsScreen() {
         <Section title={t.settings.reminderTitle}>
           <ReminderSettings />
         </Section>
+        <NightDimSetting />
         <ReleaseSoundSetting />
         <Section title={t.settings.vault}>
           <Button variant="outline" onPress={() => router.navigate("/vault")}>

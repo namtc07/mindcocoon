@@ -52,5 +52,24 @@ export const tokens: Record<ThemeName, ThemeColors> = {
   },
 };
 
+/**
+ * Mobile-only late-night palette (22:00–06:00 when "Dim after 10 pm" is on): darker, warmer and
+ * lower-contrast than Dusk, like candlelight. Not part of the web themes.
+ */
+export const MIDNIGHT: ThemeColors = {
+  background: "#0b0f1a",
+  foreground: "#d8d2c6",
+  surface: "#10151f",
+  card: "#131925",
+  primary: "#6f9c91",
+  primaryForeground: "#0b0f1a",
+  muted: "#161c28",
+  mutedForeground: "#8a8579",
+  border: "rgba(216, 210, 198, 0.07)",
+  ember: "#c99a62",
+  destructive: "#c97d72",
+  mood: { peaceful: "#2f9178", hopeful: "#a07a28", numb: "#8a74b3", heavy: "#2f5b9c", anxious: "#9c3f41" },
+};
+
 export const radius = { sm: 8, md: 12, lg: 16, xl: 22, full: 999 } as const;
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
