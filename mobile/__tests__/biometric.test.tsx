@@ -2,7 +2,7 @@ import { getVaultState, initVault, lockVault, setVaultPasscode } from "@mindcoco
 import { act, fireEvent, screen, userEvent, waitFor } from "@testing-library/react-native";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as SecureStore from "expo-secure-store";
-import { Platform } from "react-native";
+import { Alert, Platform } from "react-native";
 import VaultScreen from "@/app/(tabs)/vault";
 import { __resetVaultHookForTests } from "@/hooks/use-vault";
 import { BIOMETRIC_KEY } from "@/lib/biometric";
@@ -97,8 +97,13 @@ describe("Face ID unlock", () => {
     const user = await setup();
     await turnOn(user);
     await waitFor(() => expect(store().data.has(BIOMETRIC_KEY)).toBe(true));
+    // Removing asks first: confirm in the alert.
+    const alert = jest.spyOn(Alert, "alert").mockImplementation((_title, _msg, buttons) => {
+      void buttons?.find((b) => b.style === "destructive")?.onPress?.();
+    });
     await user.press(screen.getByRole("button", { name: "Remove passcode" }));
     await waitFor(() => expect(store().data.has(BIOMETRIC_KEY)).toBe(false));
+    alert.mockRestore();
     expect(getPref("biometric")).toBeUndefined();
   });
 

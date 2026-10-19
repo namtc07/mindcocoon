@@ -44,7 +44,7 @@ describe("Wind down", () => {
   it("skipping the check-in uses Rainy night", async () => {
     const { user } = await open();
     await user.press(await screen.findByRole("button", { name: "Skip" }));
-    await user.press(screen.getByRole("button", { name: "Skip" }));
+    await user.press(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByRole("button", { name: "Rainy night" })).toBeSelected();
     expect(await getStorage().moods.list()).toEqual([]);
   });
@@ -61,7 +61,7 @@ describe("Wind down", () => {
   it("leaving before Goodnight plays nothing", async () => {
     const { user, view } = await open();
     await user.press(await screen.findByRole("button", { name: "Skip" }));
-    await user.press(screen.getByRole("button", { name: "Skip" }));
+    await user.press(screen.getByRole("button", { name: "Next" }));
     await user.press(screen.getByRole("button", { name: "60 min" }));
     await view.unmount();
     expect(audio.getState().playing).toEqual([]);
@@ -82,7 +82,7 @@ describe("Wind down", () => {
   it("the night screen shows what's playing and can stop it", async () => {
     const { user } = await open();
     await user.press(await screen.findByRole("button", { name: "Skip" }));
-    await user.press(screen.getByRole("button", { name: "Skip" }));
+    await user.press(screen.getByRole("button", { name: "Next" }));
     await user.press(screen.getByRole("button", { name: "Goodnight" }));
     expect(await screen.findByLabelText("Now playing")).toBeOnTheScreen();
     expect(screen.getByLabelText("Sleep timer: 30 min")).toBeOnTheScreen();
