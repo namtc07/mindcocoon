@@ -10,6 +10,7 @@ it("a note being typed survives the switch at 18:00", async () => {
   const user = userEvent.setup();
   await renderWithApp(<TodayScreen />);
   await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+  await user.press(screen.getByRole("button", { name: "Save" }));
   await user.press(await screen.findByRole("button", { name: "Add tags or a note" }));
   await user.type(screen.getByLabelText("A few words, if you want"), "long day");
   mockNow = new Date(2026, 9, 19, 18, 0, 5);

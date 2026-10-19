@@ -6,7 +6,7 @@ import { VaultLockedError, unlockWithPasscode } from "@mindcocoon/core/vault/ses
 import { Check } from "lucide-react-native";
 import { useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { FeelingChips } from "@/components/mood/FeelingChips";
+import { FeelingChips, useFeelingLabels } from "@/components/mood/FeelingChips";
 import { MoodPicker } from "@/components/mood/MoodPicker";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -23,7 +23,10 @@ function latestToday(logs: MoodLog[], now: Date): MoodLog | null {
   return logs.find((l) => dayKeyFromISO(l.createdAt) === dayKey(now)) ?? null;
 }
 
-/** One tap saves the mood; tags and a note can be added afterwards to the same check-in. */
+/**
+ * Choose a mood (and, if you like, a few words), then Save; nothing is kept before that. Once saved,
+ * the picker folds into one line ("Today: Heavy · Change"); tags and a note go on the same check-in.
+ */
 export function QuickCheckin() {
   const { t } = useI18n();
   const { c } = useTheme();
@@ -41,7 +44,12 @@ export function QuickCheckin() {
   const today = latestToday(logs, now);
   // Writes go one after another, each on the check-in as it is by then (no lost words, no duplicates).
   const queue = useRef<Promise<unknown>>(Promise.resolve());
-  const [pendingFeelings, setPendingFeelings] = useState<string[] | null>(null);
+  // The picker's draft: open while there is no check-in today, or after "Change".
+  const [changing, setChanging] = useState(false);
+  const [draftMood, setDraftMood] = useState<MoodType | null>(null);
+  const [draftFeelings, setDraftFeelings] = useState<string[]>([]);
+  const picking = !today || changing;
+  const feelingLabels = useFeelingLabels();
 
   function resetDetails() {
     setOpen(false);
@@ -55,22 +63,43 @@ export function QuickCheckin() {
     return queue.current;
   }
 
-  function pick(mood: MoodType) {
-    if (!today) resetDetails();
-    setPendingFeelings(null);
-    void enqueue(async () => {
-      const current = latestToday(getMoodState().logs, new Date());
-      await (current ? changeMood(current, mood) : addMood({ mood, tags: [] }));
-      setMessage(t.today.saved);
-    });
+  function choose(mood: MoodType) {
+    if (mood !== draftMood) setDraftFeelings([]);
+    setDraftMood(mood);
   }
 
-  function pickFeelings(feelings: string[]) {
-    setPendingFeelings(feelings);
+  function startChange() {
+    if (!today) return;
+    setDraftMood(today.mood);
+    setDraftFeelings(today.feelings ?? []);
+    setChanging(true);
+  }
+
+  function cancelChange() {
+    setChanging(false);
+    setDraftMood(null);
+    setDraftFeelings([]);
+  }
+
+  function save() {
+    const mood = draftMood;
+    if (!mood) return;
+    const feelings = draftFeelings;
+    if (!today) resetDetails();
+    setChanging(false);
+    setDraftMood(null);
+    setDraftFeelings([]);
     void enqueue(async () => {
       const current = latestToday(getMoodState().logs, new Date());
-      if (current) await updateMoodDetails(current, { tags: current.tags, feelings });
-    }).finally(() => setPendingFeelings((p) => (p === feelings ? null : p)));
+      if (!current) {
+        await addMood({ mood, tags: [], feelings });
+      } else {
+        // Same mood: keep the check-in (id, time); a new mood is a fresh moment.
+        const base = current.mood === mood ? current : await changeMood(current, mood);
+        await updateMoodDetails(base, { tags: base.tags, feelings });
+      }
+      setMessage(t.today.saved);
+    });
   }
 
   async function saveDetails() {
@@ -94,25 +123,56 @@ export function QuickCheckin() {
 
   return (
     <View style={styles.wrap}>
-      <Text style={[styles.question, { color: c.mutedForeground }]}>{t.today.checkinQuestion}</Text>
-      <MoodPicker variant="orbs" value={today?.mood ?? null} onChange={(m) => void pick(m)} label={t.today.checkinQuestion} />
+      {picking && <Text style={[styles.question, { color: c.mutedForeground }]}>{t.today.checkinQuestion}</Text>}
+      {picking ? (
+        <>
+          <MoodPicker variant="orbs" value={draftMood} onChange={choose} label={t.today.checkinQuestion} />
+          {draftMood && <FeelingChips mood={draftMood} value={draftFeelings} onChange={setDraftFeelings} />}
+          <View style={styles.row}>
+            <Button disabled={!draftMood} onPress={save}>
+              {t.today.saveMood}
+            </Button>
+            {today && (
+              <Button variant="ghost" onPress={cancelChange}>
+                {t.common.cancel}
+              </Button>
+            )}
+          </View>
+        </>
+      ) : (
+        today && (
+          <View style={[styles.summary, { backgroundColor: c.surface }]}>
+            <View style={[styles.dot, { backgroundColor: c.mood[today.mood] }]} />
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={[styles.summaryTitle, { color: c.foreground }]}>
+                {t.today.todaySummary.split("{mood}").join(t.mood.states[today.mood].label)}
+              </Text>
+              {(today.feelings?.length ?? 0) > 0 && (
+                <Text style={{ fontFamily: fonts.sans, fontSize: 14, color: c.mutedForeground }}>{feelingLabels(today.feelings)}</Text>
+              )}
+            </View>
+            <Button variant="ghost" onPress={startChange}>
+              {t.today.change}
+            </Button>
+          </View>
+        )
+      )}
       <View accessibilityLiveRegion="polite" style={styles.message}>
-        {today && message && (
+        {today && !picking && message && (
           <>
             <Check size={16} color={c.primary} />
             <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.primary }}>{message}</Text>
           </>
         )}
       </View>
-      {today && <FeelingChips mood={today.mood} value={pendingFeelings ?? today.feelings ?? []} onChange={pickFeelings} />}
-      {today && !open && (
+      {today && !picking && !open && (
         <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setOpen(true)} style={styles.link}>
           <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground, textDecorationLine: "underline" }}>
             {t.today.addDetails}
           </Text>
         </Pressable>
       )}
-      {today && open && (
+      {today && !picking && open && (
         <View style={styles.details}>
           <View style={styles.tags}>
             {DEFAULT_TAGS.map((tag) => (
@@ -145,4 +205,7 @@ const styles = StyleSheet.create({
   details: { gap: space.lg },
   tags: { flexDirection: "row", flexWrap: "wrap", gap: space.sm },
   row: { flexDirection: "row", gap: space.md },
+  summary: { flexDirection: "row", alignItems: "center", gap: space.md, borderRadius: 16, paddingLeft: space.lg, paddingVertical: space.sm },
+  dot: { width: 20, height: 20, borderRadius: 10 },
+  summaryTitle: { fontFamily: fonts.sansMedium, fontSize: 16 },
 });

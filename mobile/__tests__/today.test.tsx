@@ -6,21 +6,54 @@ import { router } from "expo-router";
 import TodayScreen from "@/app/(tabs)/index";
 import { renderWithApp } from "@/test-utils/render";
 
-async function addNote(user: ReturnType<typeof userEvent.setup>, mood: string, note: string) {
+type User = ReturnType<typeof userEvent.setup>;
+
+/** Choose a mood, then Save (choosing alone saves nothing). */
+async function checkIn(user: User, mood: string) {
   await user.press(await screen.findByRole("radio", { name: mood }));
+  await user.press(screen.getByRole("button", { name: "Save" }));
+  await screen.findByText(`Today: ${mood}`);
+}
+
+async function addNote(user: User, mood: string, note: string) {
+  await checkIn(user, mood);
   await user.press(await screen.findByRole("button", { name: "Add tags or a note" }));
   await user.type(screen.getByLabelText("A few words, if you want"), note);
 }
 
+const stored = async () => (await getStorage().moods.list()).map((l) => l.mood);
+
 afterEach(() => jest.useRealTimers());
 
 describe("Today", () => {
-  it("saves a mood with one tap", async () => {
+  it("choosing a mood saves nothing until Save", async () => {
     const user = userEvent.setup();
     await renderWithApp(<TodayScreen />);
     await user.press(await screen.findByRole("radio", { name: "Heavy" }));
-    await waitFor(async () => expect((await getStorage().moods.list()).map((l) => l.mood)).toEqual(["heavy"]));
-    expect(await screen.findByText("Saved for today")).toBeOnTheScreen();
+    expect(screen.getByRole("radio", { name: "Heavy" })).toBeChecked();
+    expect(await stored()).toEqual([]);
+  });
+
+  it("Save keeps the check-in and folds the picker into one line", async () => {
+    const user = userEvent.setup();
+    await renderWithApp(<TodayScreen />);
+    await checkIn(user, "Heavy");
+    expect(await stored()).toEqual(["heavy"]);
+    expect(screen.getByText("Saved for today")).toBeOnTheScreen();
+    expect(screen.queryByRole("radio")).not.toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Change" })).toBeOnTheScreen();
+  });
+
+  it("Change reopens the picker; Cancel keeps what was saved", async () => {
+    const user = userEvent.setup();
+    await renderWithApp(<TodayScreen />);
+    await checkIn(user, "Heavy");
+    await user.press(screen.getByRole("button", { name: "Change" }));
+    expect(screen.getByRole("radio", { name: "Heavy" })).toBeChecked();
+    await user.press(screen.getByRole("radio", { name: "Peaceful" }));
+    await user.press(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.getByText("Today: Heavy")).toBeOnTheScreen();
+    expect(await stored()).toEqual(["heavy"]);
   });
 
   it("encrypts a note added right after launch", async () => {
@@ -40,7 +73,9 @@ describe("Today", () => {
     await addNote(user, "Heavy", "long day");
     await user.press(screen.getByRole("button", { name: "Save details" }));
     await screen.findByText("Details saved");
+    await user.press(screen.getByRole("button", { name: "Change" }));
     await user.press(screen.getByRole("radio", { name: "Peaceful" }));
+    await user.press(screen.getByRole("button", { name: "Save" }));
     await waitFor(async () => {
       const logs = await getStorage().moods.list();
       expect(logs.map((l) => l.mood)).toEqual(["peaceful"]);
@@ -64,7 +99,7 @@ describe("Today", () => {
   it("adds details to the same check-in (same id and time)", async () => {
     const user = userEvent.setup();
     await renderWithApp(<TodayScreen />);
-    await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+    await checkIn(user, "Heavy");
     await waitFor(async () => expect(await getStorage().moods.list()).toHaveLength(1));
     const [first] = await getStorage().moods.list();
     await user.press(screen.getByRole("button", { name: "Add tags or a note" }));
@@ -83,14 +118,13 @@ describe("Today", () => {
     jest.useFakeTimers({ now: new Date(2026, 9, 17, 23, 0) });
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     await renderWithApp(<TodayScreen />);
-    await user.press(await screen.findByRole("radio", { name: "Heavy" }));
-    await waitFor(async () => expect(await getStorage().moods.list()).toHaveLength(1));
+    await checkIn(user, "Heavy");
     await act(async () => {
       jest.setSystemTime(new Date(2026, 9, 18, 21, 0));
       jest.advanceTimersByTime(6_000);
     });
-    await user.press(screen.getByRole("radio", { name: "Peaceful" }));
-    await waitFor(async () => expect((await getStorage().moods.list()).map((l) => l.mood).sort()).toEqual(["heavy", "peaceful"]));
+    await checkIn(user, "Peaceful");
+    await waitFor(async () => expect((await stored()).sort()).toEqual(["heavy", "peaceful"]));
     jest.useRealTimers();
   });
 
@@ -102,14 +136,17 @@ describe("Today", () => {
   });
 
   describe("feeling words", () => {
-    it("picking a feeling word after a quick check-in saves it", async () => {
+    it("words picked before Save are saved with the mood", async () => {
       const user = userEvent.setup();
       await renderWithApp(<TodayScreen />);
       await user.press(await screen.findByRole("radio", { name: "Heavy" }));
       expect(await screen.findByText("More precisely?")).toBeOnTheScreen();
       await user.press(screen.getByRole("button", { name: "lonely" }));
-      await waitFor(async () => expect((await getStorage().moods.list())[0].feelings).toEqual(["lonely"]));
       expect(screen.getByRole("button", { name: "lonely" })).toBeSelected();
+      expect(await stored()).toEqual([]);
+      await user.press(screen.getByRole("button", { name: "Save" }));
+      await waitFor(async () => expect((await getStorage().moods.list())[0].feelings).toEqual(["lonely"]));
+      expect(screen.getByText("lonely")).toBeOnTheScreen();
     });
 
     it("at most three words", async () => {
@@ -117,8 +154,9 @@ describe("Today", () => {
       await renderWithApp(<TodayScreen />);
       await user.press(await screen.findByRole("radio", { name: "Heavy" }));
       for (const w of ["lonely", "sad", "hurt", "exhausted"]) await user.press(await screen.findByRole("button", { name: w }));
-      await waitFor(async () => expect((await getStorage().moods.list())[0].feelings).toEqual(["lonely", "sad", "hurt"]));
       expect(screen.getByRole("button", { name: "exhausted" })).not.toBeSelected();
+      await user.press(screen.getByRole("button", { name: "Save" }));
+      await waitFor(async () => expect((await getStorage().moods.list())[0].feelings).toEqual(["lonely", "sad", "hurt"]));
     });
 
     it("changing the mood shows that mood's words and drops the old ones", async () => {
@@ -129,31 +167,34 @@ describe("Today", () => {
       await user.press(screen.getByRole("radio", { name: "Anxious" }));
       expect(await screen.findByRole("button", { name: "worried" })).toBeOnTheScreen();
       expect(screen.queryByRole("button", { name: "lonely" })).not.toBeOnTheScreen();
-      await waitFor(async () => expect((await getStorage().moods.list())[0].feelings).toBeUndefined());
+      await user.press(screen.getByRole("button", { name: "Save" }));
+      await waitFor(async () => expect((await getStorage().moods.list())[0].feelings ?? []).toEqual([]));
+    });
+
+    it("changing a saved check-in keeps its words when the mood stays", async () => {
+      const user = userEvent.setup();
+      await renderWithApp(<TodayScreen />);
+      await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+      await user.press(await screen.findByRole("button", { name: "sad" }));
+      await user.press(screen.getByRole("button", { name: "Save" }));
+      await screen.findByText("Today: Heavy");
+      await user.press(screen.getByRole("button", { name: "Change" }));
+      expect(screen.getByRole("button", { name: "sad" })).toBeSelected();
+      await user.press(screen.getByRole("button", { name: "hurt" }));
+      await user.press(screen.getByRole("button", { name: "Save" }));
+      await waitFor(async () => expect((await getStorage().moods.list())[0].feelings).toEqual(["sad", "hurt"]));
+      expect(await getStorage().moods.list()).toHaveLength(1);
     });
   });
 
-  it("follows a check-in changed elsewhere (e.g. wind-down) and saves words on it", async () => {
+  it("follows a check-in changed elsewhere (e.g. wind-down)", async () => {
     const user = userEvent.setup();
     await renderWithApp(<TodayScreen />);
-    await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+    await checkIn(user, "Heavy");
     await waitFor(() => expect(getMoodState().logs).toHaveLength(1));
     await act(async () => {
       await changeMood(getMoodState().logs[0], "anxious");
     });
-    expect(await screen.findByRole("radio", { name: "Anxious" })).toBeChecked();
-    await user.press(await screen.findByRole("button", { name: "worried" }));
-    await waitFor(async () => expect(await getStorage().moods.list()).toHaveLength(1));
-    await waitFor(async () => expect((await getStorage().moods.list())[0].feelings).toEqual(["worried"]));
-  });
-
-  it("two quick taps on feeling words keep both", async () => {
-    const user = userEvent.setup();
-    await renderWithApp(<TodayScreen />);
-    await user.press(await screen.findByRole("radio", { name: "Heavy" }));
-    const lonely = await screen.findByRole("button", { name: "lonely" });
-    const sad = screen.getByRole("button", { name: "sad" });
-    await Promise.all([user.press(lonely), user.press(sad)]);
-    await waitFor(async () => expect([...((await getStorage().moods.list())[0].feelings ?? [])].sort()).toEqual(["lonely", "sad"]));
+    expect(await screen.findByText("Today: Anxious")).toBeOnTheScreen();
   });
 });
