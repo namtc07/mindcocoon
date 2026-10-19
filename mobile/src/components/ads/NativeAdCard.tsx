@@ -1,6 +1,7 @@
 import { dayKey } from "@mindcocoon/core/dates";
 import { X } from "lucide-react-native";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { NativeAd, NativeAdView, NativeAsset, NativeAssetType } from "react-native-google-mobile-ads";
 import { useNow } from "@/hooks/use-now";
@@ -23,6 +24,7 @@ import { useTheme } from "@/theme/theme";
  * quiet hours); nothing shows if nothing loads; the ad is released when its screen goes away.
  */
 const readHidden = () => getPref("nativeHiddenOn") ?? "";
+const REFRESH_AFTER_MS = 60_000;
 
 export function NativeAdCard({ placement }: { placement: "today" | "mood" }) {
   const { t } = useI18n();
@@ -44,6 +46,15 @@ export function NativeAdCard({ placement }: { placement: "today" | "mood" }) {
   }
   const unitId = adUnitId(placement === "today" ? "native-today" : "native-mood");
   const [ad, setAd] = useState<NativeAd | null>(null);
+  // Native ads don't refresh themselves (banners do): coming back to this screen after more than a
+  // minute asks for a fresh one. Sooner, the same ad stays.
+  const [round, setRound] = useState(0);
+  const loadedAt = useRef(0);
+  useFocusEffect(
+    useCallback(() => {
+      if (loadedAt.current > 0 && Date.now() - loadedAt.current > REFRESH_AFTER_MS) setRound((r) => r + 1);
+    }, []),
+  );
 
   useEffect(() => {
     if (!allowed || !unitId) return;
@@ -53,6 +64,7 @@ export function NativeAdCard({ placement }: { placement: "today" | "mood" }) {
       .then((next) => {
         if (!live) return next.destroy();
         loaded = next;
+        loadedAt.current = Date.now();
         setAd(next);
       })
       .catch(() => {});
@@ -61,7 +73,7 @@ export function NativeAdCard({ placement }: { placement: "today" | "mood" }) {
       loaded?.destroy();
       setAd(null);
     };
-  }, [allowed, unitId]);
+  }, [allowed, unitId, round]);
 
   if (!allowed || !ad) return null;
   return (

@@ -111,3 +111,29 @@ describe("Native ad in the Mood history", () => {
     expect(screen.queryByTestId("native-ad")).not.toBeOnTheScreen();
   });
 });
+
+describe("A fresh native ad when you come back", () => {
+  it("coming back after more than a minute loads a new ad; sooner keeps the same one", async () => {
+    const { captureFocusEffects } = jest.requireActual<typeof import("@/test-utils/focus")>("@/test-utils/focus");
+    const focus = captureFocusEffects();
+    jest.useFakeTimers({ advanceTimers: true, now: new Date(2026, 9, 19, 12, 0) });
+    const start = Date.now();
+    try {
+      await withFlags(ON);
+      await renderWithApp(<TodayScreen />, { keepState: true });
+      await screen.findByTestId("native-ad");
+      expect(NativeAd.createForAdRequest).toHaveBeenCalledTimes(1);
+      jest.setSystemTime(start + 30_000);
+      await act(async () => focus.focus());
+      expect(NativeAd.createForAdRequest).toHaveBeenCalledTimes(1);
+      jest.setSystemTime(start + 61_000);
+      await act(async () => focus.focus());
+      expect(NativeAd.createForAdRequest).toHaveBeenCalledTimes(2);
+      expect(nativeMock().destroy).toHaveBeenCalled();
+      expect(await screen.findByTestId("native-ad")).toBeOnTheScreen();
+    } finally {
+      jest.useRealTimers();
+      focus.restore();
+    }
+  });
+});
