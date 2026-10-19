@@ -481,8 +481,8 @@ export const vi: Dictionary = {
   },
   ads: {
     label: "Quảng cáo",
-    hideToday: "Ẩn quảng cáo này hôm nay",
-    hidden: "Đã ẩn tới ngày mai.",
+    hideToday: "Ẩn quảng cáo này",
+    hidden: "Đã ẩn quảng cáo này.",
     adFree24h: "Tắt quảng cáo {hours} giờ",
   },
   pwa: {

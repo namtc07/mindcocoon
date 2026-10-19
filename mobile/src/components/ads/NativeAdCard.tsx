@@ -1,7 +1,6 @@
-import { dayKey } from "@mindcocoon/core/dates";
 import { X } from "lucide-react-native";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { NativeAd, NativeAdView, NativeAsset, NativeAssetType } from "react-native-google-mobile-ads";
 import { useNow } from "@/hooks/use-now";
@@ -11,7 +10,6 @@ import { canShowBanner } from "@/lib/ads/policy";
 import { toast } from "@/components/ui/Toast";
 import { useRewardedUnlock } from "@/hooks/use-rewarded-unlock";
 import { useAdFreeUntil } from "@/lib/ads/ad-free";
-import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
 import { useFlags } from "@/lib/remote-config";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
@@ -23,7 +21,6 @@ import { useTheme } from "@/theme/theme";
  * never right after someone names a feeling. Same switches as the banner (remote flag, consent,
  * quiet hours); nothing shows if nothing loads; the ad is released when its screen goes away.
  */
-const readHidden = () => getPref("nativeHiddenOn") ?? "";
 const REFRESH_AFTER_MS = 60_000;
 
 export function NativeAdCard({ placement }: { placement: "today" | "mood" }) {
@@ -33,15 +30,18 @@ export function NativeAdCard({ placement }: { placement: "today" | "mood" }) {
   const ready = useAdsReady();
   const now = useNow();
   const adFreeUntil = useAdFreeUntil();
-  const hiddenOn = useSyncExternalStore(subscribePrefs, readHidden, readHidden);
   const { adFreeOffer, adFreeHours, adFree } = useRewardedUnlock();
-  // Hidden by the person for today, or ads off for 24 hours: no request at all.
-  const allowed =
-    canShowBanner({ placement, now, flags, ready }) && hiddenOn !== dayKey(now) && now.getTime() >= adFreeUntil;
+  // Ads off for a while (one rewarded ad): no request at all.
+  const allowed = canShowBanner({ placement, now, flags, ready }) && now.getTime() >= adFreeUntil;
 
-  /** × : gone until tomorrow; then, only if they want, one short ad turns all ads off for a while. */
+  /**
+   * × hides only this ad: it is released and the card goes away. Coming back to the screen later
+   * (the usual one-minute rule) brings a different ad. Then, only if they want, one short ad turns
+   * all ads off for a while.
+   */
   function hide() {
-    void setPref("nativeHiddenOn", dayKey(now));
+    ad?.destroy();
+    setAd(null);
     const label = t.ads.adFree24h.replace("{hours}", String(adFreeHours));
     toast.show(t.ads.hidden, adFreeOffer ? { label, onPress: () => void adFree() } : undefined);
   }

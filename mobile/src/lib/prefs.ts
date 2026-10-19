@@ -44,8 +44,6 @@ export interface Prefs {
   writingPrompts?: boolean;
   /** Extra mix slots earned with rewarded ads (0–5, on top of the five). */
   extraMixSlots?: number;
-  /** Day key on which the person hid the native ad (it returns the next day). */
-  nativeHiddenOn?: string;
   /** Epoch ms until which no banner or native ad shows (earned with one rewarded ad). */
   adFreeUntil?: number;
   /** Which part of Sanctuary was open last. */

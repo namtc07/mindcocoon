@@ -480,8 +480,8 @@ export const en = {
   },
   ads: {
     label: "Ad",
-    hideToday: "Hide this ad for today",
-    hidden: "Hidden until tomorrow.",
+    hideToday: "Hide this ad",
+    hidden: "Ad hidden.",
     adFree24h: "No ads for {hours} hours",
   },
   pwa: {

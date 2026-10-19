@@ -6,6 +6,7 @@ import { __resetAdsForTests, startAds } from "@/lib/ads/admob";
 import type { RemoteFlags } from "@/lib/ads/policy";
 import { getPref, setPref } from "@/lib/prefs";
 import { remoteConfig } from "@/lib/remote-config";
+import { NativeAd } from "react-native-google-mobile-ads";
 import { renderWithApp } from "@/test-utils/render";
 
 let mockNow = new Date(2026, 9, 19, 12, 0);
@@ -19,7 +20,6 @@ async function adsOn(flags: RemoteFlags = ON) {
   __resetAdsForTests();
   await renderWithApp(<></>);
   await act(async () => {
-    await setPref("nativeHiddenOn", undefined);
     await setPref("adFreeUntil", undefined);
     await setPref("flags", { value: flags, fetchedAt: Date.now() });
     remoteConfig.reload();
@@ -42,19 +42,30 @@ const today = (
   </>
 );
 
-describe("Hiding the native ad", () => {
-  it("× hides it for the rest of the day; it comes back tomorrow", async () => {
+describe("Hiding a native ad", () => {
+  it("× hides only this ad; coming back later brings a different one", async () => {
     mockNow = new Date(2026, 9, 19, 12, 0);
     await adsOn();
-    const user = userEvent.setup();
-    await renderWithApp(today, { keepState: true });
-    await screen.findByTestId("native-ad");
-    await user.press(screen.getByRole("button", { name: "Hide this ad for today" }));
-    expect(screen.queryByTestId("native-ad")).not.toBeOnTheScreen();
-    mockNow = new Date(2026, 9, 20, 9, 0);
-    await renderWithApp(today, { keepState: true });
-    expect(await screen.findByTestId("native-ad")).toBeOnTheScreen();
-    mockNow = new Date(2026, 9, 19, 12, 0);
+    const { captureFocusEffects } = jest.requireActual<typeof import("@/test-utils/focus")>("@/test-utils/focus");
+    const focus = captureFocusEffects();
+    jest.useFakeTimers({ advanceTimers: true, now: new Date(2026, 9, 19, 12, 0) });
+    const start = Date.now();
+    try {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      await renderWithApp(today, { keepState: true });
+      await screen.findByTestId("native-ad");
+      await user.press(screen.getByRole("button", { name: "Hide this ad" }));
+      expect(screen.queryByTestId("native-ad")).not.toBeOnTheScreen();
+      expect(await screen.findByText("Ad hidden.")).toBeOnTheScreen();
+      expect(NativeAd.createForAdRequest).toHaveBeenCalledTimes(1);
+      jest.setSystemTime(start + 61_000);
+      await act(async () => focus.focus());
+      expect(NativeAd.createForAdRequest).toHaveBeenCalledTimes(2);
+      expect(await screen.findByTestId("native-ad")).toBeOnTheScreen();
+    } finally {
+      jest.useRealTimers();
+      focus.restore();
+    }
   });
 
   it("after hiding, a short ad can turn ads off for 24 hours (only if the person taps it)", async () => {
@@ -62,7 +73,7 @@ describe("Hiding the native ad", () => {
     const user = userEvent.setup();
     await renderWithApp(today, { keepState: true });
     await screen.findByTestId("native-ad");
-    await user.press(screen.getByRole("button", { name: "Hide this ad for today" }));
+    await user.press(screen.getByRole("button", { name: "Hide this ad" }));
     await user.press(await screen.findByRole("button", { name: "No ads for 24 hours" }));
     await earn();
     expect(getPref("adFreeUntil")).toBeGreaterThan(Date.now() + 23 * 3600_000);
@@ -98,8 +109,8 @@ describe("Remote switches for the ad-free option", () => {
     await screen.findByText("Settings");
     expect(screen.queryByRole("button", { name: "Watch one ad to turn ads off for 24 hours" })).not.toBeOnTheScreen();
     await renderWithApp(today, { keepState: true });
-    await user.press(await screen.findByRole("button", { name: "Hide this ad for today" }));
-    expect(await screen.findByText("Hidden until tomorrow.")).toBeOnTheScreen();
+    await user.press(await screen.findByRole("button", { name: "Hide this ad" }));
+    expect(await screen.findByText("Ad hidden.")).toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: /No ads for/ })).not.toBeOnTheScreen();
   });
 
