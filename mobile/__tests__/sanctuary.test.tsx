@@ -13,6 +13,9 @@ import { fakePlayer } from "@/test-utils/audio";
 import { captureFocusEffects } from "@/test-utils/focus";
 import { getPref, setPref } from "@/lib/prefs";
 import { renderWithApp } from "@/test-utils/render";
+import { createAudioPlayer } from "expo-audio";
+import * as Haptics from "expo-haptics";
+import { BREATH_CUE_SOURCES } from "@/lib/breath-cues";
 
 beforeEach(async () => {
   await act(async () => audio.reset());
@@ -320,3 +323,51 @@ describe("Mixes", () => {
     await waitFor(() => expect(audio.getState().playing).toEqual(["rain"]));
   });
 });
+
+describe("Breathing cues", () => {
+  const cueCalls = () =>
+    (createAudioPlayer as jest.Mock).mock.calls.map(([src]) => src).filter((src) => Object.values(BREATH_CUE_SOURCES).includes(src));
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+  });
+  afterEach(async () => {
+    jest.useRealTimers();
+    await act(() => setPref("breathCues", undefined));
+  });
+
+  it("a cue on each phase change", async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await renderWithApp(<BoxBreathing />);
+    await user.press(screen.getByRole("button", { name: "Begin" }));
+    await act(async () => jest.advanceTimersByTime(300));
+    expect(cueCalls()).toEqual([BREATH_CUE_SOURCES.inhale]);
+    await act(async () => jest.advanceTimersByTime(4_000));
+    await act(async () => jest.advanceTimersByTime(4_000));
+    expect(cueCalls()).toEqual([BREATH_CUE_SOURCES.inhale, BREATH_CUE_SOURCES.hold, BREATH_CUE_SOURCES.exhale]);
+    expect(Haptics.impactAsync).toHaveBeenCalled();
+  });
+
+  it("no cues when off", async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await renderWithApp(<BoxBreathing />);
+    await user.press(screen.getByRole("button", { name: "Sound & touch cues" }));
+    expect(getPref("breathCues")).toBe(false);
+    await user.press(screen.getByRole("button", { name: "Begin" }));
+    await act(async () => jest.advanceTimersByTime(9_000));
+    expect(cueCalls()).toEqual([]);
+  });
+
+  it("no cue after stop", async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await renderWithApp(<BoxBreathing />);
+    await user.press(screen.getByRole("button", { name: "Begin" }));
+    await act(async () => jest.advanceTimersByTime(300));
+    await user.press(screen.getByRole("button", { name: "Stop" }));
+    const before = cueCalls().length;
+    await act(async () => jest.advanceTimersByTime(9_000));
+    expect(cueCalls().length).toBe(before);
+  });
+});
+

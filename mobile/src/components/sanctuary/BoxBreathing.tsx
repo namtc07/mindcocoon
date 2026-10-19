@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { useI18n } from "@/i18n/i18n";
 import { breathAtPatternWorklet, breathScale, dotPosition, INNER_SIDE, PAD, SIZE } from "@/lib/breath-geometry";
+import { playBreathCue, stopBreathCues } from "@/lib/breath-cues";
 import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
@@ -23,6 +24,7 @@ const LENGTHS = [1, 3, 5] as const;
 export type Choice = { pattern: BreathPatternId; minutes: (typeof LENGTHS)[number] };
 const DEFAULT_CHOICE: Choice = { pattern: "box", minutes: 1 };
 const readChoice = () => getPref("breathing") ?? DEFAULT_CHOICE;
+const readCues = () => getPref("breathCues") !== false;
 
 /**
  * Paced breathing — box, 4-7-8 or slow exhale, for 1, 3 or 5 minutes (remembered). The shape draws
@@ -33,6 +35,7 @@ export function BoxBreathing({ fixed }: { fixed?: Choice } = {}) {
   const { c } = useTheme();
   const reduceMotion = useReducedMotion();
   const stored = useSyncExternalStore(subscribePrefs, readChoice, readChoice);
+  const cues = useSyncExternalStore(subscribePrefs, readCues, readCues);
   // Wind-down passes its own rhythm; the chooser is hidden then.
   const choice = fixed ?? stored;
   const pattern = BREATH_PATTERNS[choice.pattern];
@@ -50,6 +53,7 @@ export function BoxBreathing({ fixed }: { fixed?: Choice } = {}) {
   const active = running && !finished;
 
   const stop = useCallback(() => {
+    stopBreathCues();
     cancelAnimation(clock);
     clock.set(0);
     setStartedAt(null);
@@ -75,6 +79,14 @@ export function BoxBreathing({ fixed }: { fixed?: Choice } = {}) {
     const id = setInterval(() => setElapsed(Date.now() - startedAt), LABEL_TICK_MS);
     return () => clearInterval(id);
   }, [startedAt, finished]);
+
+  // A tone and a light touch at each new phase, so the rhythm can be followed with eyes closed.
+  const phaseKey = active ? `${state.cycle}:${state.phase}` : null;
+  useEffect(() => {
+    if (phaseKey && cues) playBreathCue(state.phase);
+    // Only a new phase triggers a cue.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phaseKey]);
 
   // A minute is longer than many auto-lock settings: keep the screen on while breathing.
   useEffect(() => {
@@ -150,6 +162,11 @@ export function BoxBreathing({ fixed }: { fixed?: Choice } = {}) {
       </View>
         </>
       )}
+      <View style={styles.chips}>
+        <Chip selected={cues} disabled={running && !finished} onPress={() => void setPref("breathCues", !cues)}>
+          {t.sanctuary.breathCues}
+        </Chip>
+      </View>
       <Text style={[styles.intro, { color: c.mutedForeground }]}>{t.sanctuary.patternHints[choice.pattern]}</Text>
       <View style={[styles.card, { backgroundColor: c.surface }]}>
         <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} accessible={false} importantForAccessibility="no-hide-descendants">

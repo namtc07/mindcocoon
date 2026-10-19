@@ -193,6 +193,7 @@ export const en = {
       relax: "In 4 · hold 7 · out 8. Helps you drift toward sleep.",
       calm: "In 4 · out 6. The gentlest one, good when you feel anxious.",
     },
+    breathCues: "Sound & touch cues",
     lengthLabel: "How long",
     start: "Begin",
     stop: "Stop",

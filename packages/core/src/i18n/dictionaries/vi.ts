@@ -194,6 +194,7 @@ export const vi: Dictionary = {
       relax: "Hít vào 4 · giữ 7 · thở ra 8. Giúp dễ chìm vào giấc ngủ.",
       calm: "Hít vào 4 · thở ra 6. Nhẹ nhàng nhất, hợp khi đang lo âu.",
     },
+    breathCues: "Âm thanh & rung",
     lengthLabel: "Bao lâu",
     start: "Bắt đầu",
     stop: "Dừng",

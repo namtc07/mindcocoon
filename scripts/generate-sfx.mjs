@@ -105,8 +105,26 @@ function fade(seconds = 2.8) {
   return normalise(Array.from(out), 0.35);
 }
 
+/** A soft sine glide for breathing cues: rising for in, falling for out, a quiet tick for holds. */
+function glide(from, to, seconds, peak) {
+  const n = Math.floor(seconds * SR);
+  const out = new Float32Array(n);
+  let phase = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / SR;
+    const f = from + (to - from) * (t / seconds);
+    phase += (2 * Math.PI * f) / SR;
+    out[i] = (Math.sin(phase) + 0.3 * Math.sin(2 * phase)) * envelope(t, seconds, 0.08, seconds * 0.7);
+  }
+  return normalise(Array.from(out), peak);
+}
+
+const breathIn = () => glide(330, 440, 0.9, 0.3);
+const breathOut = () => glide(440, 294, 0.9, 0.3);
+const breathHold = () => glide(392, 392, 0.35, 0.18);
+
 mkdirSync(OUT_DIR, { recursive: true });
-for (const [name, make] of Object.entries({ burn, float, scatter, fade })) {
+for (const [name, make] of Object.entries({ burn, float, scatter, fade, "breath-in": breathIn, "breath-out": breathOut, "breath-hold": breathHold })) {
   writeM4a(make(), join(OUT_DIR, `${name}.m4a`));
   console.log(`wrote ${name}.m4a`);
 }

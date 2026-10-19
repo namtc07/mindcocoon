@@ -35,6 +35,8 @@ export interface Prefs {
   releaseSound?: boolean;
   /** Softer "midnight" colours from 22:00 to 06:00 (on unless set to false). */
   nightDim?: boolean;
+  /** Tone + light vibration at each breathing phase (on unless set to false). */
+  breathCues?: boolean;
 }
 
 const KEY = "prefs:v1";
