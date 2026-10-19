@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
 import { SaveSheet } from "@/components/vent/SaveSheet";
 import { useAppState } from "@/hooks/use-app-state";
+import { guide, hush } from "@/lib/voice";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
@@ -47,7 +48,7 @@ function StepTimer({ seconds }: { seconds: number }) {
  * leaving clears it, and it's saved only if the person chooses "Keep in my vault" (encrypted).
  */
 export function PracticeRunner({ practice }: { practice: Practice }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { c } = useTheme();
   const appState = useAppState();
   const [step, setStep] = useState(0);
@@ -70,6 +71,12 @@ export function PracticeRunner({ practice }: { practice: Practice }) {
   const written = practice.steps
     .map((s, i) => (s.input && answers[i]?.trim() ? `${s.text}\n${answers[i].trim()}` : null))
     .filter((x): x is string => x !== null);
+
+  // Voice guidance (Settings, off by default): each step is read aloud; leaving stops it.
+  useEffect(() => {
+    if (!choosing) guide(current.text, locale);
+  }, [current.text, choosing, locale]);
+  useFocusEffect(useCallback(() => hush, []));
 
   // iOS has no live regions: announce each new step for VoiceOver.
   useEffect(() => {

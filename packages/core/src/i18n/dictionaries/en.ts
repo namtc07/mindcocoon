@@ -266,6 +266,13 @@ export const en = {
     title: "MindCocoon",
     body: "A quiet place is here if today was heavy.",
   },
+  stories: {
+    title: "Sleep stories",
+    read: "Read to me",
+    stop: "Stop reading",
+    hint: "Put on a soft sound in Sanctuary if you like, then let the story read itself.",
+    minutes: "{n} min",
+  },
   practices: {
     title: "Gentle practices",
     intro: "Short, quiet exercises for the end of the day. Nothing is measured.",
@@ -391,6 +398,7 @@ export const en = {
     adFreeWithAd: "Watch one ad to turn ads off for {hours} hours",
     adFreeUntil: "Ads are off until {time}",
     writingPrompts: "Writing ideas on Today",
+    voiceGuide: "Voice guidance",
     releaseSound: "Sound when letting go",
     reminderOff: "Off",
     reminderTitle: "Evening reminder",

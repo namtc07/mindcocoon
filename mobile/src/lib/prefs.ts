@@ -46,6 +46,8 @@ export interface Prefs {
   extraMixSlots?: number;
   /** Epoch ms until which no banner or native ad shows (earned with one rewarded ad). */
   adFreeUntil?: number;
+  /** Spoken guidance for breathing and practices (off unless set to true). */
+  voiceGuide?: boolean;
   /** Which part of Sanctuary was open last. */
   sanctuaryTab?: "sounds" | "breathe" | "practices";
   /** Optional name for the greeting (device only). */

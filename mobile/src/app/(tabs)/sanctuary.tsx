@@ -6,6 +6,7 @@ import { ScreenActive } from "@/components/art/activity";
 import { PracticeList } from "@/components/practices/PracticeList";
 import { BoxBreathing } from "@/components/sanctuary/BoxBreathing";
 import { SanctuaryHero } from "@/components/sanctuary/SanctuaryHero";
+import { StoryList } from "@/components/sanctuary/StoryList";
 import { SleepTimer } from "@/components/sanctuary/SleepTimer";
 import { SoundMixer } from "@/components/sanctuary/SoundMixer";
 import { TonightCard } from "@/components/sanctuary/TonightCard";
@@ -82,6 +83,10 @@ export default function SanctuaryScreen() {
                 {t.practices.title}
               </Text>
               <PracticeList />
+              <Text accessibilityRole="header" style={{ fontFamily: fonts.serif, fontSize: 24, lineHeight: 30, color: c.foreground, marginTop: space.lg }}>
+                {t.stories.title}
+              </Text>
+              <StoryList />
             </View>
           )}
         </Animated.View>

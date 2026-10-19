@@ -10,6 +10,7 @@ import { Chip } from "@/components/ui/Chip";
 import { useI18n } from "@/i18n/i18n";
 import { breathAtPatternWorklet, breathScale, dotPosition, INNER_SIDE, PAD, SIZE } from "@/lib/breath-geometry";
 import { playBreathCue, stopBreathCues } from "@/lib/breath-cues";
+import { guide, hush } from "@/lib/voice";
 import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
@@ -31,7 +32,7 @@ const readCues = () => getPref("breathCues") !== false;
  * on the UI thread; labels follow core `breathAtPattern`.
  */
 export function BoxBreathing({ fixed }: { fixed?: Choice } = {}) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { c } = useTheme();
   const reduceMotion = useReducedMotion();
   const stored = useSyncExternalStore(subscribePrefs, readChoice, readChoice);
@@ -54,6 +55,7 @@ export function BoxBreathing({ fixed }: { fixed?: Choice } = {}) {
 
   const stop = useCallback(() => {
     stopBreathCues();
+    hush();
     cancelAnimation(clock);
     clock.set(0);
     setStartedAt(null);
@@ -119,6 +121,19 @@ export function BoxBreathing({ fixed }: { fixed?: Choice } = {}) {
     exhale: t.sanctuary.exhale,
     "hold-out": t.sanctuary.holdOut,
   };
+
+  // Voice guidance (Settings, off by default): the phone says each new phase.
+  const lastSpoken = useRef<string | null>(null);
+  useEffect(() => {
+    if (!phaseKey) {
+      lastSpoken.current = null;
+      return;
+    }
+    if (lastSpoken.current === phaseKey) return;
+    lastSpoken.current = phaseKey;
+    guide(phaseLabel[state.phase], locale);
+  }, [phaseKey, phaseLabel, state.phase, locale]);
+  useEffect(() => hush, []);
 
   // iOS has no live regions: announce each phase (and the end) for VoiceOver.
   const spoken = finished ? t.sanctuary.done : running ? phaseLabel[state.phase] : null;

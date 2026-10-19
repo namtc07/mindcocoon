@@ -74,6 +74,22 @@ jest.mock("react-native-reanimated", () => {
   return { ...mock, useSharedValue: (init: unknown) => React.useState(() => create(init))[0] };
 });
 
+// Speech: records what would be said; each utterance "finishes" when a test calls __finish().
+jest.mock("expo-speech", () => {
+  const said: { text: string; options?: { onDone?: () => void } }[] = [];
+  return {
+    speak: jest.fn((text: string, options?: { onDone?: () => void }) => said.push({ text, options })),
+    stop: jest.fn(() => {
+      said.length = 0;
+      return Promise.resolve();
+    }),
+    getAvailableVoicesAsync: jest.fn(() => Promise.resolve([])),
+    VoiceQuality: { Default: "Default", Enhanced: "Enhanced" },
+    __said: said,
+    __finish: () => said.shift()?.options?.onDone?.(),
+  };
+});
+
 jest.mock("expo-clipboard", () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));
 
 jest.mock("expo-sharing", () => ({ shareAsync: jest.fn(() => Promise.resolve()), isAvailableAsync: jest.fn(() => Promise.resolve(true)) }));

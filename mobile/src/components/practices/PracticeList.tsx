@@ -7,7 +7,7 @@ import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 
-/** The four gentle practices, each opening its own step-by-step screen. */
+/** The gentle practices, each opening its own step-by-step screen. */
 export function PracticeList() {
   const { t, locale } = useI18n();
   const { c } = useTheme();

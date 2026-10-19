@@ -5,7 +5,16 @@ import type { Locale } from "./i18n/config";
  * (test/practices.test.ts). Nothing here measures, scores or counts the person.
  */
 
-export type PracticeId = "grounding" | "body-scan" | "three-good-things" | "kind-letter" | "unsent-letter" | "safe-place" | "muscle-release";
+export type PracticeId =
+  | "grounding"
+  | "body-scan"
+  | "three-good-things"
+  | "kind-letter"
+  | "unsent-letter"
+  | "safe-place"
+  | "muscle-release"
+  | "self-compassion"
+  | "brain-dump";
 
 export interface PracticeStep {
   text: string;
@@ -119,6 +128,31 @@ const en: Practice[] = [
       { text: "Notice the difference between holding and letting go. You can always come back to it." },
     ],
   },
+  {
+    id: "self-compassion",
+    title: "A kind pause",
+    summary: "Three quiet sentences for a hard moment.",
+    minutes: 2,
+    steps: [
+      { text: "Put a hand on your chest, or anywhere that feels comforting. Feel its warmth." },
+      { text: "Say to yourself, quietly: this is a hard moment. It's okay to notice that it hurts.", seconds: 20 },
+      { text: "Remind yourself: other people feel like this too. You're not the only one, and you're not doing it wrong.", seconds: 20 },
+      { text: "Ask: what would I say to someone I love who felt this way? Say that to yourself now.", seconds: 30 },
+      { text: "Take one slow breath. You can come back to this pause any time." },
+    ],
+  },
+  {
+    id: "brain-dump",
+    title: "Empty your head",
+    summary: "Write down everything that's buzzing, so your mind can stop holding it.",
+    minutes: 3,
+    steps: [
+      { text: "Your mind doesn't have to remember everything tonight. Let's put it somewhere else for a while." },
+      { text: "Write down everything that's on your mind, in any order. Tasks, worries, half-thoughts. Don't tidy it.", input: "letter" },
+      { text: "Look at the list. Is there one small thing you could do tomorrow? Write just that one.", input: "line" },
+      { text: "Everything else can wait. It's written down now, so you don't have to carry it to bed." },
+    ],
+  },
 ];
 
 const vi: Practice[] = [
@@ -215,6 +249,31 @@ const vi: Practice[] = [
       { text: "Nhún vai lên sát tai. Giữ… rồi thả xuống.", seconds: 20 },
       { text: "Nhăn cả khuôn mặt. Giữ… rồi để nó dịu hẳn lại.", seconds: 20 },
       { text: "Để ý sự khác nhau giữa lúc gồng và lúc buông. Bạn có thể quay lại cảm giác này bất cứ lúc nào." },
+    ],
+  },
+  {
+    id: "self-compassion",
+    title: "Một khoảng lặng tử tế",
+    summary: "Ba câu nói khẽ cho một lúc khó khăn.",
+    minutes: 2,
+    steps: [
+      { text: "Đặt một bàn tay lên ngực, hoặc bất cứ chỗ nào khiến bạn thấy được vỗ về. Cảm nhận hơi ấm của nó." },
+      { text: "Nói khẽ với mình: đây là một lúc khó khăn. Thấy đau cũng không sao cả.", seconds: 20 },
+      { text: "Nhắc mình rằng: người khác cũng có lúc thấy như vậy. Bạn không phải người duy nhất, và bạn không làm sai gì cả.", seconds: 20 },
+      { text: "Tự hỏi: mình sẽ nói gì với một người mình thương nếu họ đang thấy thế này? Giờ hãy nói câu đó với chính mình.", seconds: 30 },
+      { text: "Thở một hơi thật chậm. Bạn có thể quay lại khoảng lặng này bất cứ lúc nào." },
+    ],
+  },
+  {
+    id: "brain-dump",
+    title: "Đổ hết ra khỏi đầu",
+    summary: "Viết ra mọi thứ đang lùng bùng, để đầu óc không phải ôm nữa.",
+    minutes: 3,
+    steps: [
+      { text: "Tối nay đầu óc bạn không cần nhớ hết mọi thứ. Mình đặt chúng ở chỗ khác một lúc nhé." },
+      { text: "Viết ra mọi thứ đang trong đầu, không cần theo thứ tự. Việc cần làm, nỗi lo, những ý nghĩ dở dang. Không cần gọn gàng.", input: "letter" },
+      { text: "Nhìn lại danh sách. Có một việc nhỏ nào mai bạn làm được không? Chỉ viết đúng một việc đó thôi.", input: "line" },
+      { text: "Mọi thứ khác có thể đợi. Chúng đã được viết ra rồi, nên bạn không phải mang chúng lên giường nữa." },
     ],
   },
 ];

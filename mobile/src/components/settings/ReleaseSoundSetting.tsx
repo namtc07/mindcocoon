@@ -6,12 +6,12 @@ import { stopReleaseSound } from "@/lib/release-sound";
 import { fonts } from "@/theme/fonts";
 import { useTheme } from "@/theme/theme";
 
-type BoolPref = "releaseSound" | "nightDim" | "writingPrompts";
+type BoolPref = "releaseSound" | "nightDim" | "writingPrompts" | "voiceGuide";
 
 /** A Settings row with a switch for an on-by-default preference. */
-function PrefSwitch({ pref, label }: { pref: BoolPref; label: string }) {
+function PrefSwitch({ pref, label, defaultOn = true }: { pref: BoolPref; label: string; defaultOn?: boolean }) {
   const { c } = useTheme();
-  const read = () => getPref(pref) !== false;
+  const read = () => (defaultOn ? getPref(pref) !== false : getPref(pref) === true);
   const enabled = useSyncExternalStore(subscribePrefs, read, read);
   return (
     <View style={styles.row}>
@@ -39,6 +39,12 @@ export function ReleaseSoundSetting() {
 export function NightDimSetting() {
   const { t } = useI18n();
   return <PrefSwitch pref="nightDim" label={t.settings.nightDim} />;
+}
+
+/** Off by default: the phone's voice reads breathing phases and practice steps. */
+export function VoiceGuideSetting() {
+  const { t } = useI18n();
+  return <PrefSwitch pref="voiceGuide" label={t.settings.voiceGuide} defaultOn={false} />;
 }
 
 /** On by default: a small writing idea on Today. */

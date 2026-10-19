@@ -267,6 +267,13 @@ export const vi: Dictionary = {
     title: "MindCocoon",
     body: "Nếu hôm nay nặng nề, ở đây có một góc yên tĩnh cho bạn.",
   },
+  stories: {
+    title: "Truyện ngủ",
+    read: "Đọc cho tôi nghe",
+    stop: "Dừng đọc",
+    hint: "Nếu muốn, hãy bật một âm thanh nhẹ ở Nơi trú, rồi để truyện tự đọc.",
+    minutes: "{n} phút",
+  },
   practices: {
     title: "Bài tập nhẹ nhàng",
     intro: "Vài bài tập ngắn, yên tĩnh cho cuối ngày. Không đo đếm gì cả.",
@@ -392,6 +399,7 @@ export const vi: Dictionary = {
     adFreeWithAd: "Xem một quảng cáo để tắt quảng cáo trong {hours} giờ",
     adFreeUntil: "Đã tắt quảng cáo đến {time}",
     writingPrompts: "Gợi ý viết ở Hôm nay",
+    voiceGuide: "Giọng đọc hướng dẫn",
     releaseSound: "Âm thanh khi thả đi",
     reminderOff: "Tắt",
     reminderTitle: "Nhắc nhở buổi tối",

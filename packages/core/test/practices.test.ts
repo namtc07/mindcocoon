@@ -18,9 +18,10 @@ describe("practices", () => {
     expect(getPractice("en", "nope")).toBeUndefined();
   });
 
-  it("has seven practices", () => {
+  it("has nine practices", () => {
     expect(getPractices("en").map((p) => p.id)).toEqual([
       "grounding", "body-scan", "three-good-things", "kind-letter", "unsent-letter", "safe-place", "muscle-release",
+      "self-compassion", "brain-dump",
     ]);
   });
 });
