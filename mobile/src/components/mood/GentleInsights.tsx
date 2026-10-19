@@ -29,7 +29,7 @@ export function GentleInsights() {
         ? t.insights.feelingLately.replace("{word}", feelingLabel([i.word]))
         : t.insights.lateNight.replace("{mood}", moodWord(i.mood));
   return (
-    <View style={[styles.card, { backgroundColor: c.surface }]}>
+    <View testID="mood-insights" style={[styles.card, { backgroundColor: c.surface }]}>
       <View style={styles.head}>
         <Sparkles size={16} color={c.mutedForeground} />
         <Text accessibilityRole="header" style={{ fontFamily: fonts.serif, fontSize: 20, color: c.foreground }}>

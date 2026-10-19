@@ -2,7 +2,9 @@ import { formatDay, formatTime } from "@mindcocoon/core/dates";
 import { removeMood } from "@mindcocoon/core/mood/store";
 import type { MoodLog } from "@mindcocoon/core/types";
 import { Trash2 } from "lucide-react-native";
+import { useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
@@ -10,12 +12,16 @@ import { useTheme } from "@/theme/theme";
 import { useTagLabel } from "./CheckinForm";
 
 const LIMIT = 30;
+const FIRST = 5;
 
 export function MoodHistory({ logs }: { logs: MoodLog[] }) {
   const { t, locale } = useI18n();
   const { c } = useTheme();
   const tagLabel = useTagLabel();
-  const latest = [...logs].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, LIMIT);
+  const [expanded, setExpanded] = useState(false);
+  const sorted = [...logs].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, LIMIT);
+  // The latest few first; earlier ones on request, so the tab stays calm.
+  const latest = expanded ? sorted : sorted.slice(0, FIRST);
 
   function confirmDelete(log: MoodLog) {
     Alert.alert(t.moodPage.deleteEntry, undefined, [
@@ -46,6 +52,11 @@ export function MoodHistory({ logs }: { logs: MoodLog[] }) {
             </View>
           ))}
         </View>
+      )}
+      {!expanded && sorted.length > FIRST && (
+        <Button variant="ghost" onPress={() => setExpanded(true)}>
+          {t.moodPage.showEarlier}
+        </Button>
       )}
     </View>
   );

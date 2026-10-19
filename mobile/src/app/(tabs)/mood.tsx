@@ -30,9 +30,14 @@ export default function MoodScreen() {
     <Screen title={t.moodPage.title}>
       <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground }}>{t.moodPage.intro}</Text>
       <View style={styles.sections}>
-        <CheckinForm />
-        <WeekStrip logs={logs} now={now} />
-        <View style={styles.view}>
+        <View testID="mood-checkin">
+          <CheckinForm />
+        </View>
+        <GentleInsights />
+        <View testID="mood-week">
+          <WeekStrip logs={logs} now={now} />
+        </View>
+        <View testID="mood-calendar" style={styles.view}>
           <View style={styles.toggle}>
             <Chip selected={view === "month"} onPress={() => setView("month")}>
               {t.moodPage.viewMonth}
@@ -44,8 +49,9 @@ export default function MoodScreen() {
           {view === "month" ? <MonthHeatmap logs={logs} now={now} onSelect={setSelected} /> : <YearPixels logs={logs} now={now} />}
           <JourneyCard logs={logs} now={now} />
         </View>
-        <GentleInsights />
-        <MoodHistory logs={logs} />
+        <View testID="mood-history">
+          <MoodHistory logs={logs} />
+        </View>
       </View>
       <DayDetail day={selected} logs={logs} onClose={() => setSelected(null)} />
       <AdBanner placement="mood" />

@@ -87,6 +87,7 @@ export const vi: Dictionary = {
     wrongPasscode: "Mã khóa chưa đúng.",
   },
   moodPage: {
+    showEarlier: "Xem các lần trước",
     journeyButton: "Giữ một bức ảnh của tháng này",
     journeyTitle: "Tháng của bạn",
     journeyHint: "Chỉ có màu sắc và từ cảm xúc. Không có ghi chú, không gửi đi đâu trừ khi bạn chọn.",
