@@ -1,7 +1,7 @@
 -- Remote switches for the mobile app, read anonymously (no login) with the publishable key:
 --   ads_enabled       boolean            banners on Today/Mood (still hidden in quiet hours)
 --   rewarded_enabled  boolean            "watch an ad to unlock a sound for 24 hours"
---   quiet_hours       [start, end] | null local hours with no banner (may wrap past midnight)
+--   quiet_hours       [start, end] | null | [] local hours with no banner (may wrap past midnight); null or [] = none
 -- Values are edited in the dashboard (or with the service role); clients can only read.
 
 create table public.app_config (

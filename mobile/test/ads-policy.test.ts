@@ -19,6 +19,8 @@ describe("parseFlags", () => {
       ]),
     ).toEqual({ ...DEFAULT_FLAGS, adsEnabled: true, rewardedEnabled: true, quietHours: [0, 6] });
     expect(parseFlags([{ key: "quiet_hours", value: null }]).quietHours).toBeNull();
+    // An empty list in the dashboard means the same as null: no quiet hours.
+    expect(parseFlags([{ key: "quiet_hours", value: [] }]).quietHours).toBeNull();
   });
 
   it("ignores garbage per key", () => {

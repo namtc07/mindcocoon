@@ -25,7 +25,8 @@ export const DEFAULT_FLAGS: RemoteFlags = { adsEnabled: false, rewardedEnabled: 
 const isHour = (n: unknown): n is number => typeof n === "number" && Number.isInteger(n) && n >= 0 && n <= 23;
 
 function parseQuietHours(value: unknown): RemoteFlags["quietHours"] | undefined {
-  if (value === null) return null;
+  // null or an empty list (easy to type in the dashboard): no quiet hours.
+  if (value === null || (Array.isArray(value) && value.length === 0)) return null;
   if (Array.isArray(value) && value.length === 2 && isHour(value[0]) && isHour(value[1]) && value[0] !== value[1]) {
     return [value[0], value[1]];
   }
