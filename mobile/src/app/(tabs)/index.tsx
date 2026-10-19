@@ -24,6 +24,7 @@ import { ScreenActive } from "@/components/art/activity";
 const NO_INTENTS: never[] = [];
 const readIntents = () => getPref("intents") ?? NO_INTENTS;
 const readName = () => getPref("name") ?? "";
+const readIdeas = () => getPref("writingPrompts") !== false;
 
 export default function TodayScreen() {
   const { t, locale } = useI18n();
@@ -32,6 +33,7 @@ export default function TodayScreen() {
   const evening = isEveningMode(now);
   const intents = useSyncExternalStore(subscribePrefs, readIntents, readIntents);
   const name = useSyncExternalStore(subscribePrefs, readName, readName);
+  const ideas = useSyncExternalStore(subscribePrefs, readIdeas, readIdeas);
   const part = partOfDay(now);
   const greeting = name ? t.today.greetingNamed[part].split("{name}").join(name) : t.today.greeting[part];
   const prompt = (
@@ -65,7 +67,9 @@ export default function TodayScreen() {
       <View style={styles.sections}>
         <HeavyNudge now={now} />
         {/* One keyed list, so blocks move (not remount) when 18:00 / 05:00 comes — a note being typed survives. */}
-        {todayOrder(evening, intents).map((key) => (
+        {todayOrder(evening, intents)
+          .filter((key) => ideas || key !== "prompt")
+          .map((key) => (
           <Fragment key={key}>{blocks[key]}</Fragment>
         ))}
         {__DEV__ && (

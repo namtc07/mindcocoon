@@ -49,6 +49,7 @@ export const en = {
       night: "Still awake, {name}? That's okay.",
     },
     promptLabel: "Today's prompt",
+    promptIntro: "Want to write more? One idea:",
     promptAnother: "Another prompt",
     promptMore: "More prompts",
     promptWrite: "Write about this",
@@ -376,6 +377,7 @@ export const en = {
   settings: {
     adPrivacy: "Ad privacy choices",
     nightDim: "Dim after 10 pm",
+    writingPrompts: "Writing ideas on Today",
     releaseSound: "Sound when letting go",
     reminderOff: "Off",
     reminderTitle: "Evening reminder",

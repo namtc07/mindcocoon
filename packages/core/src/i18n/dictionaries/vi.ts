@@ -50,6 +50,7 @@ export const vi: Dictionary = {
       night: "{name} vẫn còn thức à? Không sao đâu.",
     },
     promptLabel: "Câu gợi mở hôm nay",
+    promptIntro: "Muốn viết thêm? Một gợi ý:",
     promptAnother: "Câu khác",
     promptMore: "Thêm câu gợi mở",
     promptWrite: "Viết về điều này",
@@ -377,6 +378,7 @@ export const vi: Dictionary = {
   settings: {
     adPrivacy: "Lựa chọn quyền riêng tư quảng cáo",
     nightDim: "Dịu màn hình sau 22 giờ",
+    writingPrompts: "Gợi ý viết ở Hôm nay",
     releaseSound: "Âm thanh khi thả đi",
     reminderOff: "Tắt",
     reminderTitle: "Nhắc nhở buổi tối",

@@ -55,3 +55,17 @@ describe("isEveningMode", () => {
     expect(isEveningMode(new Date(2026, 9, 20, 5, 0))).toBe(false);
   });
 });
+
+describe("prompt voice", () => {
+  it("every prompt is short and plain, like something a friend would ask", () => {
+    for (const p of REFLECTION_PROMPTS.en) expect(p.length, p).toBeLessThanOrEqual(70);
+    for (const p of REFLECTION_PROMPTS.vi) expect(p.length, p).toBeLessThanOrEqual(80);
+  });
+
+  it("no quoted words, no lofty therapy phrasing", () => {
+    const lofty = [/'/, /trông như thế nào/, /tiếc thương/, /vốn không phải/, /biết nói/, /không mời/, /ngày bé/, /muốn nói với bạn/];
+    for (const p of REFLECTION_PROMPTS.vi) for (const re of lofty) expect(p, p).not.toMatch(re);
+    for (const p of REFLECTION_PROMPTS.en) expect(p, p).not.toMatch(/'enough'|younger self|uninvited|want you to know/);
+  });
+});
+

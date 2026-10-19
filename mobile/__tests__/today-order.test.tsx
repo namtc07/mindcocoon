@@ -22,9 +22,9 @@ describe("Today order", () => {
     expect(firstEntry()).toHaveAccessibleName(/Wind down for sleep/);
   });
 
-  it("in the daytime: the prompt first, letting it out leads, wind down last", async () => {
+  it("in the daytime: check-in, then a writing idea; letting it out leads, wind down last", async () => {
     await at(10);
-    expect(order()).toEqual(["today-prompt", "today-checkin", "today-entries"]);
+    expect(order()).toEqual(["today-checkin", "today-prompt", "today-entries"]);
     expect(firstEntry()).toHaveAccessibleName(/Let it out/);
     const links = within(screen.getByTestId("today-entries")).getAllByRole("link");
     expect(links[links.length - 1]).toHaveAccessibleName(/Wind down for sleep/);
@@ -35,7 +35,7 @@ describe("Today order", () => {
     expect(order()[0]).toBe("today-checkin");
     jest.useRealTimers();
     await at(5);
-    expect(order()[0]).toBe("today-prompt");
+    expect(order()).toEqual(["today-checkin", "today-prompt", "today-entries"]);
   });
 
   it("a ready worry is reachable in the evening too", async () => {

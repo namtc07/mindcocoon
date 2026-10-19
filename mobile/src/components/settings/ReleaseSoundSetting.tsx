@@ -6,7 +6,7 @@ import { stopReleaseSound } from "@/lib/release-sound";
 import { fonts } from "@/theme/fonts";
 import { useTheme } from "@/theme/theme";
 
-type BoolPref = "releaseSound" | "nightDim";
+type BoolPref = "releaseSound" | "nightDim" | "writingPrompts";
 
 /** A Settings row with a switch for an on-by-default preference. */
 function PrefSwitch({ pref, label }: { pref: BoolPref; label: string }) {
@@ -39,6 +39,12 @@ export function ReleaseSoundSetting() {
 export function NightDimSetting() {
   const { t } = useI18n();
   return <PrefSwitch pref="nightDim" label={t.settings.nightDim} />;
+}
+
+/** On by default: a small writing idea on Today. */
+export function WritingPromptsSetting() {
+  const { t } = useI18n();
+  return <PrefSwitch pref="writingPrompts" label={t.settings.writingPrompts} />;
 }
 
 const styles = StyleSheet.create({

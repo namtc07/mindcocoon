@@ -8,18 +8,18 @@ const move = (order: TodayBlock[], block: TodayBlock, index: number) => {
 };
 
 /**
- * Night: name the feeling, get something for it, wind down; writing prompts come last. Day: the
- * prompt leads. What the person came for brings its block forward; worries last, so the worry line
+ * Night: name the feeling, get something for it, wind down; writing ideas come last. Day: check
+ * in, then a small writing idea. What the person came for brings its block forward; worries last, so the worry line
  * (the only way back to the box) wins the top spot when chosen.
  */
 export function todayOrder(evening: boolean, intents: readonly OnboardingIntent[]): TodayBlock[] {
-  let order: TodayBlock[] = evening ? ["checkin", "worry", "entries", "prompt"] : ["worry", "prompt", "checkin", "entries"];
+  let order: TodayBlock[] = evening ? ["checkin", "worry", "entries", "prompt"] : ["worry", "checkin", "prompt", "entries"];
   const has = (i: OnboardingIntent) => intents.includes(i);
   if (evening) {
     if (has("write")) order = move(order, "prompt", order.indexOf("entries"));
     if (has("sleep")) order = move(order, "entries", 0);
   } else {
-    if (has("feelings")) order = move(order, "checkin", order.indexOf("prompt"));
+    if (has("feelings")) order = move(order, "checkin", 0);
     if (has("write")) order = move(order, "prompt", 0);
   }
   if (has("worries")) order = move(order, "worry", 0);
