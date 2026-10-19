@@ -227,16 +227,39 @@ function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
   const lastSlot = useSharedValue(startSlot);
 
   const tick = () => void Haptics.selectionAsync().catch(() => {});
-  const jump = (slot: number) => jsRef.current?.scrollTo({ x: slot * ARC_ITEM, animated: false });
+  // The slot JS last put in the middle (updated on every jump and after each swipe settles).
+  const centred = useRef(startSlot);
+  const initialised = useRef(false);
+  const jump = (slot: number) => {
+    centred.current = slot;
+    jsRef.current?.scrollTo({ x: slot * ARC_ITEM, animated: false });
+  };
 
-  const onScroll = useAnimatedScrollHandler((e) => {
-    scrollX.set(e.contentOffset.x);
-    // A soft tick each time a new orb passes the middle while swiping (like a picker wheel).
-    const slot = Math.round(e.contentOffset.x / ARC_ITEM);
-    if (slot !== lastSlot.get()) {
-      lastSlot.set(slot);
-      if (!gliding.get()) runOnJS(tick)();
-    }
+  /** Swap to the same mood in the middle copy in one UI-thread frame (position and arc shape together). */
+  const toMiddle = (slot: number) => {
+    "worklet";
+    const same = ARC_MIDDLE * N + (((slot % N) + N) % N);
+    if (slot === same) return;
+    lastSlot.set(same);
+    scrollX.set(same * ARC_ITEM);
+    scrollTo(animatedRef, same * ARC_ITEM, 0, false);
+  };
+
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      scrollX.set(e.contentOffset.x);
+      // A soft tick each time a new orb passes the middle while swiping (like a picker wheel).
+      const slot = Math.round(e.contentOffset.x / ARC_ITEM);
+      if (slot !== lastSlot.get()) {
+        lastSlot.set(slot);
+        if (!gliding.get()) runOnJS(tick)();
+      }
+    },
+    // Re-centring on the middle copy happens here, on the UI thread, in one frame: the scroll position
+    // and the arc's shape move together, so the swap is invisible (no tick, no flash).
+    onMomentumEnd: (e) => {
+      toMiddle(Math.round(e.contentOffset.x / ARC_ITEM));
+    },
   });
   // While gliding, follow the eased value frame by frame.
   useAnimatedReaction(
@@ -248,7 +271,8 @@ function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
 
   /** Choose the mood once its orb has landed, so the rest of the screen changes after the glide, not during it. */
   const land = (slot: number) => {
-    jump(slot);
+    // The UI thread has already swapped repeats to the middle copy; JS only records what is shown.
+    centred.current = slot;
     onChangeRef.current(MOODS[slot % N].id);
   };
 
@@ -256,13 +280,18 @@ function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
   const pressSlot = useCallback(
     (slot: number) => {
       tick();
-      if (reduceMotion) return land(slot);
+      if (reduceMotion) {
+        jump(middleSlot(slot % N));
+        return land(middleSlot(slot % N));
+      }
       cancelAnimation(glideX);
       glideX.set(scrollX.get());
       gliding.set(true);
       glideX.set(
         withTiming(slot * ARC_ITEM, { duration: GLIDE_MS, easing: Easing.out(Easing.cubic) }, () => {
           gliding.set(false);
+          // Landed on a repeat (e.g. Angry just after Joyful): swap to the middle copy invisibly.
+          toMiddle(slot);
           runOnJS(land)(slot);
         }),
       );
@@ -271,15 +300,22 @@ function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
     [reduceMotion],
   );
 
-  // A choice made elsewhere (or on first layout) starts in the middle.
+  // Centre on first layout, and when the mood is changed from outside (another screen). A choice made
+  // here is already in the middle — even if that is a repeat copy — so it is never jumped away from.
   useEffect(() => {
-    if (width > 0) jump(startSlot);
+    if (width === 0) return;
+    const shown = MOODS[((centred.current % N) + N) % N].id;
+    if (!initialised.current || (value && shown !== value)) jump(startSlot);
+    initialised.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [width, startSlot]);
   /** After a swipe settles, jump (invisibly) to the same mood in the middle copy, so there is always more. */
   function recentre(x: number) {
     const slot = Math.round(x / ARC_ITEM);
     const same = middleSlot(((slot % N) + N) % N);
+    // The UI thread has already moved there (onMomentumEnd); this keeps JS in step.
     if (slot !== same) jump(same);
+    else centred.current = slot;
   }
   const side = Math.max(0, (width - ARC_ITEM) / 2);
   return (

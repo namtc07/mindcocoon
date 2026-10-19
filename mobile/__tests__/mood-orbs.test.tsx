@@ -1,8 +1,11 @@
 import { act, fireEvent, screen, userEvent } from "@testing-library/react-native";
 import * as Haptics from "expo-haptics";
+import * as Reanimated from "react-native-reanimated";
 import { ScrollView } from "react-native";
 import TodayScreen from "@/app/(tabs)/index";
 import { FeelingChips } from "@/components/mood/FeelingChips";
+import type { MoodType } from "@mindcocoon/core/types";
+import { useState } from "react";
 import { ARC_MIDDLE, MoodPicker } from "@/components/mood/MoodPicker";
 import { renderWithApp } from "@/test-utils/render";
 import { readableFill } from "@/theme/contrast";
@@ -31,14 +34,53 @@ describe("Mood orbs", () => {
 
   it("tapping an orb chooses it and glides it to the middle of the arc", async () => {
     const user = userEvent.setup();
-    const scrollTo = ScrollView.prototype.scrollTo as unknown as jest.Mock;
-    scrollTo.mockClear();
+    const timing = jest.spyOn(Reanimated, "withTiming");
     const onChange = jest.fn();
-    await renderWithApp(<MoodPicker variant="orbs" value={null} onChange={onChange} label="How are you?" />);
-    await user.press(screen.getByRole("radio", { name: "Hopeful" }));
-    expect(onChange).toHaveBeenCalledWith("hopeful");
-    // The arc repeats the ten moods; choices glide within the middle copy.
-    expect(scrollTo).toHaveBeenLastCalledWith(expect.objectContaining({ x: (ARC_MIDDLE * 10 + 7) * 76 }));
+    try {
+      await renderWithApp(<MoodPicker variant="orbs" value={null} onChange={onChange} label="How are you?" />);
+      await user.press(screen.getByRole("radio", { name: "Hopeful" }));
+      expect(onChange).toHaveBeenCalledWith("hopeful");
+      // An eased glide to Hopeful's slot in the middle copy (the arc repeats the ten moods).
+      expect(timing).toHaveBeenCalledWith((ARC_MIDDLE * 10 + 7) * 76, expect.objectContaining({ duration: expect.any(Number) }), expect.any(Function));
+    } finally {
+      timing.mockRestore();
+    }
+  });
+
+  it("under Reduce Motion it moves straight there", async () => {
+    const user = userEvent.setup();
+    const scrollTo = ScrollView.prototype.scrollTo as unknown as jest.Mock;
+    const reduce = jest.spyOn(Reanimated, "useReducedMotion").mockReturnValue(true);
+    try {
+      await renderWithApp(<MoodPicker variant="orbs" value={null} onChange={() => {}} label="How are you?" />);
+      scrollTo.mockClear();
+      await user.press(screen.getByRole("radio", { name: "Hopeful" }));
+      expect(scrollTo).toHaveBeenLastCalledWith({ x: (ARC_MIDDLE * 10 + 7) * 76, animated: false });
+    } finally {
+      reduce.mockRestore();
+    }
+  });
+
+  it("choosing a mood just past the seam (Joyful → Angry) swaps copies on the UI thread, never by a JS jump", async () => {
+    const user = userEvent.setup();
+    const jsScroll = ScrollView.prototype.scrollTo as unknown as jest.Mock;
+    const uiScroll = jest.spyOn(Reanimated, "scrollTo");
+    function Harness() {
+      const [value, setValue] = useState<MoodType | null>(null);
+      return <MoodPicker variant="orbs" value={value} onChange={setValue} label="How are you?" />;
+    }
+    try {
+      await renderWithApp(<Harness />);
+      await act(async () => fireEvent(screen.getByTestId("feeling-orbs"), "layout", { nativeEvent: { layout: { x: 0, y: 0, width: 390, height: 200 } } }));
+      const nextCopyAngry = screen.getAllByRole("radio", { name: "Angry", includeHiddenElements: true })[ARC_MIDDLE + 1];
+      jsScroll.mockClear();
+      await user.press(nextCopyAngry);
+      expect(screen.getAllByRole("radio", { name: "Angry" })[0]).toBeChecked();
+      expect(uiScroll).toHaveBeenCalledWith(expect.anything(), ARC_MIDDLE * 10 * 76, 0, false);
+      expect(jsScroll).not.toHaveBeenCalled();
+    } finally {
+      uiScroll.mockRestore();
+    }
   });
 
   it("choosing gives a light tick you can feel", async () => {
