@@ -245,6 +245,16 @@ export const en = {
     surprise: "Surprise me",
     write: "Write about: {prompt}",
   },
+  feelings: {
+    prompt: "More precisely?",
+    words: {
+      calm: "calm", content: "content", relieved: "relieved", grateful: "grateful", safe: "safe",
+      excited: "excited", motivated: "motivated", proud: "proud", loved: "loved", curious: "curious",
+      empty: "empty", tired: "tired", bored: "bored", disconnected: "disconnected", flat: "flat",
+      exhausted: "exhausted", lonely: "lonely", sad: "sad", hurt: "hurt", disappointed: "disappointed",
+      worried: "worried", overwhelmed: "overwhelmed", restless: "restless", scared: "scared", irritated: "irritated",
+    },
+  },
   sounds: {
     rain: "Rain",
     ocean: "Ocean",

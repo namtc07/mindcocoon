@@ -1,3 +1,4 @@
+import { feelingsFor } from "../feelings";
 import { getStorage, newId } from "../storage/index";
 import { decryptField, encryptField, getUnlockedDek } from "../vault/session";
 import type { MoodLog, MoodType } from "../types";
@@ -51,12 +52,14 @@ export async function loadMoods(force = false) {
 }
 
 /** Rejects with VaultLockedError when a note is given and the vault is locked. */
-export async function addMood(input: { mood: MoodType; tags: string[]; note?: string }) {
+export async function addMood(input: { mood: MoodType; tags: string[]; note?: string; feelings?: string[] }) {
   const note = input.note?.trim();
+  const feelings = feelingsFor(input.mood, input.feelings);
   const log: MoodLog = {
     id: newId(),
     mood: input.mood,
     tags: input.tags,
+    ...(feelings.length ? { feelings } : {}),
     createdAt: new Date().toISOString(),
     ...(note ? { note: await encryptField(note), isNoteEncrypted: true } : {}),
   };
@@ -71,7 +74,9 @@ export async function addMood(input: { mood: MoodType; tags: string[]; note?: st
  * Adds the new log before removing the old one so nothing is lost on failure.
  */
 export async function changeMood(previous: MoodLog, mood: MoodType): Promise<MoodLog> {
-  const log: MoodLog = { ...previous, id: newId(), mood, createdAt: new Date().toISOString() };
+  const { feelings: _old, ...rest } = previous;
+  const feelings = feelingsFor(mood, previous.feelings);
+  const log: MoodLog = { ...rest, ...(feelings.length ? { feelings } : {}), id: newId(), mood, createdAt: new Date().toISOString() };
   await getStorage().moods.add(log);
   await getStorage().moods.remove(previous.id);
   setState({ ...state, logs: [log, ...state.logs.filter((l) => l.id !== previous.id)] });
@@ -83,11 +88,15 @@ export async function changeMood(previous: MoodLog, mood: MoodType): Promise<Moo
  * Sets the tags (and optionally a new note) of an existing check-in in one write, keeping its
  * id, time and mood. Rejects with VaultLockedError when a note is given and the vault is locked.
  */
-export async function updateMoodDetails(previous: MoodLog, input: { tags: string[]; note?: string }): Promise<MoodLog> {
+export async function updateMoodDetails(
+  previous: MoodLog,
+  input: { tags: string[]; note?: string; feelings?: string[] },
+): Promise<MoodLog> {
   const note = input.note?.trim();
   const log: MoodLog = {
     ...previous,
     tags: input.tags,
+    ...(input.feelings !== undefined ? { feelings: feelingsFor(previous.mood, input.feelings) } : {}),
     ...(note ? { note: await encryptField(note), isNoteEncrypted: true } : {}),
   };
   const stored = await getStorage().moods.list();

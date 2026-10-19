@@ -11,6 +11,8 @@ export interface MoodLog {
   userId?: string;
   mood: MoodType;
   tags: string[];
+  /** Up to three more precise feeling words for this mood (ids from FEELINGS). */
+  feelings?: string[];
   /** Plain text, or an encrypted envelope when isNoteEncrypted. */
   note?: string;
   isNoteEncrypted?: boolean;

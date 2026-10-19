@@ -6,6 +6,7 @@ import { createLocalAdapter } from "@mindcocoon/core/storage/local";
 import {
   __resetMoodsForTests,
   addMood,
+  changeMood,
   getMoodState,
   loadMoods,
   readNote,
@@ -169,5 +170,41 @@ describe("updateMoodDetails", () => {
     const first = await addMood({ mood: "heavy", tags: [], note: "kept" });
     const updated = await updateMoodDetails(first, { tags: ["study"] });
     expect(await readNote(updated)).toBe("kept");
+  });
+});
+
+describe("feeling words on check-ins", () => {
+  beforeEach(async () => {
+    __setIterationsForTests(1_000);
+    setStorage(createLocalAdapter(createMemoryDriver()));
+    __resetVaultForTests();
+    __resetMoodsForTests();
+    await initVault();
+  });
+
+  it("addMood stores feelings", async () => {
+    const log = await addMood({ mood: "heavy", tags: [], feelings: ["lonely", "exhausted"] });
+    expect(log.feelings).toEqual(["lonely", "exhausted"]);
+    expect((await getStorage().moods.list())[0].feelings).toEqual(["lonely", "exhausted"]);
+  });
+
+  it("updateMoodDetails keeps feelings unless given", async () => {
+    const log = await addMood({ mood: "heavy", tags: [], feelings: ["sad"] });
+    const kept = await updateMoodDetails(log, { tags: ["work"] });
+    expect(kept.feelings).toEqual(["sad"]);
+    const changed = await updateMoodDetails(kept, { tags: ["work"], feelings: ["hurt"] });
+    expect(changed.feelings).toEqual(["hurt"]);
+  });
+
+  it("changeMood drops feelings of the old mood", async () => {
+    const log = await addMood({ mood: "heavy", tags: [], feelings: ["sad", "lonely"] });
+    const moved = await changeMood(log, "anxious");
+    expect(moved.feelings ?? []).toEqual([]);
+  });
+
+  it("old logs without feelings still load", async () => {
+    await getStorage().moods.add({ id: "old", mood: "numb", tags: [], createdAt: new Date().toISOString() });
+    await loadMoods(true);
+    expect(getMoodState().logs[0].feelings).toBeUndefined();
   });
 });

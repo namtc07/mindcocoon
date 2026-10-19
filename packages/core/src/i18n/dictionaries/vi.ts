@@ -246,6 +246,16 @@ export const vi: Dictionary = {
     surprise: "Chọn ngẫu nhiên",
     write: "Viết về: {prompt}",
   },
+  feelings: {
+    prompt: "Cụ thể hơn?",
+    words: {
+      calm: "bình thản", content: "hài lòng", relieved: "nhẹ nhõm", grateful: "biết ơn", safe: "an toàn",
+      excited: "háo hức", motivated: "có động lực", proud: "tự hào", loved: "được thương", curious: "tò mò",
+      empty: "trống trải", tired: "mệt mỏi", bored: "chán", disconnected: "lạc lõng", flat: "uể oải",
+      exhausted: "kiệt sức", lonely: "cô đơn", sad: "buồn", hurt: "tổn thương", disappointed: "thất vọng",
+      worried: "lo lắng", overwhelmed: "quá tải", restless: "bồn chồn", scared: "sợ hãi", irritated: "bực bội",
+    },
+  },
   sounds: {
     rain: "Mưa",
     ocean: "Sóng biển",
