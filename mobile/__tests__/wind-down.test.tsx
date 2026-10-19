@@ -39,6 +39,7 @@ describe("Wind down", () => {
     expect(audio.getState().sleepMinutes).toBe(30);
     expect(await screen.findByText("Sleep well.")).toBeOnTheScreen();
     expect(screen.getByTestId("ken-sleepy", { includeHiddenElements: true })).toBeOnTheScreen();
+    expect(screen.getByTestId("scene-rain-sea", { includeHiddenElements: true })).toBeOnTheScreen();
     expect((await getStorage().moods.list()).map((l) => l.mood)).toEqual(["anxious"]);
   });
 

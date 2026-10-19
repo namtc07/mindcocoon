@@ -5,6 +5,7 @@ import { useSyncExternalStore } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Chip } from "@/components/ui/Chip";
 import { toast } from "@/components/ui/Toast";
+import { MixCard } from "./MixCard";
 import { useNow } from "@/hooks/use-now";
 import { useI18n } from "@/i18n/i18n";
 import { audio, useAudio } from "@/lib/audio";
@@ -67,9 +68,7 @@ export function MixChips() {
       <Text style={[styles.label, { color: c.mutedForeground }]}>{t.sanctuary.mixesLabel}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
         {PRESET_MIXES.map((p) => (
-          <Chip key={p.id} selected={matches(p.mix)} onPress={() => play(p.mix)}>
-            {t.sanctuary.presets[p.id]}
-          </Chip>
+          <MixCard key={p.id} id={p.id} selected={matches(p.mix)} onPress={() => play(p.mix)} />
         ))}
         {saved.map((m) => (
           <View key={m.id} style={styles.saved}>

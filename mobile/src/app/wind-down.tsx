@@ -5,11 +5,13 @@ import { addMood, changeMood, getMoodState } from "@mindcocoon/core/mood/store";
 import type { MoodType } from "@mindcocoon/core/types";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ken } from "@/components/art/Ken";
 import { MoodPicker } from "@/components/mood/MoodPicker";
 import { BoxBreathing } from "@/components/sanctuary/BoxBreathing";
 import { MiniPlayer } from "@/components/sanctuary/MiniPlayer";
+import { MixCard, SCENE_OF } from "@/components/sanctuary/MixCard";
+import { Scene } from "@/components/art/Scene";
 import { Muted, Screen } from "@/components/Screen";
 import { StackHeader } from "@/components/StackHeader";
 import { Button } from "@/components/ui/Button";
@@ -21,7 +23,7 @@ import { useI18n } from "@/i18n/i18n";
 import { audio, useAudio } from "@/lib/audio";
 import type { SleepMinutes } from "@/lib/audio/engine";
 import { fonts } from "@/theme/fonts";
-import { space } from "@/theme/tokens";
+import { radius, space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 
 const TIMERS: SleepMinutes[] = [20, 30, 60];
@@ -71,6 +73,8 @@ export default function WindDownScreen() {
         return;
       }
       audio.setSleepTimer(minutes);
+      // Pin the choice: once sounds play, the default would otherwise become "keep".
+      setMixChoice(mix);
       setStep("night");
     } catch {
       toast.show(t.sanctuary.playError);
@@ -114,18 +118,18 @@ export default function WindDownScreen() {
         {step === "sounds" && (
           <View style={styles.step}>
             <Text style={[styles.h, { color: c.foreground }]}>{t.windDown.soundsTitle}</Text>
-            <View style={styles.chips}>
-              {playing.length > 0 && (
+            {playing.length > 0 && (
+              <View style={styles.chips}>
                 <Chip selected={mix === "keep"} onPress={() => setMixChoice("keep")}>
                   {t.windDown.keepPlaying}
                 </Chip>
-              )}
+              </View>
+            )}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cards}>
               {PRESET_MIXES.map((p) => (
-                <Chip key={p.id} selected={mix === p.id} onPress={() => setMixChoice(p.id)}>
-                  {t.sanctuary.presets[p.id]}
-                </Chip>
+                <MixCard key={p.id} id={p.id} selected={mix === p.id} onPress={() => setMixChoice(p.id)} />
               ))}
-            </View>
+            </ScrollView>
             <Text style={[styles.label, { color: c.mutedForeground }]}>{t.windDown.timerLabel}</Text>
             <View style={styles.chips}>
               {TIMERS.map((n) => (
@@ -147,6 +151,11 @@ export default function WindDownScreen() {
 
         {step === "night" && (
           <View style={[styles.step, styles.night]}>
+            {mix !== "keep" && (
+              <View style={styles.scene}>
+                <Scene kind={SCENE_OF[mix]} height={150} />
+              </View>
+            )}
             <Ken mood="sleepy" size={72} />
             <Muted>{t.windDown.sleepWellBody}</Muted>
             {/* What's playing, the timer, pause and stop — right where the phone gets put down. */}
@@ -168,6 +177,8 @@ const styles = StyleSheet.create({
   h: { fontFamily: fonts.serif, fontSize: 22, lineHeight: 28 },
   label: { fontFamily: fonts.sans, fontSize: 15 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: space.sm },
+  scene: { alignSelf: "stretch", borderRadius: radius.xl, overflow: "hidden" },
+  cards: { gap: space.sm, paddingRight: space.lg },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: space.md, justifyContent: "flex-end" },
   night: { alignItems: "flex-start", paddingTop: space.xl },
   player: { alignSelf: "stretch", marginHorizontal: -space.md },
