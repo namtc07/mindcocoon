@@ -1,4 +1,5 @@
 import { act, fireEvent, screen, userEvent } from "@testing-library/react-native";
+import * as Haptics from "expo-haptics";
 import { ScrollView } from "react-native";
 import TodayScreen from "@/app/(tabs)/index";
 import { FeelingChips } from "@/components/mood/FeelingChips";
@@ -38,6 +39,22 @@ describe("Mood orbs", () => {
     expect(onChange).toHaveBeenCalledWith("hopeful");
     // The arc repeats the ten moods; choices glide within the middle copy.
     expect(scrollTo).toHaveBeenLastCalledWith(expect.objectContaining({ x: (ARC_MIDDLE * 10 + 7) * 76 }));
+  });
+
+  it("choosing gives a light tick you can feel", async () => {
+    const user = userEvent.setup();
+    (Haptics.selectionAsync as jest.Mock).mockClear();
+    await renderWithApp(<MoodPicker variant="orbs" value={null} onChange={() => {}} label="How are you?" />);
+    await user.press(screen.getByRole("radio", { name: "Thankful" }));
+    expect(Haptics.selectionAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it("the caption fades to the chosen mood's words", async () => {
+    const { rerender } = await renderWithApp(<MoodPicker variant="orbs" value="heavy" onChange={() => {}} label="How are you?" />);
+    const first = screen.getByText("Weighed down, tired");
+    await rerender(<MoodPicker variant="orbs" value="joyful" onChange={() => {}} label="How are you?" />);
+    expect(screen.getByText("Light, smiling inside")).not.toBe(first);
+    expect(screen.getByText("Light, smiling inside")).toHaveProp("entering", expect.anything());
   });
 
   it("swiping only browses; nothing is chosen until a tap", async () => {

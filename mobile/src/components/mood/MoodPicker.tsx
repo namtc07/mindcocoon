@@ -2,7 +2,25 @@ import { MOODS } from "@mindcocoon/core/moods";
 import type { MoodType } from "@mindcocoon/core/types";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, type ScrollViewInstance, StyleSheet, Text, View } from "react-native";
-import Animated, { type SharedValue, useAnimatedScrollHandler, useAnimatedStyle, useReducedMotion, useSharedValue } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+import Animated, {
+  cancelAnimation,
+  Easing,
+  FadeIn,
+  FadeOut,
+  runOnJS,
+  scrollTo,
+  type SharedValue,
+  useAnimatedReaction,
+  useAnimatedRef,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
 import { useSvgId } from "@/components/art/activity";
 import { useI18n } from "@/i18n/i18n";
@@ -121,41 +139,98 @@ function ArcScale({ index, scrollX, children }: { index: number; scrollX: Shared
   return <Animated.View style={style}>{children}</Animated.View>;
 }
 
+/** A small "pop" when an orb is chosen: a quick swell that settles back with a spring. */
+function Pop({ on, children }: { on: boolean; children: ReactNode }) {
+  const reduceMotion = useReducedMotion();
+  const scale = useSharedValue(1);
+  useEffect(() => {
+    if (on && !reduceMotion) scale.set(withSequence(withTiming(1.14, { duration: 140 }), withSpring(1, { damping: 9, stiffness: 180 })));
+  }, [on, reduceMotion, scale]);
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.get() }] }));
+  return <Animated.View style={style}>{children}</Animated.View>;
+}
+
+const GLIDE_MS = 480;
+
 function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
   const { t } = useI18n();
   const { c } = useTheme();
   const radio = useMoodRadio(value, onChange);
   const reduceMotion = useReducedMotion();
-  const ref = useRef<ScrollViewInstance>(null);
+  // The animated ref drives the eased glide on the UI thread; the plain one settles exactly (and serves tests).
+  const animatedRef = useAnimatedRef<Animated.ScrollView>();
+  const jsRef = useRef<ScrollViewInstance | null>(null);
   const [width, setWidth] = useState(0);
   const startSlot = middleSlot(value ? MOODS.findIndex((m) => m.id === value) : Math.floor(N / 2));
   const scrollX = useSharedValue(startSlot * ARC_ITEM);
+  const glideX = useSharedValue(0);
+  const gliding = useSharedValue(false);
+  const lastSlot = useSharedValue(startSlot);
+
+  const tick = () => void Haptics.selectionAsync().catch(() => {});
+  const jump = (slot: number) => jsRef.current?.scrollTo({ x: slot * ARC_ITEM, animated: false });
+
   const onScroll = useAnimatedScrollHandler((e) => {
     scrollX.set(e.contentOffset.x);
+    // A soft tick each time a new orb passes the middle while swiping (like a picker wheel).
+    const slot = Math.round(e.contentOffset.x / ARC_ITEM);
+    if (slot !== lastSlot.get()) {
+      lastSlot.set(slot);
+      if (!gliding.get()) runOnJS(tick)();
+    }
   });
-  const centre = (slot: number, animated: boolean) => ref.current?.scrollTo({ x: slot * ARC_ITEM, animated });
-  // A choice made elsewhere (or on first layout) glides to the middle.
+  // While gliding, follow the eased value frame by frame.
+  useAnimatedReaction(
+    () => glideX.get(),
+    (x) => {
+      if (gliding.get()) scrollTo(animatedRef, x, 0, false);
+    },
+  );
+
+  /** Ease the orb at `slot` into the middle (or jump there under Reduce Motion). */
+  function glideTo(slot: number) {
+    if (reduceMotion) return jump(slot);
+    cancelAnimation(glideX);
+    glideX.set(scrollX.get());
+    gliding.set(true);
+    glideX.set(
+      withTiming(slot * ARC_ITEM, { duration: GLIDE_MS, easing: Easing.out(Easing.cubic) }, (finished) => {
+        gliding.set(false);
+        if (finished) runOnJS(jump)(slot);
+      }),
+    );
+  }
+
+  // A choice made elsewhere (or on first layout) starts in the middle.
   useEffect(() => {
-    if (width > 0) centre(startSlot, false);
+    if (width > 0) jump(startSlot);
   }, [width, startSlot]);
   /** After a swipe settles, jump (invisibly) to the same mood in the middle copy, so there is always more. */
   function recentre(x: number) {
     const slot = Math.round(x / ARC_ITEM);
     const same = middleSlot(((slot % N) + N) % N);
-    if (slot !== same) centre(same, false);
+    if (slot !== same) jump(same);
   }
   const side = Math.max(0, (width - ARC_ITEM) / 2);
   return (
     <View testID="feeling-orbs" style={[styles.orbs, { marginHorizontal: -bleed }]} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
       <Animated.ScrollView
         testID="feeling-arc"
-        ref={ref}
+        ref={(node: ScrollViewInstance | null) => {
+          jsRef.current = node;
+          if (typeof animatedRef === "function") (animatedRef as (n: unknown) => void)(node);
+        }}
         horizontal
         showsHorizontalScrollIndicator={false}
         snapToInterval={ARC_ITEM}
         decelerationRate="fast"
         onScroll={onScroll}
         scrollEventThrottle={16}
+        onScrollBeginDrag={() => {
+          // A finger takes over from any glide in progress.
+          cancelAnimation(glideX);
+          gliding.set(false);
+        }}
         onMomentumScrollEnd={(e) => recentre(e.nativeEvent.contentOffset.x)}
         contentContainerStyle={{ paddingHorizontal: side, paddingTop: RISE, paddingBottom: BELOW }}
       >
@@ -172,16 +247,25 @@ function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
                   accessibilityElementsHidden={repeat}
                   importantForAccessibility={repeat ? "no-hide-descendants" : "auto"}
                   onPress={() => {
+                    tick();
                     onPress();
-                    // Glide the tapped orb to the middle; the next swipe re-centres on the middle copy.
-                    centre(slot, !reduceMotion);
+                    glideTo(slot);
                   }}
                   style={styles.cell}
                 >
                   <ArcScale index={slot} scrollX={scrollX}>
-                    <View style={[styles.halo, checked && { backgroundColor: c.mood[m.id] + "40" }]}>
-                      <Orb color={c.mood[m.id]} size={ORB} />
-                    </View>
+                    <Pop on={checked}>
+                      <View style={styles.halo}>
+                        {checked && (
+                          <Animated.View
+                            entering={FadeIn.duration(260)}
+                            exiting={FadeOut.duration(200)}
+                            style={[StyleSheet.absoluteFill, styles.glow, { backgroundColor: c.mood[m.id] + "40" }]}
+                          />
+                        )}
+                        <Orb color={c.mood[m.id]} size={ORB} />
+                      </View>
+                    </Pop>
                   </ArcScale>
                   <Text numberOfLines={1} style={[styles.orbLabel, { color: checked ? c.foreground : c.mutedForeground }]}>
                     {t.mood.states[m.id].label}
@@ -192,9 +276,14 @@ function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
           })}
         </View>
       </Animated.ScrollView>
-      <Text accessibilityLiveRegion="polite" style={[styles.caption, { color: value ? c.foreground : c.mutedForeground }]}>
+      <Animated.Text
+        key={value ?? "none"}
+        entering={FadeIn.duration(260)}
+        accessibilityLiveRegion="polite"
+        style={[styles.caption, { color: value ? c.foreground : c.mutedForeground }]}
+      >
         {value ? t.mood.states[value].description : t.feelings.tapOne}
-      </Text>
+      </Animated.Text>
     </View>
   );
 }
@@ -208,6 +297,7 @@ const styles = StyleSheet.create({
   slot: { width: ARC_ITEM, alignItems: "center" },
   cell: { alignItems: "center", gap: 10, minHeight: 44, width: ARC_ITEM },
   halo: { borderRadius: ORB, padding: 6 },
+  glow: { borderRadius: ORB },
   orbLabel: { fontFamily: fonts.sansMedium, fontSize: 12 },
   caption: { fontFamily: fonts.serif, fontSize: 17, lineHeight: 23, textAlign: "center" },
 });
