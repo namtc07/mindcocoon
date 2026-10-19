@@ -17,6 +17,8 @@ type Props = {
   size?: "md" | "lg";
   /** "row": five dots in a line (compact). "orbs": a swipeable arc of glowing orbs (tap to choose), with a caption. */
   variant?: "row" | "orbs";
+  /** How far the arc reaches past its parent's padding to the screen edges (orbs only). */
+  bleed?: number;
 };
 
 /** Five coloured states as a radio group: a compact row, or glowing orbs on an arc. */
@@ -102,7 +104,7 @@ function ArcOrb({ index, scrollX, children }: { index: number; scrollX: SharedVa
   return <Animated.View style={[styles.slot, style]}>{children}</Animated.View>;
 }
 
-function MoodOrbs({ value, onChange, label }: Props) {
+function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
   const { t } = useI18n();
   const { c } = useTheme();
   const radio = useMoodRadio(value, onChange);
@@ -121,7 +123,7 @@ function MoodOrbs({ value, onChange, label }: Props) {
   }, [width, startIndex]);
   const side = Math.max(0, (width - ARC_ITEM) / 2);
   return (
-    <View testID="feeling-orbs" style={styles.orbs} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+    <View testID="feeling-orbs" style={[styles.orbs, { marginHorizontal: -bleed }]} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
       <Animated.ScrollView
         testID="feeling-arc"
         ref={ref}
@@ -170,7 +172,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", justifyContent: "space-between", gap: 4 },
   item: { flex: 1, alignItems: "center", gap: 8, minHeight: 44, paddingVertical: 4 },
   label: { fontFamily: fonts.sans, fontSize: 12, textAlign: "center", lineHeight: 15 },
-  orbs: { gap: space.sm, marginHorizontal: -space.xl },
+  orbs: { gap: space.sm },
   arc: { flexDirection: "row" },
   slot: { width: ARC_ITEM, alignItems: "center" },
   cell: { alignItems: "center", gap: 6, minHeight: 44, width: ARC_ITEM },

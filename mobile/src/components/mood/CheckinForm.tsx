@@ -84,6 +84,7 @@ export function CheckinForm() {
         }}
         label={t.today.checkinQuestion}
         variant="orbs"
+        bleed={space.lg}
       />
       {mood && <FeelingChips mood={mood} value={feelings} onChange={setFeelings} />}
       <Text style={[styles.label, { color: c.mutedForeground }]}>{t.moodPage.tagsLabel}</Text>
