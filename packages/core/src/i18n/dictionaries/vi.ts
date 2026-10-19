@@ -329,6 +329,13 @@ export const vi: Dictionary = {
     entryTitle: "Thư cho chính mình sau này",
     entryBody: "Viết bây giờ, mở sau một tuần, một tháng, hoặc vào một tuần khó khăn.",
   },
+  occasions: {
+    "tet": "Chúc bạn một năm mới bình an.",
+    "mid-autumn": "Trung thu rồi, trăng tròn đêm nay.",
+    "christmas": "Chúc bạn một mùa Giáng sinh ấm áp, bình yên.",
+    "new-year": "Năm mới rồi, cứ từ từ thôi.",
+    "full-moon": "Đêm nay trăng tròn.",
+  },
   letter: {
     title: "Thư từ Kén",
     cardTitle: "Kén để lại cho bạn vài dòng",

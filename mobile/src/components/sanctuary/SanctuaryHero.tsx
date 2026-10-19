@@ -1,5 +1,6 @@
 import { mixMatches, PRESET_MIXES } from "@mindcocoon/core/audio/mixes";
 import { partOfDay } from "@mindcocoon/core/dates";
+import { occasionFor } from "@mindcocoon/core/occasions";
 import { StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { Ken } from "@/components/art/Ken";
@@ -33,7 +34,7 @@ export function SanctuaryHero({ now }: { now: Date }) {
         </Animated.View>
       ) : (
         <View>
-          <Sky part={part} height={140} />
+          <Sky part={part} height={140} occasion={occasionFor(now)} />
           <View style={styles.ken}>
             <Ken mood={part === "night" ? "sleepy" : "calm"} size={52} />
           </View>

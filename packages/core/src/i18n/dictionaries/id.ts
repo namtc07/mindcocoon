@@ -330,6 +330,13 @@ export const id: Dictionary = {
     entryTitle: "Surat untuk dirimu nanti",
     entryBody: "Tulis sekarang, buka seminggu, sebulan lagi, atau saat minggu terasa berat.",
   },
+  occasions: {
+    "tet": "Selamat tahun baru, semoga tenang.",
+    "mid-autumn": "Bulan purnama Pertengahan Musim Gugur malam ini.",
+    "christmas": "Natal yang hangat dan tenang untukmu.",
+    "new-year": "Tahun baru, pelan-pelan saja.",
+    "full-moon": "Malam ini bulan purnama.",
+  },
   letter: {
     title: "Surat dari Kén",
     cardTitle: "Kén meninggalkan beberapa baris untukmu",

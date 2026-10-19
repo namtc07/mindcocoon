@@ -328,6 +328,13 @@ export const en = {
     entryTitle: "A letter to future you",
     entryBody: "Write now, open it in a week, a month, or on a hard week.",
   },
+  occasions: {
+    "tet": "A gentle new year to you.",
+    "mid-autumn": "A full moon for Mid-autumn tonight.",
+    "christmas": "A warm, quiet Christmas to you.",
+    "new-year": "A new year, taken slowly.",
+    "full-moon": "The moon is full tonight.",
+  },
   letter: {
     title: "A note from Kén",
     cardTitle: "Kén left you a few lines",

@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import Animated, { cancelAnimation, Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
-import Svg, { Circle, Defs, Ellipse, G, LinearGradient, Path, Stop, Text as SvgText } from "react-native-svg";
+import Svg, { Circle, Defs, Ellipse, G, Line, LinearGradient, Path, Rect, Stop, Text as SvgText } from "react-native-svg";
 import { useAnimationsActive, useSvgId } from "./activity";
 import { decorative } from "./seeded";
 
 export type KenMood = "calm" | "sleepy" | "glad";
+/** Seasonal touches only (Tết / Mid-autumn: a lantern; Christmas: a scarf). Never earned or collected. */
+export type KenAccessory = "lantern" | "scarf";
 
 /** Same tapered cocoon as the app icon, in a 100 × 120 box. */
 const BODY = "M50 14 C68 14 88 40 88 70 C88 100 70 116 50 116 C30 116 12 100 12 70 C12 40 32 14 50 14 Z";
@@ -42,7 +44,7 @@ function Face({ mood }: { mood: KenMood }) {
  * Kén, a small cocoon who keeps you company. Only a face — no needs, no levels, nothing to feed.
  * Floats gently unless Reduce Motion is on.
  */
-export function Ken({ mood = "calm", size = 72 }: { mood?: KenMood; size?: number }) {
+export function Ken({ mood = "calm", size = 72, accessory = null }: { mood?: KenMood; size?: number; accessory?: KenAccessory | null }) {
   const reduceMotion = useReducedMotion();
   const active = useAnimationsActive();
   const still = reduceMotion || !active;
@@ -59,7 +61,7 @@ export function Ken({ mood = "calm", size = 72 }: { mood?: KenMood; size?: numbe
   const float = useAnimatedStyle(() => ({ transform: [{ translateY: y.get() }] }));
   return (
     <Animated.View testID={`ken-${mood}`} {...decorative} style={[{ width: size, height: size * 1.2 }, float]}>
-      <Svg width="100%" height="100%" viewBox="0 0 100 120">
+      <Svg width="100%" height="100%" viewBox="0 0 106 120">
         <Defs>
           <LinearGradient id={`${id}-body`} x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor="#b6dcd2" />
@@ -74,6 +76,19 @@ export function Ken({ mood = "calm", size = 72 }: { mood?: KenMood; size?: numbe
         <Ellipse cx={30} cy={74} rx={6} ry={3.5} fill="#e08a7e" opacity={0.35} />
         <Ellipse cx={70} cy={74} rx={6} ry={3.5} fill="#e08a7e" opacity={0.35} />
         <Face mood={mood} />
+        {accessory === "scarf" && (
+          <G testID="ken-scarf">
+            <Path d="M18 86 C36 94 64 94 82 86 L82 92 C64 100 36 100 18 92 Z" fill="#c0392b" />
+            <Rect x={62} y={90} width={8} height={18} rx={3} fill="#a93226" />
+          </G>
+        )}
+        {accessory === "lantern" && (
+          <G testID="ken-lantern">
+            <Line x1={92} y1={72} x2={92} y2={82} stroke="#d9a86c" strokeWidth={1.5} />
+            <Rect x={85} y={82} width={14} height={18} rx={6} fill="#c0392b" />
+            <Rect x={88} y={100} width={8} height={3} fill="#d9a86c" />
+          </G>
+        )}
         {mood === "sleepy" && (
           <SvgText x={80} y={22} fontSize={14} fill="#f1f5f9" opacity={0.75}>
             z

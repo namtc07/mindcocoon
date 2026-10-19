@@ -1,5 +1,6 @@
 import { dayKey, dayKeyFromISO, formatDay, isEveningMode, partOfDay } from "@mindcocoon/core/dates";
 import { LOW_MOODS } from "@mindcocoon/core/moods";
+import { occasionFor } from "@mindcocoon/core/occasions";
 import { Link } from "expo-router";
 import { Fragment, useSyncExternalStore } from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -42,6 +43,8 @@ export default function TodayScreen() {
   const name = useSyncExternalStore(subscribePrefs, readName, readName);
   const ideas = useSyncExternalStore(subscribePrefs, readIdeas, readIdeas);
   const part = partOfDay(now);
+  const occasion = occasionFor(now);
+  const accessory = occasion === "tet" || occasion === "mid-autumn" ? "lantern" : occasion === "christmas" || occasion === "new-year" ? "scarf" : null;
   const greeting = name ? t.today.greetingNamed[part].split("{name}").join(name) : t.today.greeting[part];
   const prompt = (
     <View testID="today-prompt">
@@ -68,13 +71,14 @@ export default function TodayScreen() {
     <ScreenActive>
     <Screen title={greeting} footer={<AdBanner placement="today" />} hero={
         <View>
-          <Sky part={part} />
+          <Sky part={part} occasion={occasion} />
           <View style={styles.ken}>
-            <Ken mood={part === "night" ? "sleepy" : "calm"} size={56} />
+            <Ken mood={part === "night" ? "sleepy" : "calm"} size={56} accessory={accessory} />
           </View>
         </View>
       }>
       <Text style={{ fontFamily: fonts.sans, fontSize: 14, color: c.mutedForeground, marginTop: -space.sm }}>{formatDay(now, locale)}</Text>
+      {occasion && <Text style={{ fontFamily: fonts.serifItalic, fontSize: 15, color: c.ember }}>{t.occasions[occasion]}</Text>}
       <View style={styles.sections}>
         <HeavyNudge now={now} />
         <LetterCard now={now} />
