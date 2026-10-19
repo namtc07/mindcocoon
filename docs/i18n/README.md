@@ -1,6 +1,6 @@
 # Review the English (and later Indonesian) wording
 
-`strings-en.csv` holds every English line the app shows (about 4,000 words): the interface, writing
+`strings-en.csv` holds every English line the app shows (about 4,000 words), and `strings-id.csv` every Indonesian one (to be checked by a native Indonesian speaker the same way): the interface, writing
 ideas, practices and sleep stories. Regenerate it with `npm run export:strings`.
 
 **For the reviewer (a native English speaker):**
