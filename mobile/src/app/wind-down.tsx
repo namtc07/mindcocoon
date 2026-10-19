@@ -153,7 +153,7 @@ export default function WindDownScreen() {
           <View style={[styles.step, styles.night]}>
             {mix !== "keep" && (
               <View style={styles.scene}>
-                <Scene kind={SCENE_OF[mix]} height={150} />
+                <Scene kind={SCENE_OF[mix]} fill />
               </View>
             )}
             <Ken mood="sleepy" size={72} />

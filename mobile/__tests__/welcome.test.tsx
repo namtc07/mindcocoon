@@ -81,3 +81,14 @@ describe("Personal touches on Today", () => {
     expect(screen.getAllByTestId(/^today-/)[0].props.testID).toBe("today-entries");
   });
 });
+
+it("Welcome is covered in the app switcher too (the name being typed stays private)", async () => {
+  const { AppState } = jest.requireActual<typeof import("react-native")>("react-native");
+  const prop = jest.replaceProperty(AppState, "currentState", "inactive");
+  try {
+    await fresh();
+    expect(screen.getByLabelText("Hidden while MindCocoon is in the background")).toBeOnTheScreen();
+  } finally {
+    prop.restore();
+  }
+});

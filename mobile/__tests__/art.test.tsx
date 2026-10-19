@@ -66,3 +66,19 @@ describe("Skies and scenes", () => {
     expect(screen.getByTestId("sky-morning", HIDDEN)).toBeOnTheScreen();
   });
 });
+
+describe("Pictures are never cropped", () => {
+  it("Sky widens its drawing to the space it gets, so the moon stays in view", async () => {
+    const { fireEvent, act } = jest.requireActual<typeof import("@testing-library/react-native")>("@testing-library/react-native");
+    await render(<Sky part="night" height={170} />);
+    await act(async () => fireEvent(screen.getByTestId("sky-night", HIDDEN), "layout", { nativeEvent: { layout: { x: 0, y: 0, width: 272, height: 170 } } }));
+    const svg = screen.getByTestId("sky-svg", HIDDEN);
+    expect(svg.props.vbHeight).toBe(120);
+    expect(svg.props.vbWidth).toBeCloseTo((272 * 120) / 170, 0);
+  });
+
+  it("a scene can fill the width at its own shape", async () => {
+    await render(<Scene kind="fire" fill />);
+    expect(screen.getByTestId("scene-fire", HIDDEN)).toHaveStyle({ aspectRatio: 160 / 110 });
+  });
+});

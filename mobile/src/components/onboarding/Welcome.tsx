@@ -4,6 +4,7 @@ import { useState, useSyncExternalStore } from "react";
 import { Modal, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ken } from "@/components/art/Ken";
+import { PrivacyCover } from "@/components/PrivacyCover";
 import { Sky } from "@/components/art/Sky";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -123,6 +124,8 @@ export function Welcome() {
           </View>
         )}
       </ScrollView>
+      {/* A Modal is its own native window: the root cover can't reach it (same as Sheet). */}
+      <PrivacyCover />
     </Modal>
   );
 }

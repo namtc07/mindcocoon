@@ -33,3 +33,10 @@ describe("brand assets", () => {
     expect(JSON.stringify(app.plugins)).toContain("./assets/splash-icon.png");
   });
 });
+
+describe("brand generator", () => {
+  it("pins sharp so the icons render the same everywhere", () => {
+    const pkg = JSON.parse(readFileSync(join(__dirname, "..", "..", "package.json"), "utf8"));
+    expect(pkg.devDependencies.sharp).toMatch(/^\d+\.\d+\.\d+$/);
+  });
+});

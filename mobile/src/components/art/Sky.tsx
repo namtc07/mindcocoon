@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
 import Animated, { useAnimatedProps, useReducedMotion, useSharedValue, withDelay, withRepeat, withTiming } from "react-native-reanimated";
-import Svg, { Circle, Defs, LinearGradient, Mask, Path, Rect, Stop } from "react-native-svg";
+import Svg, { Circle, Defs, G, LinearGradient, Mask, Path, Rect, Stop } from "react-native-svg";
 import { decorative, seeded } from "./seeded";
 
 export type PartOfDay = "morning" | "afternoon" | "evening" | "night";
@@ -19,7 +19,8 @@ const SKIES: Record<PartOfDay, { top: string; bottom: string; back: string; fron
 
 const STARS = (() => {
   const rnd = seeded(42);
-  return Array.from({ length: 22 }, () => ({ x: rnd() * W, y: rnd() * 70, r: 0.6 + rnd() * 1.1 }));
+  // x is a fraction of the drawing width, which follows the space the sky gets.
+  return Array.from({ length: 22 }, () => ({ x: rnd(), y: rnd() * 70, r: 0.6 + rnd() * 1.1 }));
 })();
 const TWINKLING = 6;
 
@@ -33,44 +34,59 @@ function TwinkleStar({ x, y, r, delay, still }: { x: number; y: number; r: numbe
   return <AnimatedCircle testID="star" cx={x} cy={y} r={r} fill="#f1f5f9" animatedProps={animatedProps} />;
 }
 
-/** A small landscape for the time of day: gradient sky, sun or moon, hills; stars (a few twinkling) at night. */
+/**
+ * A small landscape for the time of day: gradient sky, sun or moon, hills; stars (a few twinkling)
+ * at night. The drawing is always H tall and as wide as the space's shape, so nothing is cropped.
+ */
 export function Sky({ part, height = H }: { part: PartOfDay; height?: number }) {
   const still = useReducedMotion();
+  const [vw, setVw] = useState(W);
   const s = SKIES[part];
-  const sunX = part === "morning" ? 70 : part === "afternoon" ? 250 : 300;
+  const sunX = vw * (part === "morning" ? 0.2 : part === "afternoon" ? 0.7 : 0.83);
+  const moonX = vw - 60;
   const sunY = part === "afternoon" ? 30 : part === "evening" ? 78 : 58;
   return (
-    <View testID={`sky-${part}`} {...decorative} style={{ height, borderRadius: 22, overflow: "hidden" }}>
-      <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice">
+    <View
+      testID={`sky-${part}`}
+      {...decorative}
+      onLayout={(e) => {
+        const { width, height: h } = e.nativeEvent.layout;
+        if (width > 0 && h > 0) setVw((H * width) / h);
+      }}
+      style={{ height, borderRadius: 22, overflow: "hidden" }}
+    >
+      <Svg testID="sky-svg" width="100%" height="100%" viewBox={`0 0 ${vw} ${H}`} preserveAspectRatio="xMidYMid slice">
         <Defs>
           <LinearGradient id={`sky-${part}`} x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={s.top} />
             <Stop offset="1" stopColor={s.bottom} />
           </LinearGradient>
           <Mask id="moon">
-            <Rect width={W} height={H} fill="white" />
-            <Circle cx={308} cy={24} r={13} fill="black" />
+            <Rect width={vw} height={H} fill="white" />
+            <Circle cx={moonX + 8} cy={24} r={13} fill="black" />
           </Mask>
         </Defs>
-        <Rect width={W} height={H} fill={`url(#sky-${part})`} />
+        <Rect width={vw} height={H} fill={`url(#sky-${part})`} />
         {part === "night" &&
           STARS.map((star, i) =>
             i < TWINKLING ? (
-              <TwinkleStar key={i} {...star} delay={i * 450} still={still} />
+              <TwinkleStar key={i} {...star} x={star.x * vw} delay={i * 450} still={still} />
             ) : (
-              <Circle testID="star" key={i} cx={star.x} cy={star.y} r={star.r} fill="#f1f5f9" opacity={0.6} />
+              <Circle testID="star" key={i} cx={star.x * vw} cy={star.y} r={star.r} fill="#f1f5f9" opacity={0.6} />
             ),
           )}
         {part === "night" ? (
-          <Circle cx={300} cy={30} r={15} fill={s.light} mask="url(#moon)" />
+          <Circle cx={moonX} cy={30} r={15} fill={s.light} mask="url(#moon)" />
         ) : (
           <>
             <Circle cx={sunX} cy={sunY} r={26} fill={s.light} opacity={0.25} />
             <Circle cx={sunX} cy={sunY} r={15} fill={s.light} />
           </>
         )}
+        <G transform={`scale(${vw / W} 1)`}>
         <Path d={`M0 92 C60 70 120 74 180 88 C240 102 300 76 ${W} 84 L${W} ${H} L0 ${H} Z`} fill={s.back} />
         <Path d={`M0 104 C70 92 140 112 210 102 C270 94 320 100 ${W} 96 L${W} ${H} L0 ${H} Z`} fill={s.front} />
+        </G>
       </Svg>
     </View>
   );

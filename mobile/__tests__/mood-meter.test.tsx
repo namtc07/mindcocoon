@@ -3,6 +3,7 @@ import TodayScreen from "@/app/(tabs)/index";
 import { FeelingChips } from "@/components/mood/FeelingChips";
 import { MoodPicker } from "@/components/mood/MoodPicker";
 import { renderWithApp } from "@/test-utils/render";
+import { readableFill } from "@/theme/contrast";
 import { tokens } from "@/theme/tokens";
 
 describe("Mood meter", () => {
@@ -38,7 +39,15 @@ describe("Mood meter", () => {
       await rerender(<FeelingChips mood="heavy" value={value} onChange={(v) => (value = v)} />);
     }
     expect(value).toEqual(["lonely", "sad", "homesick"]);
-    expect(screen.getByRole("button", { name: "sad" })).toHaveStyle({ backgroundColor: tokens.dusk.mood.heavy });
+    expect(screen.getByRole("button", { name: "sad" })).toHaveStyle({ backgroundColor: readableFill(tokens.dusk.mood.heavy).background });
     expect(screen.getByRole("button", { name: "hurt" })).toBeDisabled();
   });
+});
+
+it("the meter's side labels shrink instead of pushing orbs out at large text sizes", async () => {
+  await renderWithApp(<MoodPicker variant="meter" value={null} onChange={() => {}} label="How are you?" />);
+  const side = screen.getByText("Pleasant");
+  expect(side).toHaveStyle({ flex: 1 });
+  expect(side.props.maxFontSizeMultiplier).toBeLessThanOrEqual(1.3);
+  expect(screen.getByRole("radio", { name: "Numb" })).toHaveStyle({ flexShrink: 0, maxWidth: 104 });
 });

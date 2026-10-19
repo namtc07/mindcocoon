@@ -105,6 +105,7 @@ function MoodMeter({ value, onChange, label }: Props) {
     );
   };
   const axis = [styles.axis, { color: c.mutedForeground }];
+  const AXIS_SCALE = 1.3;
   return (
     <View testID="mood-meter" style={[styles.meter, { borderColor: c.border }]}>
       {/* Soft corner glows in each corner mood's colour (decorative). */}
@@ -124,23 +125,23 @@ function MoodMeter({ value, onChange, label }: Props) {
           <Rect x={40} y={40} width={90} height={90} fill="url(#glow-peaceful)" />
         </Svg>
       </View>
-      <Text style={[axis, styles.center]}>{t.feelings.meter.moreEnergy}</Text>
+      <Text maxFontSizeMultiplier={AXIS_SCALE} style={[axis, styles.center]}>{t.feelings.meter.moreEnergy}</Text>
       <View accessibilityRole="radiogroup" accessibilityLabel={label} style={styles.grid}>
         <View style={styles.line}>
           {cell(at(1, -1))}
           {cell(at(1, 1))}
         </View>
         <View style={styles.line}>
-          <Text style={[axis, styles.side]}>{t.feelings.meter.unpleasant}</Text>
+          <Text maxFontSizeMultiplier={AXIS_SCALE} style={[axis, styles.side]}>{t.feelings.meter.unpleasant}</Text>
           {cell(at(0, 0))}
-          <Text style={[axis, styles.side, { textAlign: "right" }]}>{t.feelings.meter.pleasant}</Text>
+          <Text maxFontSizeMultiplier={AXIS_SCALE} style={[axis, styles.side, { textAlign: "right" }]}>{t.feelings.meter.pleasant}</Text>
         </View>
         <View style={styles.line}>
           {cell(at(-1, -1))}
           {cell(at(-1, 1))}
         </View>
       </View>
-      <Text style={[axis, styles.center]}>{t.feelings.meter.lessEnergy}</Text>
+      <Text maxFontSizeMultiplier={AXIS_SCALE} style={[axis, styles.center]}>{t.feelings.meter.lessEnergy}</Text>
     </View>
   );
 }
@@ -152,10 +153,11 @@ const styles = StyleSheet.create({
   meter: { borderWidth: StyleSheet.hairlineWidth, borderRadius: radius.xl, overflow: "hidden", paddingVertical: space.md, paddingHorizontal: space.lg, gap: space.xs },
   grid: { gap: space.xs },
   line: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  cell: { alignItems: "center", gap: 6, minWidth: 88, minHeight: 44 },
+  // The orb cell keeps its size; side labels give way (and wrap) at large text sizes.
+  cell: { alignItems: "center", gap: 6, minWidth: 88, maxWidth: 104, minHeight: 44, flexShrink: 0 },
   orb: { borderRadius: ORB, borderWidth: 3, borderColor: "transparent" },
   orbLabel: { fontFamily: fonts.sansMedium, fontSize: 13 },
   axis: { fontFamily: fonts.sans, fontSize: 11, opacity: 0.85 },
   center: { textAlign: "center" },
-  side: { width: 72 },
+  side: { flex: 1, flexShrink: 1 },
 });

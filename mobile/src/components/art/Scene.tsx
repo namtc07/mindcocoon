@@ -53,10 +53,13 @@ function Fire() {
   );
 }
 
-/** A small night picture for a sound mix (rain, fire, sea, rain at sea). Static: it sits on a card. */
-export function Scene({ kind, height = H }: { kind: SceneKind; height?: number }) {
+/**
+ * A small night picture for a sound mix (rain, fire, sea, rain at sea). Static: it sits on a card.
+ * `fill` takes the full width at the drawing's own shape (nothing cropped); otherwise `height`.
+ */
+export function Scene({ kind, height = H, fill = false }: { kind: SceneKind; height?: number; fill?: boolean }) {
   return (
-    <View testID={`scene-${kind}`} {...decorative} style={{ height, overflow: "hidden" }}>
+    <View testID={`scene-${kind}`} {...decorative} style={[{ overflow: "hidden" }, fill ? { width: "100%", aspectRatio: W / H } : { height }]}>
       <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice">
         <Defs>
           <LinearGradient id="scene-sky" x1="0" y1="0" x2="0" y2="1">

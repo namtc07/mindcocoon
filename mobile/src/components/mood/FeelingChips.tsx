@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
+import { readableFill } from "@/theme/contrast";
 import { useTheme } from "@/theme/theme";
 
 /** "More precisely?" — up to three words under the chosen mood, as tiles in the mood's colour. Extra taps beyond three are ignored. */
@@ -11,6 +12,7 @@ export function FeelingChips({ mood, value, onChange }: { mood: MoodType; value:
   const { t } = useI18n();
   const { c } = useTheme();
   const tint = c.mood[mood];
+  const fill = readableFill(tint);
   function toggle(word: string) {
     if (value.includes(word)) onChange(value.filter((w) => w !== word));
     else if (value.length < MAX_FEELINGS) onChange([...value, word]);
@@ -32,10 +34,10 @@ export function FeelingChips({ mood, value, onChange }: { mood: MoodType; value:
               onPress={() => toggle(word)}
               style={[
                 styles.tile,
-                { borderColor: tint, backgroundColor: selected ? tint : "transparent", opacity: disabled ? 0.45 : 1 },
+                { borderColor: tint, backgroundColor: selected ? fill.background : "transparent", opacity: disabled ? 0.45 : 1 },
               ]}
             >
-              <Text style={[styles.word, { color: selected ? "#ffffff" : c.foreground }]}>
+              <Text style={[styles.word, { color: selected ? fill.ink : c.foreground }]}>
                 {t.feelings.words[word as keyof typeof t.feelings.words]}
               </Text>
             </Pressable>
