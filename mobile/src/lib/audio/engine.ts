@@ -91,7 +91,9 @@ export interface AudioEngine {
 
 const DEFAULT_VOLUME = 0.6;
 const DEFAULT_MASTER = 0.8;
-const FADE_MS = 60_000;
+/** The sleep timer fades over its last ten minutes (or last third, if shorter), on an eased curve. */
+const MAX_FADE_MS = 10 * 60_000;
+const smoothstep = (x: number) => x * x * (3 - 2 * x);
 const TICK_MS = 1_000;
 const ARTIST = "MindCocoon";
 
@@ -365,7 +367,8 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
         engine.stopAll();
         return;
       }
-      fade = Math.min(1, remaining / FADE_MS);
+      const fadeMs = Math.min(MAX_FADE_MS, ((state.sleepMinutes ?? 0) * 60_000) / 3);
+      fade = fadeMs > 0 ? smoothstep(Math.min(1, remaining / fadeMs)) : 1;
       applyVolumes();
     },
 

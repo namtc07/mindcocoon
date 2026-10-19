@@ -337,6 +337,14 @@ export const id: Dictionary = {
     "new-year": "Tahun baru, pelan-pelan saja.",
     "full-moon": "Malam ini bulan purnama.",
   },
+  sleep: {
+    question: "Semalam tidurmu gimana?",
+    good: "Nyenyak",
+    okay: "Lumayan",
+    rough: "Susah tidur",
+    thanks: "Makasih. Dicatat diam-diam.",
+    windDownHelps: "Di malam saat kamu bersantai dulu, tidurmu biasanya lebih nyenyak.",
+  },
   letter: {
     title: "Surat dari Kén",
     cardTitle: "Kén meninggalkan beberapa baris untukmu",

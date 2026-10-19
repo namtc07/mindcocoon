@@ -14,6 +14,7 @@ import { EntryLinks } from "@/components/today/EntryLinks";
 import { LetterCard } from "@/components/today/LetterCard";
 import { FutureLetterLine } from "@/components/today/FutureLetterLine";
 import { MomentReturn } from "@/components/today/MomentReturn";
+import { MorningQuestion } from "@/components/today/MorningQuestion";
 import { QuickCheckin } from "@/components/today/QuickCheckin";
 import { SuggestionCard } from "@/components/today/SuggestionCard";
 import { WorryReadyLine } from "@/components/today/WorryReadyLine";
@@ -83,6 +84,7 @@ export default function TodayScreen() {
         <HeavyNudge now={now} />
         <LetterCard now={now} />
         <FutureLetterLine now={now} />
+        <MorningQuestion now={now} />
         {/* One keyed list, so blocks move (not remount) when 18:00 / 05:00 comes — a note being typed survives. */}
         {todayOrder(evening, intents)
           .filter((key) => ideas || key !== "prompt")

@@ -335,6 +335,14 @@ export const en = {
     "new-year": "A new year, taken slowly.",
     "full-moon": "The moon is full tonight.",
   },
+  sleep: {
+    question: "How did you sleep?",
+    good: "Slept well",
+    okay: "So-so",
+    rough: "Hard to sleep",
+    thanks: "Thank you. Noted, quietly.",
+    windDownHelps: "On nights you wind down first, you tend to sleep better.",
+  },
   letter: {
     title: "A note from Kén",
     cardTitle: "Kén left you a few lines",

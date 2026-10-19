@@ -169,18 +169,36 @@ describe("audio engine", () => {
     expect(second.getState().volumes.ocean).toBe(0.6);
   });
 
-  it("sleep timer fades over the last minute and stops", async () => {
+  it("sleep timer fades gently over its last ten minutes and stops", async () => {
     const { engine } = setup();
     await engine.play("rain");
-    engine.setSleepTimer(10);
-    expect(engine.getState().sleepEndsAt).toBe(clock + 10 * 60_000);
-    clock += 9.5 * 60_000;
+    engine.setSleepTimer(30);
+    expect(engine.getState().sleepEndsAt).toBe(clock + 30 * 60_000);
+    clock += 15 * 60_000; // 15 min left: still full
+    vi.advanceTimersByTime(1_000);
+    expect(p("rain").volume).toBeCloseTo(0.48);
+    clock += 10 * 60_000; // 5 min left: halfway through the fade
     vi.advanceTimersByTime(1_000);
     expect(p("rain").volume).toBeCloseTo(0.24, 1);
-    clock += 30_000;
+    clock += 4 * 60_000; // 1 min left: nearly silent
+    vi.advanceTimersByTime(1_000);
+    expect(p("rain").volume).toBeLessThan(0.05);
+    clock += 60_000;
     vi.advanceTimersByTime(1_000);
     expect(engine.getState()).toMatchObject({ playing: [], sleepEndsAt: null });
     expect(p("rain").volume).toBeCloseTo(0.48);
+  });
+
+  it("a short timer fades over its last third", async () => {
+    const { engine } = setup();
+    await engine.play("rain");
+    engine.setSleepTimer(10);
+    clock += 7 * 60_000; // 3 min left of a 10-min timer: fade (3⅓ min) has just begun
+    vi.advanceTimersByTime(1_000);
+    expect(p("rain").volume).toBeGreaterThan(0.4);
+    clock += 2.5 * 60_000; // 30 s left
+    vi.advanceTimersByTime(1_000);
+    expect(p("rain").volume).toBeLessThan(0.1);
   });
 
   it("late tick stops at once", async () => {

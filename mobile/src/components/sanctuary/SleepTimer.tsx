@@ -3,12 +3,13 @@ import { Chip } from "@/components/ui/Chip";
 import { useNow } from "@/hooks/use-now";
 import { useI18n } from "@/i18n/i18n";
 import { audio, useAudio } from "@/lib/audio";
+import { markSleepNight } from "@/lib/sleep-log";
 import { SLEEP_OPTIONS, sleepMinutesLeft, type SleepMinutes } from "@/lib/audio/engine";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 
-/** Stops every sound after 10–60 minutes, fading out over the last one. */
+/** Stops every sound after 10–60 minutes, fading out gently over the last ten (or the last third). */
 export function SleepTimer() {
   const { t } = useI18n();
   const { c } = useTheme();
@@ -16,7 +17,11 @@ export function SleepTimer() {
   const now = useNow();
   const left = sleepMinutesLeft(state, now.getTime());
   const minutes = (n: number) => t.sanctuary.minutes.replace("{n}", String(n));
-  const choose = (n: SleepMinutes | null) => audio.setSleepTimer(n);
+  const choose = (n: SleepMinutes | null) => {
+    audio.setSleepTimer(n);
+    // An evening sleep timer makes tonight a "sleep night" (asked about next morning).
+    if (n !== null) void markSleepNight(new Date(), false);
+  };
 
   return (
     <View style={styles.wrap}>

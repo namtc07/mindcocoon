@@ -23,6 +23,7 @@ import { useMoodLogs } from "@/hooks/use-mood-logs";
 import { useNow } from "@/hooks/use-now";
 import { useI18n } from "@/i18n/i18n";
 import { audio, useAudio } from "@/lib/audio";
+import { markSleepNight } from "@/lib/sleep-log";
 import type { SleepMinutes } from "@/lib/audio/engine";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
@@ -108,6 +109,7 @@ export default function WindDownScreen() {
         return;
       }
       audio.setSleepTimer(minutes);
+      void markSleepNight(new Date(), true);
       // Pin the choice: once sounds play, the default would otherwise become "keep".
       setMixChoice(mix);
       setStep("night");

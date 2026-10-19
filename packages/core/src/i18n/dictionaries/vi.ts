@@ -336,6 +336,14 @@ export const vi: Dictionary = {
     "new-year": "Năm mới rồi, cứ từ từ thôi.",
     "full-moon": "Đêm nay trăng tròn.",
   },
+  sleep: {
+    question: "Đêm qua bạn ngủ thế nào?",
+    good: "Ngủ ngon",
+    okay: "Tạm được",
+    rough: "Khó ngủ",
+    thanks: "Cảm ơn bạn. Mình ghi lại khẽ thôi.",
+    windDownHelps: "Những tối bạn thư giãn trước khi ngủ, bạn thường ngủ ngon hơn.",
+  },
   letter: {
     title: "Thư từ Kén",
     cardTitle: "Kén để lại cho bạn vài dòng",

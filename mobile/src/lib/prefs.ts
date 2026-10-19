@@ -7,6 +7,7 @@ import { createKvDriver } from "./kv-driver";
 import type { PlanId } from "./purchases/plan";
 import type { CachedFlags } from "./remote-config-core";
 import type { CachedContent } from "./remote-content-core";
+import type { SleepNight } from "./sleep-log-core";
 
 /** Small persisted preferences (language, appearance), readable synchronously after loadPrefs(). */
 export interface Prefs {
@@ -62,6 +63,8 @@ export interface Prefs {
   remoteContent?: CachedContent;
   /** Day key on which Kén last brought back a light moment (at most once a day). */
   momentShownOn?: string;
+  /** Sleep nights and, if answered, how they went (words only in the app). */
+  sleepLog?: SleepNight[];
   /** Which part of Sanctuary was open last. */
   sanctuaryTab?: "sounds" | "breathe" | "practices";
   /** Optional name for the greeting (device only). */
