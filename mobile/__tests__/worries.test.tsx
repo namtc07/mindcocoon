@@ -7,6 +7,7 @@ import { __resetGentleCardForTests } from "@/components/safety/GentleCard";
 import { ToastHost } from "@/components/ui/Toast";
 import { eraseEverything } from "@/lib/export";
 import { __resetWorriesForTests, addWorry, getWorries, nextMorning } from "@/lib/worries";
+import Storage from "expo-sqlite/kv-store";
 import { renderWithApp } from "@/test-utils/render";
 
 const kv = () => (jest.requireMock("expo-sqlite/kv-store") as { default: { __data?: Map<string, string> } }).default;
@@ -36,7 +37,7 @@ describe("Worry box", () => {
     jest.useFakeTimers({ advanceTimers: true, now: new Date(2026, 9, 19, 23, 30) });
     await renderWithApp(<WorriesScreen />, { keepState: true });
     expect(await screen.findByText("Some worries are resting until morning.")).toBeOnTheScreen();
-    expect(screen.queryByRole("button", { name: "Read" })).not.toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: /^Read/ })).not.toBeOnTheScreen();
   });
 
   it("Vent can set a worry down; heavy words get the gentle card first", async () => {
@@ -69,18 +70,18 @@ describe("Worry box", () => {
     jest.useFakeTimers({ advanceTimers: true, now: new Date(2026, 9, 19, 8, 0) });
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     await renderWithApp(<WorriesScreen />, { keepState: true });
-    const reads = await screen.findAllByRole("button", { name: "Read" });
+    const reads = await screen.findAllByRole("button", { name: /^Read/ });
     await user.press(reads[0]);
     expect(await screen.findByText("first")).toBeOnTheScreen();
     expect(screen.getByText("Is this still heavy?")).toBeOnTheScreen();
     await user.press(screen.getByRole("button", { name: "Let it go" }));
     await waitFor(async () => expect(await getWorries()).toHaveLength(2));
 
-    await user.press((await screen.findAllByRole("button", { name: "Read" }))[0]);
+    await user.press((await screen.findAllByRole("button", { name: /^Read/ }))[0]);
     await user.press(await screen.findByRole("button", { name: "Keep in my vault" }));
     await waitFor(() => expect(getVaultState().entries.map((e) => e.body)).toContain("second"));
 
-    await user.press((await screen.findAllByRole("button", { name: "Read" }))[0]);
+    await user.press((await screen.findAllByRole("button", { name: /^Read/ }))[0]);
     await user.press(await screen.findByRole("button", { name: "Another day" }));
     await waitFor(async () => expect((await getWorries())[0].openAt).toBe(new Date(2026, 9, 20, 6, 0).toISOString()));
   });
@@ -111,10 +112,10 @@ describe("Worry box", () => {
     jest.useFakeTimers({ advanceTimers: true, now: new Date(2026, 9, 18, 23, 30) });
     await renderWithApp(<TodayScreen />, { keepState: true });
     await screen.findByText(/Vent|Let it out/);
-    expect(screen.queryByText("Something you set down last night is ready to look at.")).not.toBeOnTheScreen();
+    expect(screen.queryByText("Something you set down is ready to look at.")).not.toBeOnTheScreen();
     jest.useFakeTimers({ advanceTimers: true, now: new Date(2026, 9, 19, 7, 0) });
     await renderWithApp(<TodayScreen />, { keepState: true });
-    expect(await screen.findByText("Something you set down last night is ready to look at.")).toBeOnTheScreen();
+    expect(await screen.findByText("Something you set down is ready to look at.")).toBeOnTheScreen();
   });
 
   it("erase everything removes worries", async () => {
@@ -122,6 +123,62 @@ describe("Worry box", () => {
     await act(() => addWorry("x", new Date()));
     await act(() => eraseEverything());
     expect(await getWorries()).toEqual([]);
-    expect(kv()).toBeDefined();
+    expect(await Storage.getItem("mc:worries:v1")).toBeNull();
+  });
+
+  it("a failed save says so (not 'unlock'), keeps the words and stores nothing", async () => {
+    await fresh();
+    const original = Storage.setItem.bind(Storage);
+    const set = jest
+      .spyOn(Storage, "setItem")
+      .mockImplementation(((key: string, value: string) =>
+        key === "mc:worries:v1" ? Promise.reject(new Error("disk full")) : original(key, value)) as typeof Storage.setItem);
+    try {
+      const user = userEvent.setup();
+      await renderWithApp(
+        <>
+          <VentScreen />
+          <ToastHost />
+        </>,
+        { keepState: true },
+      );
+      await user.type(screen.getByLabelText("Write what's on your mind"), "rent");
+      await user.press(screen.getByRole("button", { name: "Set it down until tomorrow" }));
+      expect(await screen.findByText("Couldn't set it down. Try again.")).toBeOnTheScreen();
+      expect(screen.getByLabelText("Write what's on your mind")).toHaveDisplayValue("rent");
+      expect(await getWorries()).toEqual([]);
+    } finally {
+      set.mockRestore();
+    }
+  });
+
+  it("opening a ready worry while locked asks for the passcode", async () => {
+    await fresh();
+    await act(async () => {
+      await setVaultPasscode("2468");
+      await addWorry("x", new Date(2026, 9, 18, 23, 0));
+      lockVault();
+    });
+    jest.useFakeTimers({ advanceTimers: true, now: new Date(2026, 9, 19, 8, 0) });
+    await renderWithApp(<WorriesScreen />, { keepState: true });
+    expect(await screen.findByLabelText("Passcode")).toBeOnTheScreen();
+  });
+
+  it("a worry that can't be read can still be let go", async () => {
+    await fresh();
+    await act(() => addWorry("x", new Date(2026, 9, 18, 23, 0)));
+    const list = await getWorries();
+    await act(async () => {
+      await Storage.setItem("mc:worries:v1", JSON.stringify(list.map((w) => ({ ...w, text: "v1.broken.broken" }))));
+      await __resetWorriesForTests();
+      await Storage.setItem("mc:worries:v1", JSON.stringify(list.map((w) => ({ ...w, text: "v1.broken.broken" }))));
+    });
+    jest.useFakeTimers({ advanceTimers: true, now: new Date(2026, 9, 19, 8, 0) });
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await renderWithApp(<WorriesScreen />, { keepState: true });
+    await user.press(await screen.findByRole("button", { name: /^Read/ }));
+    expect(await screen.findByText("This one can't be opened any more.")).toBeOnTheScreen();
+    await user.press(screen.getByRole("button", { name: "Let it go" }));
+    await waitFor(async () => expect(await getWorries()).toEqual([]));
   });
 });

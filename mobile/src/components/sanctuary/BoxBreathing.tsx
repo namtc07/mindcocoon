@@ -1,7 +1,7 @@
 import { breathAtPattern, BREATH_PATTERNS, cyclesFor, totalMsFor, type BreathPatternId, type BreathPhase } from "@mindcocoon/core/breathing";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AccessibilityInfo, AppState, Platform, StyleSheet, Text, View } from "react-native";
 import Animated, { cancelAnimation, Easing, useAnimatedProps, useReducedMotion, useSharedValue, withTiming } from "react-native-reanimated";
 import Svg, { Circle, Rect } from "react-native-svg";
@@ -82,11 +82,17 @@ export function BoxBreathing({ fixed }: { fixed?: Choice } = {}) {
 
   // A tone and a light touch at each new phase, so the rhythm can be followed with eyes closed.
   const phaseKey = active ? `${state.cycle}:${state.phase}` : null;
+  const lastCue = useRef<string | null>(null);
   useEffect(() => {
-    if (phaseKey && cues) playBreathCue(state.phase);
-    // Only a new phase triggers a cue.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phaseKey]);
+    if (!phaseKey) {
+      lastCue.current = null;
+      return;
+    }
+    // Exactly one cue per new phase.
+    if (!cues || lastCue.current === phaseKey) return;
+    lastCue.current = phaseKey;
+    playBreathCue(state.phase);
+  }, [phaseKey, cues, state.phase]);
 
   // A minute is longer than many auto-lock settings: keep the screen on while breathing.
   useEffect(() => {
@@ -163,7 +169,13 @@ export function BoxBreathing({ fixed }: { fixed?: Choice } = {}) {
         </>
       )}
       <View style={styles.chips}>
-        <Chip selected={cues} disabled={running && !finished} onPress={() => void setPref("breathCues", !cues)}>
+        <Chip
+          selected={cues}
+          onPress={() => {
+            if (cues) stopBreathCues();
+            void setPref("breathCues", !cues);
+          }}
+        >
           {t.sanctuary.breathCues}
         </Chip>
       </View>

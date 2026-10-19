@@ -22,7 +22,7 @@ export default function WorriesScreen() {
   const now = useNow();
   const vault = useVault();
   const worries = useWorries();
-  const [open, setOpen] = useState<{ id: string; text: string } | null>(null);
+  const [open, setOpen] = useState<{ id: string; text: string | null } | null>(null);
   const ready = worries.filter((w) => isReady(w, now));
   const waiting = worries.length > ready.length;
 
@@ -30,14 +30,15 @@ export default function WorriesScreen() {
     try {
       setOpen({ id, text: await readWorry(id) });
     } catch {
-      toast.show(t.vault.unavailable);
+      // Unreadable (damaged) — it can still be let go, so it never lingers on Today.
+      setOpen({ id, text: null });
     }
   }
 
   async function act(kind: "letGo" | "keep" | "later") {
     if (!open) return;
     try {
-      if (kind === "keep") await saveVaultEntry({ title: t.worries.vaultTitle, body: open.text });
+      if (kind === "keep" && open.text !== null) await saveVaultEntry({ title: t.worries.vaultTitle, body: open.text });
       if (kind === "later") await keepAnotherDay(open.id);
       else await removeWorry(open.id);
       if (kind === "letGo") toast.show(t.worries.letGoDone);
@@ -57,16 +58,20 @@ export default function WorriesScreen() {
           <UnlockPanel resetReadyAt={null} />
         ) : open ? (
           <View style={[styles.card, { backgroundColor: c.surface }]}>
-            <Text style={[styles.text, { color: c.foreground }]}>{open.text}</Text>
-            <Text style={[styles.question, { color: c.mutedForeground }]}>{t.worries.stillHeavy}</Text>
+            <Text style={[styles.text, { color: open.text === null ? c.mutedForeground : c.foreground }]}>{open.text ?? t.worries.unreadable}</Text>
+            {open.text !== null && <Text style={[styles.question, { color: c.mutedForeground }]}>{t.worries.stillHeavy}</Text>}
             <View style={styles.actions}>
               <Button onPress={() => void act("letGo")}>{t.worries.letGo}</Button>
-              <Button variant="outline" onPress={() => void act("keep")}>
-                {t.worries.keep}
-              </Button>
-              <Button variant="ghost" onPress={() => void act("later")}>
-                {t.worries.anotherDay}
-              </Button>
+              {open.text !== null && (
+                <>
+                  <Button variant="outline" onPress={() => void act("keep")}>
+                    {t.worries.keep}
+                  </Button>
+                  <Button variant="ghost" onPress={() => void act("later")}>
+                    {t.worries.anotherDay}
+                  </Button>
+                </>
+              )}
             </View>
           </View>
         ) : (
@@ -76,7 +81,7 @@ export default function WorriesScreen() {
                 <Text style={[styles.when, { color: c.mutedForeground }]}>
                   {formatDay(new Date(w.createdAt), locale)}
                 </Text>
-                <Button variant="outline" onPress={() => void read(w.id)}>
+                <Button variant="outline" accessibilityLabel={`${t.worries.read}: ${formatDay(new Date(w.createdAt), locale)}`} onPress={() => void read(w.id)}>
                   {t.worries.read}
                 </Button>
               </View>

@@ -30,9 +30,10 @@ export function nextMorning(now: Date): Date {
   return morning;
 }
 
+/** Storage first, then memory: a failed write leaves no phantom worry behind. */
 async function save(list: StoredWorry[]) {
-  cache = list;
   await driver.set(KEY, list);
+  cache = list;
   listeners.forEach((l) => l());
 }
 
@@ -88,7 +89,10 @@ function subscribe(listener: () => void) {
 export function useWorries(): StoredWorry[] {
   const list = useSyncExternalStore(subscribe, () => cache ?? EMPTY, () => EMPTY);
   useEffect(() => {
-    if (cache === null) void getWorries().then(() => listeners.forEach((l) => l()));
+    if (cache === null)
+      getWorries()
+        .then(() => listeners.forEach((l) => l()))
+        .catch(() => {});
   }, []);
   return list;
 }

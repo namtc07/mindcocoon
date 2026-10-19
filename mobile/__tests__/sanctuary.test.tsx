@@ -369,5 +369,32 @@ describe("Breathing cues", () => {
     await act(async () => jest.advanceTimersByTime(9_000));
     expect(cueCalls().length).toBe(before);
   });
+
+  it("cues can be turned off mid-session", async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await renderWithApp(<BoxBreathing />);
+    await user.press(screen.getByRole("button", { name: "Begin" }));
+    await act(async () => jest.advanceTimersByTime(300));
+    const cue = screen.getByRole("button", { name: "Sound & touch cues" });
+    expect(cue).toBeEnabled();
+    await user.press(cue);
+    const before = cueCalls().length;
+    await act(async () => jest.advanceTimersByTime(9_000));
+    expect(cueCalls().length).toBe(before);
+  });
+
+  it("a paused Sanctuary mix keeps its lock-screen session", async () => {
+    await act(() => audio.play("rain"));
+    await act(async () => audio.pauseAll());
+    (setAudioModeAsync as jest.Mock).mockClear();
+    (createAudioPlayer as jest.Mock).mockClear(); // in Jest every audio asset resolves to the same id
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    await renderWithApp(<BoxBreathing />);
+    await user.press(screen.getByRole("button", { name: "Begin" }));
+    await act(async () => jest.advanceTimersByTime(300));
+    expect(cueCalls().length).toBe(1);
+    expect(setAudioModeAsync).not.toHaveBeenCalled();
+    await act(async () => audio.reset());
+  });
 });
 

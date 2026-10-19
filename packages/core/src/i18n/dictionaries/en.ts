@@ -293,7 +293,7 @@ export const en = {
     setDown: "Set it down until tomorrow",
     setDownDone: "In the worry box until morning.",
     lockedHint: "Unlock your vault first to set a worry down.",
-    readyLine: "Something you set down last night is ready to look at.",
+    readyLine: "Something you set down is ready to look at.",
     waiting: "Some worries are resting until morning.",
     empty: "Nothing here right now.",
     read: "Read",
@@ -302,6 +302,8 @@ export const en = {
     keep: "Keep in my vault",
     anotherDay: "Another day",
     vaultTitle: "From the worry box",
+    saveFailed: "Couldn't set it down. Try again.",
+    unreadable: "This one can't be opened any more.",
     letGoDone: "Let go.",
   },
   insights: {

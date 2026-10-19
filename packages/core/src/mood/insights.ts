@@ -1,8 +1,9 @@
+import { dayKeyFromISO } from "../dates";
 import type { MoodLog, MoodType } from "../types";
 
 /**
  * Gentle observations from the last 30 days, in words only (never numbers or scores), and only
- * when there is enough to be fair: a tag that often comes with one mood, a feeling word that keeps
+ * when there is enough to be fair (counted in distinct days, so one long evening is never "a pattern"): a tag that often comes with one mood, a feeling word that keeps
  * coming back this week, heavy moments that tend to arrive late at night. At most three.
  */
 export type Insight =
@@ -21,6 +22,7 @@ const LATE_SHARE = 0.7;
 const HEAVY_MOODS: MoodType[] = ["anxious", "heavy"];
 
 const isLate = (d: Date) => d.getHours() >= 22 || d.getHours() < 4;
+const days = (logs: MoodLog[]) => new Set(logs.map((l) => dayKeyFromISO(l.createdAt))).size;
 
 function topCount<T>(items: T[]): { value: T; count: number } | null {
   const counts = new Map<T, number>();
@@ -43,9 +45,10 @@ export function gentleInsights(logs: MoodLog[], now: Date): Insight[] {
   let bestTag: { tag: string; mood: MoodType; n: number } | null = null;
   for (const tag of tags) {
     const tagged = recent.filter((l) => l.tags.includes(tag));
-    if (tagged.length < MIN_TAG_LOGS) continue;
+    if (days(tagged) < MIN_TAG_LOGS) continue;
     const top = topCount(tagged.map((l) => l.mood));
-    if (top && top.count / tagged.length >= TAG_SHARE && (!bestTag || tagged.length > bestTag.n)) {
+    const topDays = days(tagged.filter((l) => l.mood === top?.value));
+    if (top && top.count / tagged.length >= TAG_SHARE && topDays >= MIN_TAG_LOGS - 1 && (!bestTag || tagged.length > bestTag.n)) {
       bestTag = { tag, mood: top.value, n: tagged.length };
     }
   }
@@ -54,11 +57,13 @@ export function gentleInsights(logs: MoodLog[], now: Date): Insight[] {
   // A feeling word that keeps coming back this week.
   const week = recent.filter((l) => new Date(l.createdAt).getTime() >= now.getTime() - RECENT_DAYS * DAY);
   const word = topCount(week.flatMap((l) => l.feelings ?? []));
-  if (word && word.count >= MIN_FEELING_LOGS) out.push({ kind: "feeling-lately", word: word.value });
+  if (word && days(week.filter((l) => l.feelings?.includes(word.value))) >= MIN_FEELING_LOGS) {
+    out.push({ kind: "feeling-lately", word: word.value });
+  }
 
   // Heavy moments that tend to come late at night.
   const heavy = recent.filter((l) => HEAVY_MOODS.includes(l.mood));
-  if (heavy.length >= MIN_LATE_LOGS) {
+  if (days(heavy) >= MIN_LATE_LOGS) {
     const late = heavy.filter((l) => isLate(new Date(l.createdAt)));
     const top = topCount(late.map((l) => l.mood));
     if (late.length / heavy.length >= LATE_SHARE && top) out.push({ kind: "late-night", mood: top.value });

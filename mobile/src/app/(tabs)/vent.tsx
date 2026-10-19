@@ -14,6 +14,7 @@ import { Chip } from "@/components/ui/Chip";
 import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
 import { stopReleaseSound } from "@/lib/release-sound";
 import { addWorry } from "@/lib/worries";
+import { VaultLockedError } from "@mindcocoon/core/vault/session";
 import { toast } from "@/components/ui/Toast";
 import { SaveSheet } from "@/components/vent/SaveSheet";
 import { useAppState } from "@/hooks/use-app-state";
@@ -64,13 +65,18 @@ export default function VentScreen() {
   }
 
   /** Worry box: rests (encrypted) until morning. A locked vault can't encrypt it, so the words stay. */
+  const [settingDown, setSettingDown] = useState(false);
   async function doWorry() {
+    if (settingDown) return;
+    setSettingDown(true);
     try {
       await addWorry(text);
       clearEditor();
       toast.show(t.worries.setDownDone);
-    } catch {
-      toast.show(t.worries.lockedHint);
+    } catch (error) {
+      toast.show(error instanceof VaultLockedError ? t.worries.lockedHint : t.worries.saveFailed);
+    } finally {
+      setSettingDown(false);
     }
   }
 
@@ -175,7 +181,7 @@ export default function VentScreen() {
             <Button variant="ghost" onPress={() => attempt("save")} disabled={empty}>
               {t.vent.saveToVault}
             </Button>
-            <Button variant="ghost" onPress={() => attempt("worry")} disabled={empty}>
+            <Button variant="ghost" onPress={() => attempt("worry")} disabled={empty || settingDown}>
               {t.worries.setDown}
             </Button>
           </View>

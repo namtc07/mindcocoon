@@ -50,3 +50,11 @@ describe("gentleInsights", () => {
     expect(gentleInsights(lots, NOW).length).toBeLessThanOrEqual(3);
   });
 });
+
+describe("gentleInsights counts days, not check-ins", () => {
+  it("several check-ins on a single evening say nothing", () => {
+    const sameNight = (extra: { tags?: string[]; feelings?: string[] }) =>
+      [0, 1, 2, 3].map((k) => ({ ...log("anxious", 1, { hour: 23, ...extra }), id: `s${k}` }));
+    expect(gentleInsights(sameNight({ tags: ["work"], feelings: ["worried"] }), NOW)).toEqual([]);
+  });
+});

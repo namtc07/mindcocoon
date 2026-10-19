@@ -38,7 +38,9 @@ export function createEffectChannel(): EffectChannel {
     stop();
     const mine = generation;
     try {
-      if (audio.getState().playing.length === 0) {
+      // A playing or paused Sanctuary mix owns the session (and its lock-screen controls): leave it.
+      const { playing, held } = audio.getState();
+      if (playing.length === 0 && held.length === 0) {
         await setAudioModeAsync({ playsInSilentMode: false, shouldPlayInBackground: false, interruptionMode: "mixWithOthers" });
         audio.invalidateSession();
       }
