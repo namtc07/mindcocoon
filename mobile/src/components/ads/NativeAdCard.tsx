@@ -1,0 +1,100 @@
+import { useEffect, useState } from "react";
+import { Image, StyleSheet, Text, View } from "react-native";
+import { NativeAd, NativeAdView, NativeAsset, NativeAssetType } from "react-native-google-mobile-ads";
+import { useNow } from "@/hooks/use-now";
+import { useI18n } from "@/i18n/i18n";
+import { AD_REQUEST, adUnitId, useAdsReady } from "@/lib/ads/admob";
+import { canShowBanner } from "@/lib/ads/policy";
+import { useFlags } from "@/lib/remote-config";
+import { fonts } from "@/theme/fonts";
+import { radius, space } from "@/theme/tokens";
+import { useTheme } from "@/theme/theme";
+
+/**
+ * One native ad on Today, after the check-in: shaped like the app's cards but always labelled
+ * "Ad" (the SDK adds AdChoices). Same switches as the banner (remote flag, consent, quiet hours);
+ * nothing shows if nothing loads. The ad is released when Today goes away.
+ */
+export function NativeAdCard() {
+  const { t } = useI18n();
+  const { c } = useTheme();
+  const flags = useFlags();
+  const ready = useAdsReady();
+  const now = useNow();
+  const allowed = canShowBanner({ placement: "today", now, flags, ready });
+  const unitId = adUnitId("native-today");
+  const [ad, setAd] = useState<NativeAd | null>(null);
+
+  useEffect(() => {
+    if (!allowed || !unitId) return;
+    let live = true;
+    let loaded: NativeAd | null = null;
+    NativeAd.createForAdRequest(unitId, AD_REQUEST)
+      .then((next) => {
+        if (!live) return next.destroy();
+        loaded = next;
+        setAd(next);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+      loaded?.destroy();
+      setAd(null);
+    };
+  }, [allowed, unitId]);
+
+  if (!allowed || !ad) return null;
+  return (
+    <NativeAdView nativeAd={ad} testID="native-ad" style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}>
+      <View style={styles.top}>
+        <Text style={[styles.label, { color: c.mutedForeground, borderColor: c.border }]}>{t.ads.label}</Text>
+        {ad.advertiser ? (
+          <NativeAsset assetType={NativeAssetType.ADVERTISER}>
+            <Text numberOfLines={1} style={[styles.advertiser, { color: c.mutedForeground }]}>
+              {ad.advertiser}
+            </Text>
+          </NativeAsset>
+        ) : null}
+      </View>
+      <View style={styles.row}>
+        {ad.icon?.url ? (
+          <NativeAsset assetType={NativeAssetType.ICON}>
+            <Image source={{ uri: ad.icon.url }} style={styles.icon} accessibilityIgnoresInvertColors />
+          </NativeAsset>
+        ) : null}
+        <View style={styles.text}>
+          <NativeAsset assetType={NativeAssetType.HEADLINE}>
+            <Text numberOfLines={2} style={[styles.headline, { color: c.foreground }]}>
+              {ad.headline}
+            </Text>
+          </NativeAsset>
+          {ad.body ? (
+            <NativeAsset assetType={NativeAssetType.BODY}>
+              <Text numberOfLines={2} style={[styles.body, { color: c.mutedForeground }]}>
+                {ad.body}
+              </Text>
+            </NativeAsset>
+          ) : null}
+        </View>
+      </View>
+      {ad.callToAction ? (
+        <NativeAsset assetType={NativeAssetType.CALL_TO_ACTION}>
+          <Text style={[styles.cta, { color: c.primary, borderColor: c.primary }]}>{ad.callToAction}</Text>
+        </NativeAsset>
+      ) : null}
+    </NativeAdView>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: { borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, padding: space.lg, gap: space.md },
+  top: { flexDirection: "row", alignItems: "center", gap: space.sm },
+  label: { fontFamily: fonts.sansMedium, fontSize: 11, borderWidth: 1, borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1 },
+  advertiser: { fontFamily: fonts.sans, fontSize: 12, flexShrink: 1 },
+  row: { flexDirection: "row", gap: space.md, alignItems: "center" },
+  icon: { width: 44, height: 44, borderRadius: radius.md },
+  text: { flex: 1, gap: 2 },
+  headline: { fontFamily: fonts.sansMedium, fontSize: 15, lineHeight: 20 },
+  body: { fontFamily: fonts.sans, fontSize: 13, lineHeight: 18 },
+  cta: { alignSelf: "flex-start", fontFamily: fonts.sansMedium, fontSize: 14, borderWidth: 1, borderRadius: radius.full, paddingHorizontal: space.lg, paddingVertical: 8, overflow: "hidden" },
+});

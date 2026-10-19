@@ -3,6 +3,7 @@ import { Link } from "expo-router";
 import { Fragment, useSyncExternalStore } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { AdBanner } from "@/components/ads/AdBanner";
+import { NativeAdCard } from "@/components/ads/NativeAdCard";
 import { Ken } from "@/components/art/Ken";
 import { Sky } from "@/components/art/Sky";
 import { Screen } from "@/components/Screen";
@@ -45,6 +46,7 @@ export default function TodayScreen() {
     <View testID="today-checkin" style={styles.group}>
       <QuickCheckin />
       <SuggestionCard now={now} />
+      <NativeAdCard />
     </View>
   );
   const entries = (

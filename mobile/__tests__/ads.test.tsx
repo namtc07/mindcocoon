@@ -100,6 +100,7 @@ describe("Banner", () => {
     await show(ui);
     expect(screen.queryByTestId("ad-banner")).not.toBeOnTheScreen();
     expect(screen.queryByTestId("admob-banner")).not.toBeOnTheScreen();
+    expect(screen.queryByTestId("native-ad")).not.toBeOnTheScreen();
     if (name === "a practice") expect(screen.getByText("A kind letter to yourself")).toBeOnTheScreen();
   });
 });

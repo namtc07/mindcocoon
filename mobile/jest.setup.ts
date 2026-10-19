@@ -190,6 +190,20 @@ jest.mock("react-native-google-mobile-ads", () => {
     removeAllListeners: jest.fn(() => rewardedListeners.clear()),
     emit: (type: string, payload?: unknown) => [...(rewardedListeners.get(type) ?? [])].forEach((cb) => cb(payload)),
   };
+  // Native ads: a loaded fake with the usual assets; tests can make the next load fail.
+  const nativeAd = {
+    responseId: "native-1",
+    headline: "Quiet Tea Co.",
+    body: "Loose-leaf tea for slow evenings.",
+    callToAction: "Learn more",
+    advertiser: "Quiet Tea",
+    icon: { url: "https://example.com/icon.png", scale: 1 },
+    destroy: jest.fn(),
+    addAdEventListener: jest.fn(() => ({ remove: jest.fn() })),
+  };
+  const NativeAdView = ({ children, nativeAd: _ad, ...rest }: Record<string, unknown>) =>
+    React.createElement(View, { testID: "admob-native", ...rest }, children);
+  const NativeAsset = ({ children }: { children: unknown }) => children;
   function BannerAd(props: Record<string, unknown>) {
     return React.createElement(View, { testID: "admob-banner", ...props });
   }
@@ -198,6 +212,11 @@ jest.mock("react-native-google-mobile-ads", () => {
     default: () => sdk,
     __sdk: sdk,
     __rewarded: rewarded,
+    __nativeAd: nativeAd,
+    NativeAd: { createForAdRequest: jest.fn(() => Promise.resolve(nativeAd)) },
+    NativeAdView,
+    NativeAsset,
+    NativeAssetType: { HEADLINE: "headline", BODY: "body", CALL_TO_ACTION: "callToAction", ICON: "icon", ADVERTISER: "advertiser" },
     AdsConsent: {
       gatherConsent: jest.fn(() => Promise.resolve({ canRequestAds: true, privacyOptionsRequirementStatus: "NOT_REQUIRED" })),
       getConsentInfo: jest.fn(() => Promise.resolve({ canRequestAds: false, privacyOptionsRequirementStatus: "UNKNOWN" })),
@@ -205,7 +224,7 @@ jest.mock("react-native-google-mobile-ads", () => {
     },
     AdsConsentPrivacyOptionsRequirementStatus: { UNKNOWN: "UNKNOWN", REQUIRED: "REQUIRED", NOT_REQUIRED: "NOT_REQUIRED" },
     MaxAdContentRating: { G: "G", PG: "PG", T: "T", MA: "MA" },
-    TestIds: { ADAPTIVE_BANNER: "test-adaptive-banner", REWARDED: "test-rewarded" },
+    TestIds: { ADAPTIVE_BANNER: "test-adaptive-banner", REWARDED: "test-rewarded", NATIVE: "test-native" },
     BannerAd,
     BannerAdSize: { ANCHORED_ADAPTIVE_BANNER: "ANCHORED_ADAPTIVE_BANNER" },
     RewardedAd: { createForAdRequest: jest.fn(() => rewarded) },
