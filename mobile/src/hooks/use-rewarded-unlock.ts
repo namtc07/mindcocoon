@@ -6,6 +6,7 @@ import { AD_REQUEST, adUnitId, useAdsReady } from "@/lib/ads/admob";
 import { canOfferRewarded } from "@/lib/ads/policy";
 import { useFlags } from "@/lib/remote-config";
 import { SOUND_TRACKS } from "@mindcocoon/core/sounds";
+import { startAdFree } from "@/lib/ads/ad-free";
 import { getPref, setPref } from "@/lib/prefs";
 import { unlockAllFor24h, unlockFor24h } from "@/lib/unlocks";
 
@@ -95,6 +96,8 @@ export function useRewardedUnlock() {
     unlock: (id: string) => showRewarded(() => unlockFor24h(id)),
     /** Every extra sound for 24 hours. */
     unlockAll: () => showRewarded(() => unlockAllFor24h(PREMIUM_IDS)),
+    /** No banner or native ad for 24 hours. */
+    adFree24h: () => showRewarded(() => startAdFree()),
     /** Room for one more saved mix (up to ten in all). */
     earnMixSlot: () =>
       showRewarded(() => setPref("extraMixSlots", Math.min((getPref("extraMixSlots") ?? 0) + 1, MAX_EXTRA_MIX_SLOTS))),

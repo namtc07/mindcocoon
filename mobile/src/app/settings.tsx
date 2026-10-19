@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { TextField } from "@/components/ui/TextField";
 import { NightDimSetting, ReleaseSoundSetting, WritingPromptsSetting } from "@/components/settings/ReleaseSoundSetting";
+import { AdFreeSetting } from "@/components/settings/AdFreeSetting";
 import { NameSetting } from "@/components/settings/NameSetting";
 import { ReminderSettings } from "@/components/settings/ReminderSettings";
 import { StackHeader } from "@/components/StackHeader";
@@ -158,6 +159,7 @@ export default function SettingsScreen() {
           >
             {t.settings.export}
           </Button>
+          <AdFreeSetting />
           {adPrivacy && (
             <Button variant="outline" onPress={() => void showAdPrivacyOptions()}>
               {t.settings.adPrivacy}

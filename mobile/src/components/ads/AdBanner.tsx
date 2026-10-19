@@ -4,6 +4,7 @@ import { BannerAd, BannerAdSize } from "react-native-google-mobile-ads";
 import { useNow } from "@/hooks/use-now";
 import { AD_REQUEST, adUnitId, useAdsReady } from "@/lib/ads/admob";
 import { canShowBanner, type AdPlacement } from "@/lib/ads/policy";
+import { useAdFreeUntil } from "@/lib/ads/ad-free";
 import { useFlags } from "@/lib/remote-config";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
@@ -19,8 +20,9 @@ export function AdBanner({ placement }: { placement: AdPlacement }) {
   const ready = useAdsReady();
   const now = useNow();
   const [failed, setFailed] = useState(false);
+  const adFreeUntil = useAdFreeUntil();
   const unitId = adUnitId(placement === "today" ? "banner-today" : "banner-mood");
-  if (failed || !unitId || !canShowBanner({ placement, now, flags, ready })) return null;
+  if (failed || !unitId || now.getTime() < adFreeUntil || !canShowBanner({ placement, now, flags, ready })) return null;
   return (
     <View testID="ad-banner" style={{ alignItems: "center", paddingVertical: space.xs, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.border, backgroundColor: c.background }}>
       <BannerAd unitId={unitId} size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER} requestOptions={AD_REQUEST} onAdFailedToLoad={() => setFailed(true)} />
