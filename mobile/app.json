@@ -30,7 +30,15 @@
       "expo-sqlite",
       "expo-localization",
       "expo-font",
-      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#0F172A"
+        }
+      ],
       "expo-sharing",
       [
         "expo-audio",

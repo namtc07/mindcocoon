@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "gen:audio": "node scripts/generate-ambient.mjs && node scripts/generate-music.mjs",
-    "test:live": "vitest run --config vitest.live.config.mts"
+    "test:live": "vitest run --config vitest.live.config.mts",
+    "gen:brand": "node scripts/generate-brand.mjs"
   },
   "dependencies": {
     "@scure/bip39": "^2.4.0",
