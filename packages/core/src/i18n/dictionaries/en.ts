@@ -86,6 +86,9 @@ export const en = {
     wrongPasscode: "That passcode didn't match.",
   },
   moodPage: {
+    viewMonth: "Month",
+    viewYear: "Year",
+    yearLabel: "Your year in colours",
     title: "Your mood journey",
     intro: "A gentle look back. No scores, just colours.",
     checkIn: "Check in",

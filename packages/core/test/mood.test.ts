@@ -208,3 +208,20 @@ describe("feeling words on check-ins", () => {
     expect(getMoodState().logs[0].feelings).toBeUndefined();
   });
 });
+
+describe("yearGrid", () => {
+  it("has twelve months of real days with the latest mood per day", async () => {
+    const { yearGrid } = await import("@mindcocoon/core/mood/selectors");
+    const logs: MoodLog[] = [
+      { id: "a", mood: "heavy", tags: [], createdAt: new Date(2028, 1, 29, 9).toISOString() },
+      { id: "b", mood: "hopeful", tags: [], createdAt: new Date(2028, 1, 29, 22).toISOString() },
+    ];
+    const grid = yearGrid(logs, 2028);
+    expect(grid).toHaveLength(12);
+    expect(grid[1]).toHaveLength(29);
+    expect(grid[0]).toHaveLength(31);
+    expect(grid[1][28].dayKey).toBe("2028-02-29");
+    expect(grid[1][28].log?.mood).toBe("hopeful");
+    expect(yearGrid([], 2027)[1]).toHaveLength(28);
+  });
+});

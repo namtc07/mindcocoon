@@ -87,6 +87,9 @@ export const vi: Dictionary = {
     wrongPasscode: "Mã khóa chưa đúng.",
   },
   moodPage: {
+    viewMonth: "Tháng",
+    viewYear: "Năm",
+    yearLabel: "Một năm của bạn qua màu sắc",
     title: "Hành trình cảm xúc",
     intro: "Nhìn lại nhẹ nhàng. Không điểm số, chỉ có màu sắc.",
     checkIn: "Ghi lại cảm xúc",

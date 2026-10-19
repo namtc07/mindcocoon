@@ -47,6 +47,18 @@ export function monthGrid(logs: MoodLog[], year: number, month: number): (DayCel
 }
 
 /** True after seven local days in a row that each ended "heavy", at most once a week. */
+/** A whole year as twelve rows of real days (no padding), each with that day's latest check-in. */
+export function yearGrid(logs: MoodLog[], year: number): DayCell[][] {
+  const byDay = latestMoodByDay(logs);
+  return Array.from({ length: 12 }, (_, month) =>
+    Array.from({ length: new Date(year, month + 1, 0).getDate() }, (_, i) => {
+      const date = new Date(year, month, i + 1);
+      const key = dayKey(date);
+      return { dayKey: key, date, log: byDay.get(key) ?? null };
+    }),
+  );
+}
+
 export function shouldShowHeavyNudge(
   logs: MoodLog[],
   now: Date,
