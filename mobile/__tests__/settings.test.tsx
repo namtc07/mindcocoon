@@ -5,7 +5,7 @@ import { act, fireEvent, screen, userEvent, waitFor } from "@testing-library/rea
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import SettingsScreen from "@/app/settings";
-import { FirstRunNotice } from "@/components/FirstRunNotice";
+import { Welcome } from "@/components/onboarding/Welcome";
 import { createMobileAdapter } from "@/lib/storage";
 import { getEraseCount } from "@/lib/export";
 import { clearPrefs, getPref, setPref } from "@/lib/prefs";
@@ -92,17 +92,30 @@ it("release sounds can be turned off in Settings", async () => {
   expect(getPref("releaseSound")).toBe(false);
 });
 
-describe("First-run notice", () => {
-  it("shows once", async () => {
+describe("Welcome", () => {
+  it("shows once, and again after erasing everything", async () => {
     const user = userEvent.setup();
-    await renderWithApp(<FirstRunNotice />);
     await setPref("firstRunSeen", undefined);
-    await renderWithApp(<FirstRunNotice />);
-    await user.press(await screen.findByRole("button", { name: "Got it" }));
+    await renderWithApp(<Welcome />);
+    await user.press(await screen.findByRole("button", { name: "Skip" }));
     expect(getPref("firstRunSeen")).toBe(true);
-    await renderWithApp(<FirstRunNotice />);
-    expect(screen.queryByText("Welcome to MindCocoon")).not.toBeOnTheScreen();
+    await renderWithApp(<Welcome />);
+    expect(screen.queryByText("A quiet place for heavy nights")).not.toBeOnTheScreen();
     await act(() => clearPrefs());
-    expect(await screen.findByText("Welcome to MindCocoon")).toBeOnTheScreen();
+    expect(await screen.findByText("A quiet place for heavy nights")).toBeOnTheScreen();
+  });
+});
+
+describe("Your name", () => {
+  it("is saved when editing ends and cleared when emptied", async () => {
+    const user = userEvent.setup();
+    await renderWithApp(<SettingsScreen />);
+    const field = screen.getByLabelText("Your name");
+    await user.type(field, " Mai ");
+    await act(async () => fireEvent(field, "endEditing"));
+    expect(getPref("name")).toBe("Mai");
+    await user.clear(field);
+    await act(async () => fireEvent(field, "endEditing"));
+    expect(getPref("name")).toBeUndefined();
   });
 });

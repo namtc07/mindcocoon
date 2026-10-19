@@ -1,6 +1,7 @@
 import type { SavedMix } from "@mindcocoon/core/audio/mixes";
 import type { BreathPatternId } from "@mindcocoon/core/breathing";
 import type { Locale } from "@mindcocoon/core/i18n/config";
+import type { OnboardingIntent } from "@mindcocoon/core/onboarding";
 import type { AudioPrefs } from "./audio/engine";
 import { createKvDriver } from "./kv-driver";
 import type { CachedFlags } from "./remote-config-core";
@@ -37,6 +38,10 @@ export interface Prefs {
   nightDim?: boolean;
   /** Tone + light vibration at each breathing phase (on unless set to false). */
   breathCues?: boolean;
+  /** Why the person came (welcome screens); only reorders Today. */
+  intents?: OnboardingIntent[];
+  /** Optional name for the greeting (device only). */
+  name?: string;
 }
 
 const KEY = "prefs:v1";

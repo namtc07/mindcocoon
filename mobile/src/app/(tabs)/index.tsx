@@ -1,6 +1,6 @@
 import { formatDay, isEveningMode, partOfDay } from "@mindcocoon/core/dates";
 import { Link } from "expo-router";
-import { Fragment } from "react";
+import { Fragment, useSyncExternalStore } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { Ken } from "@/components/art/Ken";
@@ -14,15 +14,25 @@ import { WorryReadyLine } from "@/components/today/WorryReadyLine";
 import { ReflectionPrompt } from "@/components/today/ReflectionPrompt";
 import { useNow } from "@/hooks/use-now";
 import { useI18n } from "@/i18n/i18n";
+import { getPref, subscribePrefs } from "@/lib/prefs";
+import { todayOrder } from "@/lib/today-order";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
+
+const NO_INTENTS: never[] = [];
+const readIntents = () => getPref("intents") ?? NO_INTENTS;
+const readName = () => getPref("name") ?? "";
 
 export default function TodayScreen() {
   const { t, locale } = useI18n();
   const { c } = useTheme();
   const now = useNow();
   const evening = isEveningMode(now);
+  const intents = useSyncExternalStore(subscribePrefs, readIntents, readIntents);
+  const name = useSyncExternalStore(subscribePrefs, readName, readName);
+  const part = partOfDay(now);
+  const greeting = name ? t.today.greetingNamed[part].replace("{name}", name) : t.today.greeting[part];
   const prompt = (
     <View testID="today-prompt">
       <ReflectionPrompt now={now} />
@@ -39,15 +49,13 @@ export default function TodayScreen() {
       <EntryLinks evening={evening} />
     </View>
   );
-  // Night: name the feeling, get something for it, wind down; writing prompts come last.
-  // The worry-box line shows at any time (it's the only way back to the box).
   const blocks = { checkin, worry: <WorryReadyLine now={now} />, entries, prompt };
   return (
-    <Screen title={t.today.greeting[partOfDay(now)]} hero={
+    <Screen title={greeting} hero={
         <View>
-          <Sky part={partOfDay(now)} />
+          <Sky part={part} />
           <View style={styles.ken}>
-            <Ken mood={partOfDay(now) === "night" ? "sleepy" : "calm"} size={56} />
+            <Ken mood={part === "night" ? "sleepy" : "calm"} size={56} />
           </View>
         </View>
       }>
@@ -55,8 +63,8 @@ export default function TodayScreen() {
       <View style={styles.sections}>
         <HeavyNudge now={now} />
         {/* One keyed list, so blocks move (not remount) when 18:00 / 05:00 comes — a note being typed survives. */}
-        {(evening ? ["checkin", "worry", "entries", "prompt"] : ["worry", "prompt", "checkin", "entries"]).map((key) => (
-          <Fragment key={key}>{blocks[key as keyof typeof blocks]}</Fragment>
+        {todayOrder(evening, intents).map((key) => (
+          <Fragment key={key}>{blocks[key]}</Fragment>
         ))}
         {__DEV__ && (
           <Link href="/dev/spike" style={{ color: c.mutedForeground, fontFamily: fonts.sans, fontSize: 13 }}>

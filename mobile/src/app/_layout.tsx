@@ -5,7 +5,7 @@ import * as SystemUI from "expo-system-ui";
 import { Fragment, useEffect, useState } from "react";
 import { View } from "react-native";
 import { AdsBootstrap } from "@/components/ads/AdsBootstrap";
-import { FirstRunNotice } from "@/components/FirstRunNotice";
+import { Welcome } from "@/components/onboarding/Welcome";
 import { PrivacyCover } from "@/components/PrivacyCover";
 import { AudioLabelsSync } from "@/components/sanctuary/AudioLabelsSync";
 import { NotificationRouter } from "@/components/settings/NotificationRouter";
@@ -68,7 +68,7 @@ export default function RootLayout() {
           <Stack.Screen name="dev/spike" />
         </Stack.Protected>
       </Stack>
-      <FirstRunNotice />
+      <Welcome />
       </Fragment>
       <AudioLabelsSync />
       <AdsBootstrap />

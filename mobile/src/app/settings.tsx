@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { TextField } from "@/components/ui/TextField";
 import { NightDimSetting, ReleaseSoundSetting } from "@/components/settings/ReleaseSoundSetting";
+import { NameSetting } from "@/components/settings/NameSetting";
 import { ReminderSettings } from "@/components/settings/ReminderSettings";
 import { StackHeader } from "@/components/StackHeader";
 import { showAdPrivacyOptions, useAdPrivacyRequired } from "@/lib/ads/admob";
@@ -114,6 +115,7 @@ export default function SettingsScreen() {
     <>
       <StackHeader />
       <Screen title={t.settings.title}>
+        <NameSetting />
         <Choice
           label={t.settings.language}
           value={locale}
