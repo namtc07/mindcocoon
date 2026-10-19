@@ -57,6 +57,29 @@ export const RISK_PHRASES = {
     "hurt myself",
     "self harm",
   ],
+  // Indonesian, including everyday spellings (gak/ga/nggak, pengen/pingin). Bare "mau mati" is left
+  // out on purpose: it is common hyperbole ("panas mau mati").
+  id: [
+    "bunuh diri",
+    "ingin mati",
+    "pengen mati",
+    "pingin mati",
+    "kepingin mati",
+    "mau mati aja",
+    "mengakhiri hidup",
+    "akhiri hidup",
+    "tidak mau hidup",
+    "tidak ingin hidup",
+    "gak mau hidup",
+    "ga mau hidup",
+    "nggak mau hidup",
+    "enggak mau hidup",
+    "lebih baik mati",
+    "lebih baik aku mati",
+    "menyakiti diri",
+    "nyakitin diri",
+    "melukai diri",
+  ],
 };
 
 /** Accented forms matched on the original text (their unaccented form is ambiguous). */

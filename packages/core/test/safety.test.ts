@@ -50,6 +50,17 @@ describe("checkText", () => {
   });
 });
 
+describe("checkText in Indonesian", () => {
+  it.each(["aku pengen mati aja", "rasanya ingin bunuh diri", "aku mau mengakhiri hidup", "gak mau hidup lagi", "pengen nyakitin diri sendiri", "lebih baik aku mati"])(
+    "flags %s",
+    (text) => expect(checkText(text).flagged).toBe(true),
+  );
+
+  it.each(["capek banget sampai mau mati rasanya ketawa", "panas mau mati", "hari ini berat tapi aku baik baik saja"])("leaves %s alone", (text) =>
+    expect(checkText(text).flagged).toBe(false),
+  );
+});
+
 describe("hotlines", () => {
   const line: Hotline = {
     id: "test",

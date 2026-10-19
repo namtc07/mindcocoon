@@ -16,7 +16,7 @@ export function normalizeForMatch(text: string): string {
     .trim();
 }
 
-const ALL_RISK = [...RISK_PHRASES.vi, ...RISK_PHRASES.en];
+const ALL_RISK = [...RISK_PHRASES.vi, ...RISK_PHRASES.en, ...RISK_PHRASES.id];
 
 export function checkText(text: string): { flagged: boolean } {
   const accented = text.normalize("NFC").toLowerCase();
