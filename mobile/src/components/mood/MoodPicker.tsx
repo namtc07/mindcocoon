@@ -92,16 +92,33 @@ function Orb({ color, size }: { color: string; size: number }) {
 const ORB = 52;
 /** Width of one orb's slot on the arc (the scroll snaps to it). */
 export const ARC_ITEM = 76;
-/** Where the arc starts when nothing is chosen yet: the middle of the list. */
-const START = Math.floor(MOODS.length / 2);
+/** The ten moods repeat this many times so the arc never runs out; the middle copy is the "real" one. */
+const ARC_COPIES = 7;
+export const ARC_MIDDLE = Math.floor(ARC_COPIES / 2);
+const N = MOODS.length;
+const SLOTS = Array.from({ length: N * ARC_COPIES }, (_, i) => ({ slot: i, mood: MOODS[i % N], copy: Math.floor(i / N) }));
+/** Index of a mood's slot in the middle copy. */
+const middleSlot = (moodIndex: number) => ARC_MIDDLE * N + moodIndex;
+/** Room above for the rising neighbours, and below so the middle label is never cut off. */
+const RISE = 40;
+const BELOW = 18;
 
 function ArcOrb({ index, scrollX, children }: { index: number; scrollX: SharedValue<number>; children: ReactNode }) {
-  // The middle orb is largest and lowest; neighbours shrink, fade and rise — a soft smile-shaped arc.
+  // The middle orb is lowest; neighbours rise and fade — a soft smile-shaped arc.
   const style = useAnimatedStyle(() => {
-    const d = Math.min(Math.abs(index * ARC_ITEM - scrollX.get()) / ARC_ITEM, 3);
-    return { opacity: 1 - d * 0.22, transform: [{ translateY: -d * d * 7 }, { scale: 1.2 - d * 0.18 }] };
+    const d = Math.min(Math.abs(index * ARC_ITEM - scrollX.get()) / ARC_ITEM, 2.5);
+    return { opacity: 1 - d * 0.26, transform: [{ translateY: -d * d * 6 }] };
   });
   return <Animated.View style={[styles.slot, style]}>{children}</Animated.View>;
+}
+
+/** Only the orb grows near the middle (the label keeps its size, so it always fits). */
+function ArcScale({ index, scrollX, children }: { index: number; scrollX: SharedValue<number>; children: ReactNode }) {
+  const style = useAnimatedStyle(() => {
+    const d = Math.min(Math.abs(index * ARC_ITEM - scrollX.get()) / ARC_ITEM, 2.5);
+    return { transform: [{ scale: 1.18 - d * 0.16 }] };
+  });
+  return <Animated.View style={style}>{children}</Animated.View>;
 }
 
 function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
@@ -111,16 +128,22 @@ function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
   const reduceMotion = useReducedMotion();
   const ref = useRef<ScrollViewInstance>(null);
   const [width, setWidth] = useState(0);
-  const startIndex = value ? MOODS.findIndex((m) => m.id === value) : START;
-  const scrollX = useSharedValue(startIndex * ARC_ITEM);
+  const startSlot = middleSlot(value ? MOODS.findIndex((m) => m.id === value) : Math.floor(N / 2));
+  const scrollX = useSharedValue(startSlot * ARC_ITEM);
   const onScroll = useAnimatedScrollHandler((e) => {
     scrollX.set(e.contentOffset.x);
   });
-  const centre = (index: number, animated: boolean) => ref.current?.scrollTo({ x: index * ARC_ITEM, animated });
+  const centre = (slot: number, animated: boolean) => ref.current?.scrollTo({ x: slot * ARC_ITEM, animated });
   // A choice made elsewhere (or on first layout) glides to the middle.
   useEffect(() => {
-    if (width > 0) centre(startIndex, false);
-  }, [width, startIndex]);
+    if (width > 0) centre(startSlot, false);
+  }, [width, startSlot]);
+  /** After a swipe settles, jump (invisibly) to the same mood in the middle copy, so there is always more. */
+  function recentre(x: number) {
+    const slot = Math.round(x / ARC_ITEM);
+    const same = middleSlot(((slot % N) + N) % N);
+    if (slot !== same) centre(same, false);
+  }
   const side = Math.max(0, (width - ARC_ITEM) / 2);
   return (
     <View testID="feeling-orbs" style={[styles.orbs, { marginHorizontal: -bleed }]} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
@@ -133,25 +156,33 @@ function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
         decelerationRate="fast"
         onScroll={onScroll}
         scrollEventThrottle={16}
-        contentContainerStyle={{ paddingHorizontal: side, paddingTop: 36 }}
+        onMomentumScrollEnd={(e) => recentre(e.nativeEvent.contentOffset.x)}
+        contentContainerStyle={{ paddingHorizontal: side, paddingTop: RISE, paddingBottom: BELOW }}
       >
         <View accessibilityRole="radiogroup" accessibilityLabel={label} style={styles.arc}>
-          {MOODS.map((m, i) => {
+          {SLOTS.map(({ slot, mood: m, copy }) => {
             const checked = m.id === value;
             const { onPress, ...a11y } = radio(m.id);
+            // Screen readers get each mood once (the middle copy); the repeats are for swiping.
+            const repeat = copy !== ARC_MIDDLE;
             return (
-              <ArcOrb key={m.id} index={i} scrollX={scrollX}>
+              <ArcOrb key={slot} index={slot} scrollX={scrollX}>
                 <Pressable
                   {...a11y}
+                  accessibilityElementsHidden={repeat}
+                  importantForAccessibility={repeat ? "no-hide-descendants" : "auto"}
                   onPress={() => {
                     onPress();
-                    centre(i, !reduceMotion);
+                    // Glide the tapped orb to the middle; the next swipe re-centres on the middle copy.
+                    centre(slot, !reduceMotion);
                   }}
                   style={styles.cell}
                 >
-                  <View style={[styles.halo, checked && { backgroundColor: c.mood[m.id] + "40" }]}>
-                    <Orb color={c.mood[m.id]} size={ORB} />
-                  </View>
+                  <ArcScale index={slot} scrollX={scrollX}>
+                    <View style={[styles.halo, checked && { backgroundColor: c.mood[m.id] + "40" }]}>
+                      <Orb color={c.mood[m.id]} size={ORB} />
+                    </View>
+                  </ArcScale>
                   <Text numberOfLines={1} style={[styles.orbLabel, { color: checked ? c.foreground : c.mutedForeground }]}>
                     {t.mood.states[m.id].label}
                   </Text>
@@ -175,7 +206,7 @@ const styles = StyleSheet.create({
   orbs: { gap: space.sm },
   arc: { flexDirection: "row" },
   slot: { width: ARC_ITEM, alignItems: "center" },
-  cell: { alignItems: "center", gap: 6, minHeight: 44, width: ARC_ITEM },
+  cell: { alignItems: "center", gap: 10, minHeight: 44, width: ARC_ITEM },
   halo: { borderRadius: ORB, padding: 6 },
   orbLabel: { fontFamily: fonts.sansMedium, fontSize: 12 },
   caption: { fontFamily: fonts.serif, fontSize: 17, lineHeight: 23, textAlign: "center" },

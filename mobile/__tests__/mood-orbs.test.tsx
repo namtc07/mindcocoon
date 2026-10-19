@@ -2,7 +2,7 @@ import { act, fireEvent, screen, userEvent } from "@testing-library/react-native
 import { ScrollView } from "react-native";
 import TodayScreen from "@/app/(tabs)/index";
 import { FeelingChips } from "@/components/mood/FeelingChips";
-import { MoodPicker } from "@/components/mood/MoodPicker";
+import { ARC_MIDDLE, MoodPicker } from "@/components/mood/MoodPicker";
 import { renderWithApp } from "@/test-utils/render";
 import { readableFill } from "@/theme/contrast";
 import { tokens } from "@/theme/tokens";
@@ -36,7 +36,8 @@ describe("Mood orbs", () => {
     await renderWithApp(<MoodPicker variant="orbs" value={null} onChange={onChange} label="How are you?" />);
     await user.press(screen.getByRole("radio", { name: "Hopeful" }));
     expect(onChange).toHaveBeenCalledWith("hopeful");
-    expect(scrollTo).toHaveBeenLastCalledWith(expect.objectContaining({ x: 7 * 76 }));
+    // The arc repeats the ten moods; choices glide within the middle copy.
+    expect(scrollTo).toHaveBeenLastCalledWith(expect.objectContaining({ x: (ARC_MIDDLE * 10 + 7) * 76 }));
   });
 
   it("swiping only browses; nothing is chosen until a tap", async () => {
@@ -46,6 +47,21 @@ describe("Mood orbs", () => {
       fireEvent(screen.getByTestId("feeling-arc"), "momentumScrollEnd", { nativeEvent: { contentOffset: { x: 2 * 76, y: 0 } } }),
     );
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("never runs out: after swiping far, it quietly returns to the same mood in the middle", async () => {
+    const scrollTo = ScrollView.prototype.scrollTo as unknown as jest.Mock;
+    await renderWithApp(<MoodPicker variant="orbs" value={null} onChange={() => {}} label="How are you?" />);
+    scrollTo.mockClear();
+    await act(async () =>
+      fireEvent(screen.getByTestId("feeling-arc"), "momentumScrollEnd", { nativeEvent: { contentOffset: { x: (ARC_MIDDLE * 10 + 22) * 76, y: 0 } } }),
+    );
+    expect(scrollTo).toHaveBeenLastCalledWith({ x: (ARC_MIDDLE * 10 + 2) * 76, animated: false });
+  });
+
+  it("labels are never cut off: the label does not grow with the orb", async () => {
+    await renderWithApp(<MoodPicker variant="orbs" value="peaceful" onChange={() => {}} label="How are you?" />);
+    expect(screen.getByTestId("feeling-arc")).toHaveProp("contentContainerStyle", expect.objectContaining({ paddingBottom: expect.any(Number) }));
   });
 
   it("says a few words about the chosen mood, and invites a swipe or tap before", async () => {
