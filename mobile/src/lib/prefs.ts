@@ -6,6 +6,7 @@ import type { AudioPrefs } from "./audio/engine";
 import { createKvDriver } from "./kv-driver";
 import type { PlanId } from "./purchases/plan";
 import type { CachedFlags } from "./remote-config-core";
+import type { CachedContent } from "./remote-content-core";
 
 /** Small persisted preferences (language, appearance), readable synchronously after loadPrefs(). */
 export interface Prefs {
@@ -57,6 +58,8 @@ export interface Prefs {
   weeklyLetter?: boolean;
   /** The Sunday (day key) whose letter was read. */
   letterReadOn?: string;
+  /** Writing ideas, stories and practices published after this version (from Supabase). */
+  remoteContent?: CachedContent;
   /** Which part of Sanctuary was open last. */
   sanctuaryTab?: "sounds" | "breathe" | "practices";
   /** Optional name for the greeting (device only). */

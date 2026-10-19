@@ -7,6 +7,7 @@ import { Muted, Screen } from "@/components/Screen";
 import { StackHeader } from "@/components/StackHeader";
 import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/i18n/i18n";
+import { useRemoteContent } from "@/lib/remote-content";
 import { hush, say } from "@/lib/voice";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
@@ -20,7 +21,8 @@ export default function StoryScreen() {
   const { t, locale } = useI18n();
   const { c } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const story = getStory(locale, id ?? "");
+  const extra = useRemoteContent().stories[locale];
+  const story = getStory(locale, id ?? "") ?? extra.find((s) => s.id === id) ?? null;
   const [reading, setReading] = useState<number | null>(null);
   // Bumped on every start/stop, so a late "done" from an old utterance never moves things on.
   const session = useRef(0);

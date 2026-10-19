@@ -16,6 +16,7 @@ import { hydrateAudio, startAudioLifecycle } from "@/lib/audio";
 import { useEraseCount } from "@/lib/export";
 import { loadPrefs } from "@/lib/prefs";
 import { startRemoteConfig } from "@/lib/remote-config";
+import { startRemoteContent } from "@/lib/remote-content";
 import { useAppFonts } from "@/theme/fonts";
 import { useTheme } from "@/theme/theme";
 
@@ -39,10 +40,12 @@ export default function RootLayout() {
     const stopAutoLock = appAutoLock.start();
     const stopAudio = startAudioLifecycle();
     const stopFlags = startRemoteConfig();
+    const stopContent = startRemoteContent();
     return () => {
       stopAutoLock();
       stopAudio();
       stopFlags();
+      stopContent();
     };
   }, []);
 

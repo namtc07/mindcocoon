@@ -293,6 +293,9 @@ export const id: Dictionary = {
     on: "Aktif",
     resetTest: "Atur ulang Pro (uji coba)",
   },
+  content: {
+    new: "Baru",
+  },
   letter: {
     title: "Surat dari Kén",
     cardTitle: "Kén meninggalkan beberapa baris untukmu",

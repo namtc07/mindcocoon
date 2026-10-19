@@ -292,6 +292,9 @@ export const vi: Dictionary = {
     on: "Đang bật",
     resetTest: "Tắt Pro (thử)",
   },
+  content: {
+    new: "Mới",
+  },
   letter: {
     title: "Thư từ Kén",
     cardTitle: "Kén để lại cho bạn vài dòng",

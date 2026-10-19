@@ -1,4 +1,5 @@
 import { promptAt, promptForDay } from "@mindcocoon/core/prompts";
+import { useRemoteContent } from "@/lib/remote-content";
 import { checkText } from "@mindcocoon/core/safety/detect";
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
@@ -41,7 +42,8 @@ export default function VentScreen() {
   const insets = useSafeAreaInsets();
   const appState = useAppState();
   const now = useNow();
-  const params = useLocalSearchParams<{ prompt?: string; promptIndex?: string }>();
+  const params = useLocalSearchParams<{ prompt?: string; promptIndex?: string; remotePrompt?: string }>();
+  const remotePrompts = useRemoteContent().prompts;
   const [text, setText] = useState("");
   const [phase, setPhase] = useState<Phase>("writing");
   const [plan, setPlan] = useState<DissolvePlan | null>(null);
@@ -101,14 +103,14 @@ export default function VentScreen() {
 
   // Leaving Vent silences a release sound that is still playing.
   // …and forgets a prompt opened from the library, so Today's "Write about this" never shows a stale one.
-  const hasPromptParam = params.prompt !== undefined || params.promptIndex !== undefined;
+  const hasPromptParam = params.prompt !== undefined || params.promptIndex !== undefined || params.remotePrompt !== undefined;
   // Vent's own navigation object targets this route (router.setParams would hit whatever is focused next).
   const navigation = useNavigation();
   useFocusEffect(
     useCallback(
       () => () => {
         stopReleaseSound();
-        if (hasPromptParam) navigation.setParams({ prompt: undefined, promptIndex: undefined } as never);
+        if (hasPromptParam) navigation.setParams({ prompt: undefined, promptIndex: undefined, remotePrompt: undefined } as never);
       },
       [hasPromptParam, navigation],
     ),
@@ -121,7 +123,9 @@ export default function VentScreen() {
 
   // From the library: a fixed index, so switching language keeps the same prompt. From Today: the day's prompt.
   const prompt =
-    params.promptIndex !== undefined
+    params.remotePrompt !== undefined
+      ? (remotePrompts[locale][Number(params.remotePrompt) || 0]?.text ?? null)
+      : params.promptIndex !== undefined
       ? promptAt(locale, Number(params.promptIndex) || 0)
       : params.prompt !== undefined
         ? promptForDay(now, locale, Number(params.prompt) || 0)

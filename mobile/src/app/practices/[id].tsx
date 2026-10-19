@@ -1,4 +1,5 @@
-import { getPractice } from "@mindcocoon/core/practices";
+import { getPractice, type Practice } from "@mindcocoon/core/practices";
+import { useRemoteContent } from "@/lib/remote-content";
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { PracticeRunner } from "@/components/practices/PracticeRunner";
 import { Screen } from "@/components/Screen";
@@ -9,7 +10,8 @@ import { useI18n } from "@/i18n/i18n";
 export default function PracticeScreen() {
   const { locale } = useI18n();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const practice = getPractice(locale, id ?? "");
+  const extra = useRemoteContent().practices[locale];
+  const practice = getPractice(locale, id ?? "") ?? (extra.find((p) => p.id === id) as Practice | undefined);
   if (!practice) return <Redirect href="/practices" />;
   return (
     <>

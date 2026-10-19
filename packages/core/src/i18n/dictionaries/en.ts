@@ -291,6 +291,9 @@ export const en = {
     on: "On",
     resetTest: "Reset Pro (test)",
   },
+  content: {
+    new: "New",
+  },
   letter: {
     title: "A note from Kén",
     cardTitle: "Kén left you a few lines",

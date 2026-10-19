@@ -8,17 +8,20 @@ import { StackHeader } from "@/components/StackHeader";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { useI18n } from "@/i18n/i18n";
+import { useRemoteContent } from "@/lib/remote-content";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 
 const write = (index: number) => router.push({ pathname: "/vent", params: { promptIndex: String(index) } });
+const writeRemote = (index: number) => router.push({ pathname: "/vent", params: { remotePrompt: String(index) } });
 
 /** Every reflection prompt; tap one to write about it in Vent. Ad-free. */
 export default function PromptsScreen() {
   const { t, locale } = useI18n();
   const { c } = useTheme();
   const [theme, setTheme] = useState<PromptTheme | null>(null);
+  const extra = useRemoteContent().prompts[locale];
   const shown = REFLECTION_PROMPTS[locale].map((prompt, i) => ({ prompt, i })).filter(({ i }) => !theme || PROMPT_THEME_OF[i] === theme);
   return (
     <>
@@ -41,6 +44,27 @@ export default function PromptsScreen() {
             </Chip>
           ))}
         </ScrollView>
+        {extra.length > 0 && theme === null && (
+          <View style={{ gap: space.sm }}>
+            <Text style={{ fontFamily: fonts.sansMedium, fontSize: 14, color: c.ember }}>{t.content.new}</Text>
+            <View style={[styles.card, { backgroundColor: c.surface }]}>
+              {[...extra].reverse().map((p, n) => {
+                const index = extra.length - 1 - n;
+                return (
+                  <Pressable
+                    key={index}
+                    accessibilityRole="button"
+                    accessibilityLabel={t.prompts.write.replace("{prompt}", p.text)}
+                    onPress={() => writeRemote(index)}
+                    style={[styles.row, n > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.border }]}
+                  >
+                    <Text style={{ fontFamily: fonts.serif, fontSize: 19, lineHeight: 26, color: c.foreground }}>{p.text}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        )}
         <View style={[styles.card, { backgroundColor: c.surface }]}>
           {shown.map(({ prompt, i }, n) => (
             <Pressable
