@@ -82,13 +82,15 @@
           "banner-today": "",
           "banner-mood": "",
           "rewarded": "",
-          "native-today": ""
+          "native-today": "",
+          "native-mood": ""
         },
         "android": {
           "banner-today": "",
           "banner-mood": "",
           "rewarded": "",
-          "native-today": ""
+          "native-today": "",
+          "native-mood": ""
         }
       }
     }

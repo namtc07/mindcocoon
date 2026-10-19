@@ -1,4 +1,5 @@
-import { formatDay, isEveningMode, partOfDay } from "@mindcocoon/core/dates";
+import { dayKey, dayKeyFromISO, formatDay, isEveningMode, partOfDay } from "@mindcocoon/core/dates";
+import { LOW_MOODS } from "@mindcocoon/core/moods";
 import { Link } from "expo-router";
 import { Fragment, useSyncExternalStore } from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -13,6 +14,7 @@ import { QuickCheckin } from "@/components/today/QuickCheckin";
 import { SuggestionCard } from "@/components/today/SuggestionCard";
 import { WorryReadyLine } from "@/components/today/WorryReadyLine";
 import { ReflectionPrompt } from "@/components/today/ReflectionPrompt";
+import { useMoodLogs } from "@/hooks/use-mood-logs";
 import { useNow } from "@/hooks/use-now";
 import { useI18n } from "@/i18n/i18n";
 import { getPref, subscribePrefs } from "@/lib/prefs";
@@ -32,6 +34,7 @@ export default function TodayScreen() {
   const { c } = useTheme();
   const now = useNow();
   const evening = isEveningMode(now);
+  const { logs } = useMoodLogs();
   const intents = useSyncExternalStore(subscribePrefs, readIntents, readIntents);
   const name = useSyncExternalStore(subscribePrefs, readName, readName);
   const ideas = useSyncExternalStore(subscribePrefs, readIdeas, readIdeas);
@@ -46,7 +49,6 @@ export default function TodayScreen() {
     <View testID="today-checkin" style={styles.group}>
       <QuickCheckin />
       <SuggestionCard now={now} />
-      <NativeAdCard />
     </View>
   );
   const entries = (
@@ -54,6 +56,9 @@ export default function TodayScreen() {
       <EntryLinks evening={evening} />
     </View>
   );
+  // The one native ad sits at the very end, and is left out on a low day (heavy, lonely, anxious, angry).
+  const todayLog = logs.find((l) => dayKeyFromISO(l.createdAt) === dayKey(now));
+  const lowDay = !!todayLog && LOW_MOODS.includes(todayLog.mood);
   const blocks = { checkin, worry: <WorryReadyLine now={now} />, entries, prompt };
   return (
     <ScreenActive>
@@ -74,6 +79,7 @@ export default function TodayScreen() {
           .map((key) => (
           <Fragment key={key}>{blocks[key]}</Fragment>
         ))}
+        {!lowDay && <NativeAdCard placement="today" />}
         {__DEV__ && (
           <Link href="/dev/spike" style={{ color: c.mutedForeground, fontFamily: fonts.sans, fontSize: 13 }}>
             Dev: crypto spike

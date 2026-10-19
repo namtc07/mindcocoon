@@ -10,7 +10,7 @@ import mobileAds, { AdsConsent, AdsConsentPrivacyOptionsRequirementStatus, MaxAd
 
 export const AD_REQUEST = { requestNonPersonalizedAdsOnly: true } as const;
 
-export type AdUnitKind = "banner-today" | "banner-mood" | "rewarded" | "native-today";
+export type AdUnitKind = "banner-today" | "banner-mood" | "rewarded" | "native-today" | "native-mood";
 
 let started: Promise<void> | null = null;
 let ready = false;
@@ -79,7 +79,7 @@ export function showAdPrivacyOptions() {
 
 /** Google's test units in development; release ids come from app.json `extra.admob.<ios|android>`. */
 export function adUnitId(kind: AdUnitKind): string {
-  if (__DEV__) return kind === "rewarded" ? TestIds.REWARDED : kind === "native-today" ? TestIds.NATIVE : TestIds.ADAPTIVE_BANNER;
+  if (__DEV__) return kind === "rewarded" ? TestIds.REWARDED : kind.startsWith("native") ? TestIds.NATIVE : TestIds.ADAPTIVE_BANNER;
   const ids = (Constants.expoConfig?.extra?.admob as Record<string, Partial<Record<AdUnitKind, string>>> | undefined)?.[Platform.OS];
   return ids?.[kind] ?? "";
 }

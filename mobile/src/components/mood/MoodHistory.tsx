@@ -2,8 +2,9 @@ import { formatDay, formatTime } from "@mindcocoon/core/dates";
 import { removeMood } from "@mindcocoon/core/mood/store";
 import type { MoodLog } from "@mindcocoon/core/types";
 import { Trash2 } from "lucide-react-native";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { NativeAdCard } from "@/components/ads/NativeAdCard";
 import { Ken } from "@/components/art/Ken";
 import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/i18n/i18n";
@@ -14,6 +15,7 @@ import { useTagLabel } from "./CheckinForm";
 
 const LIMIT = 30;
 const FIRST = 5;
+const AD_AFTER = 3;
 
 export function MoodHistory({ logs }: { logs: MoodLog[] }) {
   const { t, locale } = useI18n();
@@ -42,7 +44,10 @@ export function MoodHistory({ logs }: { logs: MoodLog[] }) {
       ) : (
         <View role="list" accessibilityLabel={t.moodPage.history}>
           {latest.map((log, i) => (
-            <View key={log.id} role="listitem" accessibilityLabel={t.mood.states[log.mood].label} style={[styles.item, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.border }]}>
+            <Fragment key={log.id}>
+            {/* One native ad among past check-ins (after the third), as journaling apps do. */}
+            {i === AD_AFTER && <NativeAdCard placement="mood" />}
+            <View testID="history-row" role="listitem" accessibilityLabel={t.mood.states[log.mood].label} style={[styles.item, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.border }]}>
               <View style={[styles.dot, { backgroundColor: c.mood[log.mood] }]} />
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={{ fontFamily: fonts.sansMedium, fontSize: 15, color: c.foreground }}>{t.mood.states[log.mood].label}</Text>
@@ -54,6 +59,7 @@ export function MoodHistory({ logs }: { logs: MoodLog[] }) {
                 <Trash2 size={18} color={c.mutedForeground} />
               </Pressable>
             </View>
+            </Fragment>
           ))}
         </View>
       )}

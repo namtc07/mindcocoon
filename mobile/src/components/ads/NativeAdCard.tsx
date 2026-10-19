@@ -11,18 +11,19 @@ import { radius, space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 
 /**
- * One native ad on Today, after the check-in: shaped like the app's cards but always labelled
- * "Ad" (the SDK adds AdChoices). Same switches as the banner (remote flag, consent, quiet hours);
- * nothing shows if nothing loads. The ad is released when Today goes away.
+ * One native ad, shaped like the app's cards but always labelled "Ad" (the SDK adds AdChoices).
+ * Placed like other journaling apps do: at the end of Today, and among past check-ins on Mood —
+ * never right after someone names a feeling. Same switches as the banner (remote flag, consent,
+ * quiet hours); nothing shows if nothing loads; the ad is released when its screen goes away.
  */
-export function NativeAdCard() {
+export function NativeAdCard({ placement }: { placement: "today" | "mood" }) {
   const { t } = useI18n();
   const { c } = useTheme();
   const flags = useFlags();
   const ready = useAdsReady();
   const now = useNow();
-  const allowed = canShowBanner({ placement: "today", now, flags, ready });
-  const unitId = adUnitId("native-today");
+  const allowed = canShowBanner({ placement, now, flags, ready });
+  const unitId = adUnitId(placement === "today" ? "native-today" : "native-mood");
   const [ad, setAd] = useState<NativeAd | null>(null);
 
   useEffect(() => {
