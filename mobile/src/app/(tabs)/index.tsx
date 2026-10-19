@@ -3,6 +3,7 @@ import { Link } from "expo-router";
 import { Fragment } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { AdBanner } from "@/components/ads/AdBanner";
+import { Sky } from "@/components/art/Sky";
 import { Screen } from "@/components/Screen";
 import { HeavyNudge } from "@/components/safety/HeavyNudge";
 import { EntryLinks } from "@/components/today/EntryLinks";
@@ -41,7 +42,7 @@ export default function TodayScreen() {
   // The worry-box line shows at any time (it's the only way back to the box).
   const blocks = { checkin, worry: <WorryReadyLine now={now} />, entries, prompt };
   return (
-    <Screen title={t.today.greeting[partOfDay(now)]}>
+    <Screen title={t.today.greeting[partOfDay(now)]} hero={<Sky part={partOfDay(now)} />}>
       <Text style={{ fontFamily: fonts.sans, fontSize: 14, color: c.mutedForeground, marginTop: -space.sm }}>{formatDay(now, locale)}</Text>
       <View style={styles.sections}>
         <HeavyNudge now={now} />

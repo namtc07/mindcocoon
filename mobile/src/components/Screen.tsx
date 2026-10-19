@@ -4,8 +4,18 @@ import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 
-/** Scrollable page with a serif title, left-aligned like the web. */
-export function Screen({ title, children, scrollRef }: { title: string; children?: ReactNode; scrollRef?: Ref<ScrollViewInstance> }) {
+/** Scrollable page with a serif title, left-aligned like the web; `hero` (an illustration) sits above the title. */
+export function Screen({
+  title,
+  children,
+  scrollRef,
+  hero,
+}: {
+  title: string;
+  children?: ReactNode;
+  scrollRef?: Ref<ScrollViewInstance>;
+  hero?: ReactNode;
+}) {
   const { c } = useTheme();
   return (
     <ScrollView
@@ -15,6 +25,7 @@ export function Screen({ title, children, scrollRef }: { title: string; children
       keyboardShouldPersistTaps="handled"
       automaticallyAdjustKeyboardInsets
       style={{ backgroundColor: c.background }} contentContainerStyle={styles.content}>
+      {hero}
       <Text accessibilityRole="header" style={[styles.title, { color: c.foreground }]}>
         {title}
       </Text>
