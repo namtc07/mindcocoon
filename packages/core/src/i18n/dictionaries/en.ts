@@ -255,6 +255,14 @@ export const en = {
       worried: "worried", overwhelmed: "overwhelmed", restless: "restless", scared: "scared", irritated: "irritated",
     },
   },
+  suggest: {
+    title: "Something for this feeling",
+    breathe: "Breathe",
+    listen: "Listen",
+    try: "Try",
+    notNow: "Not now",
+    playing: "Playing {name}",
+  },
   sounds: {
     rain: "Rain",
     ocean: "Ocean",

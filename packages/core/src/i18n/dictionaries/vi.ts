@@ -256,6 +256,14 @@ export const vi: Dictionary = {
       worried: "lo lắng", overwhelmed: "quá tải", restless: "bồn chồn", scared: "sợ hãi", irritated: "bực bội",
     },
   },
+  suggest: {
+    title: "Một chút cho cảm xúc này",
+    breathe: "Thở",
+    listen: "Nghe",
+    try: "Thử",
+    notNow: "Để sau",
+    playing: "Đang phát {name}",
+  },
   sounds: {
     rain: "Mưa",
     ocean: "Sóng biển",

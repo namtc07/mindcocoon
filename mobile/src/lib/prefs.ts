@@ -29,6 +29,8 @@ export interface Prefs {
   mixes?: SavedMix[];
   /** How Vent lets words go: "burn" | "float" | "scatter" | "fade". */
   ritual?: "burn" | "float" | "scatter" | "fade";
+  /** Day key on which "Not now" hid the suggestion card. */
+  suggestHiddenOn?: string;
 }
 
 const KEY = "prefs:v1";
