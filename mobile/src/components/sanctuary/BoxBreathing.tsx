@@ -20,7 +20,7 @@ const KEEP_AWAKE_TAG = "breathing";
 const LABEL_TICK_MS = 250;
 const PATTERN_IDS: BreathPatternId[] = ["box", "relax", "calm"];
 const LENGTHS = [1, 3, 5] as const;
-type Choice = { pattern: BreathPatternId; minutes: (typeof LENGTHS)[number] };
+export type Choice = { pattern: BreathPatternId; minutes: (typeof LENGTHS)[number] };
 const DEFAULT_CHOICE: Choice = { pattern: "box", minutes: 1 };
 const readChoice = () => getPref("breathing") ?? DEFAULT_CHOICE;
 
@@ -28,11 +28,13 @@ const readChoice = () => getPref("breathing") ?? DEFAULT_CHOICE;
  * Paced breathing — box, 4-7-8 or slow exhale, for 1, 3 or 5 minutes (remembered). The shape draws
  * on the UI thread; labels follow core `breathAtPattern`.
  */
-export function BoxBreathing() {
+export function BoxBreathing({ fixed }: { fixed?: Choice } = {}) {
   const { t } = useI18n();
   const { c } = useTheme();
   const reduceMotion = useReducedMotion();
-  const choice = useSyncExternalStore(subscribePrefs, readChoice, readChoice);
+  const stored = useSyncExternalStore(subscribePrefs, readChoice, readChoice);
+  // Wind-down passes its own rhythm; the chooser is hidden then.
+  const choice = fixed ?? stored;
   const pattern = BREATH_PATTERNS[choice.pattern];
   const cycles = cyclesFor(pattern, choice.minutes);
   const totalMs = totalMsFor(pattern, cycles);
@@ -129,6 +131,8 @@ export function BoxBreathing() {
         </Text>
         <Text style={[styles.intro, { color: c.mutedForeground }]}>{t.sanctuary.breathingIntro}</Text>
       </View>
+      {!fixed && (
+        <>
       <View style={styles.chips}>
         {PATTERN_IDS.map((id) => (
           <Chip key={id} selected={choice.pattern === id} disabled={running && !finished} onPress={() => choose({ ...choice, pattern: id })}>
@@ -144,6 +148,8 @@ export function BoxBreathing() {
           </Chip>
         ))}
       </View>
+        </>
+      )}
       <Text style={[styles.intro, { color: c.mutedForeground }]}>{t.sanctuary.patternHints[choice.pattern]}</Text>
       <View style={[styles.card, { backgroundColor: c.surface }]}>
         <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} accessible={false} importantForAccessibility="no-hide-descendants">

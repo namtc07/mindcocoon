@@ -1,0 +1,148 @@
+import { PRESET_MIXES, type PresetMixId } from "@mindcocoon/core/audio/mixes";
+import { dayKey, dayKeyFromISO } from "@mindcocoon/core/dates";
+import { suggestionFor } from "@mindcocoon/core/feelings";
+import { addMood, changeMood } from "@mindcocoon/core/mood/store";
+import type { MoodType } from "@mindcocoon/core/types";
+import { router } from "expo-router";
+import { Moon } from "lucide-react-native";
+import { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { MoodPicker } from "@/components/mood/MoodPicker";
+import { BoxBreathing } from "@/components/sanctuary/BoxBreathing";
+import { Muted, Screen } from "@/components/Screen";
+import { StackHeader } from "@/components/StackHeader";
+import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
+import { toast } from "@/components/ui/Toast";
+import { useMoodLogs } from "@/hooks/use-mood-logs";
+import { useNow } from "@/hooks/use-now";
+import { useI18n } from "@/i18n/i18n";
+import { audio } from "@/lib/audio";
+import type { SleepMinutes } from "@/lib/audio/engine";
+import { fonts } from "@/theme/fonts";
+import { space } from "@/theme/tokens";
+import { useTheme } from "@/theme/theme";
+
+const TIMERS: SleepMinutes[] = [20, 30, 60];
+type Step = "checkin" | "breathe" | "sounds" | "night";
+
+/**
+ * Bedtime in one flow: check in → one minute of breathing that fits the feeling → a mix and a sleep
+ * timer. Nothing plays until "Goodnight"; leaving early leaves no sound behind. Ad-free.
+ */
+export default function WindDownScreen() {
+  const { t } = useI18n();
+  const { c } = useTheme();
+  const now = useNow();
+  const { logs } = useMoodLogs();
+  const todayLog = logs.find((l) => dayKeyFromISO(l.createdAt) === dayKey(now)) ?? null;
+  const [step, setStep] = useState<Step>("checkin");
+  const [mood, setMood] = useState<MoodType | null>(null);
+  const [mixChoice, setMixChoice] = useState<PresetMixId | null>(null);
+  const [minutes, setMinutes] = useState<SleepMinutes>(30);
+
+  const currentMood = mood ?? todayLog?.mood ?? null;
+  const suggestion = currentMood ? suggestionFor(currentMood) : null;
+  const mix = mixChoice ?? suggestion?.mix ?? "rainy-night";
+
+  async function pickMood(next: MoodType) {
+    setMood(next);
+    if (todayLog) await changeMood(todayLog, next);
+    else await addMood({ mood: next, tags: [] });
+  }
+
+  async function goodnight() {
+    const preset = PRESET_MIXES.find((p) => p.id === mix);
+    try {
+      if (preset) await audio.applyMix(preset.mix, () => true);
+      audio.setSleepTimer(minutes);
+      setStep("night");
+    } catch {
+      toast.show(t.sanctuary.playError);
+    }
+  }
+
+  return (
+    <>
+      <StackHeader />
+      <Screen title={step === "night" ? t.windDown.sleepWell : t.windDown.title}>
+        {step === "checkin" && (
+          <View style={styles.step}>
+            <Muted>{t.windDown.intro}</Muted>
+            <Text style={[styles.h, { color: c.foreground }]}>{t.windDown.howTonight}</Text>
+            <MoodPicker value={currentMood} onChange={(m) => void pickMood(m)} label={t.windDown.howTonight} />
+            <View style={styles.actions}>
+              <Button variant="ghost" onPress={() => setStep("breathe")}>
+                {t.windDown.skip}
+              </Button>
+              <Button disabled={!currentMood} onPress={() => setStep("breathe")}>
+                {t.practices.next}
+              </Button>
+            </View>
+          </View>
+        )}
+
+        {step === "breathe" && (
+          <View style={styles.step}>
+            <BoxBreathing fixed={{ pattern: suggestion?.breath.pattern ?? "box", minutes: 1 }} />
+            <View style={styles.actions}>
+              <Button variant="ghost" onPress={() => setStep("checkin")}>
+                {t.practices.back}
+              </Button>
+              <Button variant="ghost" onPress={() => setStep("sounds")}>
+                {t.windDown.skip}
+              </Button>
+              <Button onPress={() => setStep("sounds")}>{t.practices.next}</Button>
+            </View>
+          </View>
+        )}
+
+        {step === "sounds" && (
+          <View style={styles.step}>
+            <Text style={[styles.h, { color: c.foreground }]}>{t.windDown.soundsTitle}</Text>
+            <View style={styles.chips}>
+              {PRESET_MIXES.map((p) => (
+                <Chip key={p.id} selected={mix === p.id} onPress={() => setMixChoice(p.id)}>
+                  {t.sanctuary.presets[p.id]}
+                </Chip>
+              ))}
+            </View>
+            <Text style={[styles.label, { color: c.mutedForeground }]}>{t.windDown.timerLabel}</Text>
+            <View style={styles.chips}>
+              {TIMERS.map((n) => (
+                <Chip key={n} selected={minutes === n} onPress={() => setMinutes(n)}>
+                  {t.sanctuary.minutes.replace("{n}", String(n))}
+                </Chip>
+              ))}
+            </View>
+            <View style={styles.actions}>
+              <Button variant="ghost" onPress={() => setStep("breathe")}>
+                {t.practices.back}
+              </Button>
+              <Button onPress={() => void goodnight()}>{t.windDown.goodnight}</Button>
+            </View>
+          </View>
+        )}
+
+        {step === "night" && (
+          <View style={[styles.step, styles.night]}>
+            <Moon size={36} color={c.mutedForeground} />
+            <Muted>{t.windDown.sleepWellBody}</Muted>
+            <Button variant="ghost" onPress={() => router.navigate("/")}>
+              {t.windDown.backToday}
+            </Button>
+          </View>
+        )}
+      </Screen>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  step: { gap: space.lg },
+  h: { fontFamily: fonts.serif, fontSize: 22, lineHeight: 28 },
+  label: { fontFamily: fonts.sans, fontSize: 15 },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: space.sm },
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: space.md, justifyContent: "flex-end" },
+  night: { alignItems: "flex-start", paddingTop: space.xl },
+});

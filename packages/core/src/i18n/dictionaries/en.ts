@@ -49,6 +49,8 @@ export const en = {
     notePlaceholder: "A few words, if you want",
     noteLocked: "Unlock your vault to add a note.",
     tiles: {
+      windDownTitle: "Wind down for sleep",
+      windDownBody: "Check in, breathe, then fall asleep to soft sounds.",
       ventTitle: "Let it out",
       ventBody: "Write freely, then release it or keep it.",
       breatheTitle: "Breathe for a minute",
@@ -262,6 +264,18 @@ export const en = {
     try: "Try",
     notNow: "Not now",
     playing: "Playing {name}",
+  },
+  windDown: {
+    title: "Wind down for sleep",
+    intro: "A minute to check in, a minute to breathe, then sounds that fade out on their own.",
+    howTonight: "How are you tonight?",
+    skip: "Skip",
+    soundsTitle: "Sounds for sleep",
+    timerLabel: "Fade out after",
+    goodnight: "Goodnight",
+    sleepWell: "Sleep well.",
+    sleepWellBody: "The sounds will fade out on their own. You can put the phone down now.",
+    backToday: "Back to Today",
   },
   sounds: {
     rain: "Rain",

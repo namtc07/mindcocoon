@@ -50,6 +50,8 @@ export const vi: Dictionary = {
     notePlaceholder: "Vài chữ, nếu bạn muốn",
     noteLocked: "Mở két để thêm ghi chú.",
     tiles: {
+      windDownTitle: "Thư giãn trước khi ngủ",
+      windDownBody: "Ghé lại cảm xúc, thở, rồi ngủ cùng âm thanh dịu nhẹ.",
       ventTitle: "Trút ra",
       ventBody: "Viết thoải mái, rồi thả đi hoặc cất lại.",
       breatheTitle: "Thở một phút",
@@ -263,6 +265,18 @@ export const vi: Dictionary = {
     try: "Thử",
     notNow: "Để sau",
     playing: "Đang phát {name}",
+  },
+  windDown: {
+    title: "Thư giãn trước khi ngủ",
+    intro: "Một phút ghé lại cảm xúc, một phút để thở, rồi âm thanh sẽ tự nhỏ dần.",
+    howTonight: "Tối nay bạn thấy thế nào?",
+    skip: "Bỏ qua",
+    soundsTitle: "Âm thanh để ngủ",
+    timerLabel: "Tắt dần sau",
+    goodnight: "Chúc ngủ ngon",
+    sleepWell: "Ngủ ngon nhé.",
+    sleepWellBody: "Âm thanh sẽ tự nhỏ dần rồi tắt. Bạn có thể đặt điện thoại xuống rồi.",
+    backToday: "Về Hôm nay",
   },
   sounds: {
     rain: "Mưa",
