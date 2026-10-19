@@ -148,7 +148,7 @@ export function BoxBreathing({ fixed }: { fixed?: Choice } = {}) {
         <Text accessibilityRole="header" style={[styles.title, { color: c.foreground }]}>
           {t.sanctuary.breathingTitle}
         </Text>
-        <Text style={[styles.intro, { color: c.mutedForeground }]}>{t.sanctuary.breathingIntro}</Text>
+        {!fixed && <Text style={[styles.intro, { color: c.mutedForeground }]}>{t.sanctuary.breathingIntro}</Text>}
       </View>
       {!fixed && (
         <>

@@ -88,6 +88,7 @@ export const vi: Dictionary = {
   },
   moodPage: {
     showEarlier: "Xem các lần trước",
+    journeyFailed: "Chưa tạo được ảnh. Thử lại nhé.",
     journeyButton: "Giữ một bức ảnh của tháng này",
     journeyTitle: "Tháng của bạn",
     journeyHint: "Chỉ có màu sắc và từ cảm xúc. Không có ghi chú, không gửi đi đâu trừ khi bạn chọn.",
@@ -129,6 +130,8 @@ export const vi: Dictionary = {
     intro: "Mọi bài viết được mã hóa trên máy này. Chỉ bạn đọc được.",
     empty: "Chưa có gì ở đây. Những gì bạn cất từ Trút bỏ sẽ nằm yên ở đây.",
     writeFirst: "Viết gì đó",
+    unsupportedDevice: "Máy này hiện không mã hóa được két. Hãy thử mở lại app.",
+    removePasscodeConfirm: "Gỡ mã khóa? Két sẽ mở được mà không cần mã trên máy này.",
     unsupported: "Trình duyệt này không mã hóa được két. Hãy thử Chrome, Safari hoặc Firefox bản mới.",
     unavailable: "Chưa mở được két lúc này. Nhật ký của bạn vẫn an toàn, thử lại sau giây lát nhé.",
     retry: "Thử lại",

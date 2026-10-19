@@ -100,7 +100,17 @@ export default function VentScreen() {
   }
 
   // Leaving Vent silences a release sound that is still playing.
-  useFocusEffect(useCallback(() => stopReleaseSound, []));
+  // …and forgets a prompt opened from the library, so Today's "Write about this" never shows a stale one.
+  const hasPromptParam = params.prompt !== undefined || params.promptIndex !== undefined;
+  useFocusEffect(
+    useCallback(
+      () => () => {
+        stopReleaseSound();
+        if (hasPromptParam) router.setParams({ prompt: undefined, promptIndex: undefined });
+      },
+      [hasPromptParam],
+    ),
+  );
 
   const finishDissolve = useCallback(() => {
     setPlan(null);

@@ -1,6 +1,6 @@
 import { lockVault, regenerateRecoveryCode, removeVaultPasscode, setVaultAutoLock, setVaultPasscode } from "@mindcocoon/core/vault/session";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Sheet } from "@/components/ui/Sheet";
@@ -93,11 +93,21 @@ export function VaultSettings({
               </View>
               <Button
                 variant="ghost"
-                onPress={async () => {
-                  await removeVaultPasscode();
-                  await disableBiometric();
-                  toast.show(t.vault.passcodeRemoved);
-                }}
+                onPress={() =>
+                  // Removing protection is easy to do by accident: ask first.
+                  Alert.alert(t.vault.removePasscode, t.vault.removePasscodeConfirm, [
+                    { text: t.common.cancel, style: "cancel" },
+                    {
+                      text: t.vault.removePasscode,
+                      style: "destructive",
+                      onPress: async () => {
+                        await removeVaultPasscode();
+                        await disableBiometric();
+                        toast.show(t.vault.passcodeRemoved);
+                      },
+                    },
+                  ])
+                }
               >
                 {t.vault.removePasscode}
               </Button>

@@ -64,7 +64,9 @@ function EraseSheet({ visible, onClose }: { visible: boolean; onClose: () => voi
   const { c } = useTheme();
   const [word, setWord] = useState("");
   const [busy, setBusy] = useState(false);
-  const ok = word.trim().toLowerCase() === t.settings.eraseConfirmWord;
+  // Accept any Unicode form and the older accent placement ("xoá" = "xóa").
+  const norm = (text: string) => text.normalize("NFC").trim().toLowerCase().replace(/oá/g, "óa");
+  const ok = norm(word) === norm(t.settings.eraseConfirmWord);
   return (
     <Sheet visible={visible} onClose={onClose} title={t.settings.erase}>
       <Text style={{ fontFamily: fonts.sans, fontSize: 15, lineHeight: 21, color: c.mutedForeground }}>{t.settings.eraseHint}</Text>

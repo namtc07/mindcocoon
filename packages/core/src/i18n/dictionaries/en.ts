@@ -87,6 +87,7 @@ export const en = {
   },
   moodPage: {
     showEarlier: "Show earlier check-ins",
+    journeyFailed: "Couldn't make the picture. Try again.",
     journeyButton: "Keep a picture of this month",
     journeyTitle: "Your month",
     journeyHint: "Colours and feeling words only. No notes, nothing shared unless you choose to.",
@@ -128,6 +129,8 @@ export const en = {
     intro: "Entries are encrypted on this device. Only you can read them.",
     empty: "Nothing here yet. Words you save from Vent will rest here.",
     writeFirst: "Go write something",
+    unsupportedDevice: "This phone can't encrypt your vault right now. Try restarting the app.",
+    removePasscodeConfirm: "Remove the passcode? Your vault will open without one on this phone.",
     unsupported: "This browser can't encrypt your vault. Try a recent Chrome, Safari or Firefox.",
     unavailable: "We can't open your vault right now. Your entries are safe — try again in a moment.",
     retry: "Try again",

@@ -34,7 +34,7 @@ export default function VaultScreen() {
       </View>
     );
   } else if (vault.status === "unsupported") {
-    content = <Text style={[styles.p, { color: c.foreground }]}>{t.vault.unsupported}</Text>;
+    content = <Text style={[styles.p, { color: c.foreground }]}>{t.vault.unsupportedDevice}</Text>;
   } else if (vault.status === "locked") {
     content = <UnlockPanel resetReadyAt={vault.resetReadyAt} />;
   } else if (vault.status !== "unlocked") {

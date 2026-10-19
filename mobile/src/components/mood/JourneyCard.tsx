@@ -52,7 +52,7 @@ export function JourneyCard({ logs, now }: { logs: MoodLog[]; now: Date }) {
       uri = await captureRef(card, { format: "png", quality: 1, result: "tmpfile" });
       await Sharing.shareAsync(uri, { mimeType: "image/png" });
     } catch {
-      toast.show(t.vault.unavailable);
+      toast.show(t.moodPage.journeyFailed);
     } finally {
       if (uri) releaseCapture(uri);
       setBusy(false);

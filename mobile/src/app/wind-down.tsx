@@ -106,9 +106,6 @@ export default function WindDownScreen() {
               <Button variant="ghost" onPress={() => setStep("checkin")}>
                 {t.practices.back}
               </Button>
-              <Button variant="ghost" onPress={() => setStep("sounds")}>
-                {t.windDown.skip}
-              </Button>
               <Button onPress={() => setStep("sounds")}>{t.practices.next}</Button>
             </View>
           </View>
