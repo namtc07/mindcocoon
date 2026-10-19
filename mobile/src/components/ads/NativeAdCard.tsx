@@ -10,6 +10,7 @@ import { canShowBanner } from "@/lib/ads/policy";
 import { toast } from "@/components/ui/Toast";
 import { useRewardedUnlock } from "@/hooks/use-rewarded-unlock";
 import { useAdFreeUntil } from "@/lib/ads/ad-free";
+import { useIsPro } from "@/lib/purchases/pro";
 import { useFlags } from "@/lib/remote-config";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
@@ -30,9 +31,10 @@ export function NativeAdCard({ placement }: { placement: "today" | "mood" }) {
   const ready = useAdsReady();
   const now = useNow();
   const adFreeUntil = useAdFreeUntil();
+  const pro = useIsPro();
   const { adFreeOffer, adFreeHours, adFree } = useRewardedUnlock();
   // Ads off for a while (one rewarded ad): no request at all.
-  const allowed = canShowBanner({ placement, now, flags, ready }) && now.getTime() >= adFreeUntil;
+  const allowed = !pro && canShowBanner({ placement, now, flags, ready }) && now.getTime() >= adFreeUntil;
 
   /**
    * × hides only this ad: it is released and the card goes away. Coming back to the screen later

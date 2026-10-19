@@ -9,13 +9,16 @@ import { TextField } from "@/components/ui/TextField";
 import { NightDimSetting, ReleaseSoundSetting, VoiceGuideSetting, WritingPromptsSetting } from "@/components/settings/ReleaseSoundSetting";
 import Constants from "expo-constants";
 import appConfig from "../../app.json";
-import { Download, LifeBuoy, Lock, ShieldCheck, Trash2 } from "lucide-react-native";
+import { Download, LifeBuoy, Lock, RotateCcw, ShieldCheck, Sparkles, Trash2 } from "lucide-react-native";
+import { useIsPro } from "@/lib/purchases/pro";
+import { activeStore } from "@/lib/purchases/store";
 import { Ken } from "@/components/art/Ken";
 import { AdFreeSetting } from "@/components/settings/AdFreeSetting";
 import { SettingsGroup, SettingsRow } from "@/components/settings/SettingsGroup";
 import { useNow } from "@/hooks/use-now";
 import { useRewardedUnlock } from "@/hooks/use-rewarded-unlock";
 import { useAdFreeUntil } from "@/lib/ads/ad-free";
+import { setPref } from "@/lib/prefs";
 import { NameSetting } from "@/components/settings/NameSetting";
 import { ReminderSettings } from "@/components/settings/ReminderSettings";
 import { StackHeader } from "@/components/StackHeader";
@@ -104,6 +107,9 @@ export default function SettingsScreen() {
   const [eraseOpen, setEraseOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const adPrivacy = useAdPrivacyRequired();
+  const pro = useIsPro();
+  // Pro is offered only where a store can sell it (today: the test store in development builds).
+  const proOffered = pro || activeStore() !== null;
   const { adFreeOffer } = useRewardedUnlock();
   const adFreeUntil = useAdFreeUntil();
   const now = useNow();
@@ -121,6 +127,10 @@ export default function SettingsScreen() {
                 <NameSetting />
               </View>
             </View>
+            {proOffered ? (
+              <SettingsRow icon={Sparkles} label={pro ? `${t.pro.title} · ${t.pro.on}` : t.pro.title} onPress={() => router.push("/pro")} />
+            ) : null}
+            {__DEV__ && pro ? <SettingsRow icon={RotateCcw} role="button" label={t.pro.resetTest} onPress={() => void setPref("pro", undefined)} /> : null}
           </SettingsGroup>
 
           <SettingsGroup title={t.settings.appearance} testID="group-appearance">

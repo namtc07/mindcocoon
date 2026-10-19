@@ -14,6 +14,7 @@ import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
 import { isUnlockedIn } from "@/lib/unlocks-core";
 import { useUnlocks } from "@/lib/unlocks";
 import { useFlags } from "@/lib/remote-config";
+import { PRO_MIX_LIMIT, useIsPro } from "@/lib/purchases/pro";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
@@ -37,10 +38,11 @@ export function MixChips() {
   const matches = (mix: Mix) => mixMatches(mix, state.playing, state.volumes);
   const nameOf = (m: SavedMix) => t.sanctuary.myMix.replace("{n}", String(m.n));
   const extra = useSyncExternalStore(subscribePrefs, readExtra, readExtra);
-  const full = saved.length >= MAX_SAVED_MIXES + extra;
+  const pro = useIsPro();
+  const full = saved.length >= (pro ? PRO_MIX_LIMIT : MAX_SAVED_MIXES + extra);
   const { offer, busy, earnMixSlot } = useRewardedUnlock();
   // Full, and room can still grow (up to ten): a short ad, only if the person taps it.
-  const canGrow = full && offer && extra < MAX_EXTRA_MIX_SLOTS;
+  const canGrow = !pro && full && offer && extra < MAX_EXTRA_MIX_SLOTS;
 
   function play(mix: Mix) {
     audio

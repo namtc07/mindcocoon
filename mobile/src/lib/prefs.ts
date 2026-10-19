@@ -4,6 +4,7 @@ import type { Locale } from "@mindcocoon/core/i18n/config";
 import type { OnboardingIntent } from "@mindcocoon/core/onboarding";
 import type { AudioPrefs } from "./audio/engine";
 import { createKvDriver } from "./kv-driver";
+import type { PlanId } from "./purchases/plan";
 import type { CachedFlags } from "./remote-config-core";
 
 /** Small persisted preferences (language, appearance), readable synchronously after loadPrefs(). */
@@ -48,6 +49,10 @@ export interface Prefs {
   adFreeUntil?: number;
   /** Spoken guidance for breathing and practices (off unless set to true). */
   voiceGuide?: boolean;
+  /** MindCocoon Pro: which plan, since when (set by a purchase or restore). */
+  pro?: { plan: PlanId; since: number };
+  /** Development only: plans "bought" in the test store, so Restore can find them. */
+  testPurchases?: PlanId[];
   /** Which part of Sanctuary was open last. */
   sanctuaryTab?: "sounds" | "breathe" | "practices";
   /** Optional name for the greeting (device only). */

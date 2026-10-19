@@ -7,12 +7,13 @@ import { canOfferRewarded } from "@/lib/ads/policy";
 import { useFlags } from "@/lib/remote-config";
 import { SOUND_TRACKS } from "@mindcocoon/core/sounds";
 import { startAdFree } from "@/lib/ads/ad-free";
-import { getPref, setPref } from "@/lib/prefs";
+import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
 import { unlockAllFor24h, unlockFor24h } from "@/lib/unlocks";
 
 export type UnlockResult = "unlocked" | "unavailable" | "dismissed";
 
 const LOAD_TIMEOUT_MS = 10_000;
+const readPro = () => getPref("pro") !== undefined;
 
 /** At most one rewarded ad at a time, app-wide; cancelled if the person leaves Sanctuary or the app first. */
 let cancelPending: (() => void) | null = null;
@@ -90,6 +91,8 @@ export function useRewardedUnlock() {
     return () => sub.remove();
   }, []);
   const offer = canOfferRewarded({ flags, ready });
+  // Pro has no ads to turn off.
+  const pro = useSyncExternalStore(subscribePrefs, readPro, readPro);
   const adFreeHours = flags.adFreeHours ?? 24;
   return {
     offer,
@@ -99,7 +102,7 @@ export function useRewardedUnlock() {
     /** Every extra sound for 24 hours. */
     unlockAll: () => showRewarded(() => unlockAllFor24h(PREMIUM_IDS)),
     /** "One ad, no ads for a while" is on (remote ad_free_enabled), and for how many hours. */
-    adFreeOffer: offer && flags.adFreeEnabled !== false,
+    adFreeOffer: offer && !pro && flags.adFreeEnabled !== false,
     adFreeHours,
     /** No banner or native ad for `adFreeHours`. */
     adFree: () => showRewarded(() => startAdFree(adFreeHours)),
