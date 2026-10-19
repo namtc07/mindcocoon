@@ -231,3 +231,8 @@ jest.mock("expo-local-authentication", () => ({
   AuthenticationType: { FINGERPRINT: 1, FACIAL_RECOGNITION: 2, IRIS: 3 },
   SecurityLevel: { NONE: 0, SECRET: 1, BIOMETRIC_WEAK: 2, BIOMETRIC_STRONG: 3 },
 }));
+
+jest.mock("react-native-view-shot", () => ({
+  captureRef: jest.fn(() => Promise.resolve("file:///cache/journey.png")),
+  releaseCapture: jest.fn(),
+}));

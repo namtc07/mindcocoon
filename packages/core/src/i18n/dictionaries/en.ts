@@ -86,6 +86,10 @@ export const en = {
     wrongPasscode: "That passcode didn't match.",
   },
   moodPage: {
+    journeyButton: "Keep a picture of this month",
+    journeyTitle: "Your month",
+    journeyHint: "Colours and feeling words only. No notes, nothing shared unless you choose to.",
+    journeyShare: "Save or share",
     viewMonth: "Month",
     viewYear: "Year",
     yearLabel: "Your year in colours",

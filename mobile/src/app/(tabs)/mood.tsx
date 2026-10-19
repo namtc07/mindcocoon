@@ -6,6 +6,7 @@ import { Screen } from "@/components/Screen";
 import { CheckinForm } from "@/components/mood/CheckinForm";
 import { DayDetail } from "@/components/mood/DayDetail";
 import { GentleInsights } from "@/components/mood/GentleInsights";
+import { JourneyCard } from "@/components/mood/JourneyCard";
 import { MonthHeatmap } from "@/components/mood/MonthHeatmap";
 import { MoodHistory } from "@/components/mood/MoodHistory";
 import { WeekStrip } from "@/components/mood/WeekStrip";
@@ -41,6 +42,7 @@ export default function MoodScreen() {
             </Chip>
           </View>
           {view === "month" ? <MonthHeatmap logs={logs} now={now} onSelect={setSelected} /> : <YearPixels logs={logs} now={now} />}
+          <JourneyCard logs={logs} now={now} />
         </View>
         <GentleInsights />
         <MoodHistory logs={logs} />
