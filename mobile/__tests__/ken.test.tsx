@@ -17,7 +17,8 @@ describe("Kén", () => {
   });
 
   it("Today shows a calm Kén by day", async () => {
-    mockNow = new Date(2026, 9, 19, 10, 0);
+    // A Wednesday morning (no Sunday letter card, which has its own Kén).
+    mockNow = new Date(2026, 9, 21, 10, 0);
     await renderWithApp(<TodayScreen />);
     expect(screen.getByTestId("ken-calm", HIDDEN)).toBeOnTheScreen();
     mockNow = new Date(2026, 9, 19, 23, 30);

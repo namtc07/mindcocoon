@@ -6,7 +6,7 @@ import { stopReleaseSound } from "@/lib/release-sound";
 import { fonts } from "@/theme/fonts";
 import { useTheme } from "@/theme/theme";
 
-type BoolPref = "releaseSound" | "nightDim" | "writingPrompts" | "voiceGuide";
+type BoolPref = "releaseSound" | "nightDim" | "writingPrompts" | "voiceGuide" | "weeklyLetter";
 
 /** A Settings row with a switch for an on-by-default preference. */
 function PrefSwitch({ pref, label, defaultOn = true }: { pref: BoolPref; label: string; defaultOn?: boolean }) {
@@ -39,6 +39,12 @@ export function ReleaseSoundSetting() {
 export function NightDimSetting() {
   const { t } = useI18n();
   return <PrefSwitch pref="nightDim" label={t.settings.nightDim} />;
+}
+
+/** On by default: Kén's Sunday letter (in the app; as a notification only if notifications are allowed). */
+export function WeeklyLetterSetting() {
+  const { t } = useI18n();
+  return <PrefSwitch pref="weeklyLetter" label={t.letter.setting} />;
 }
 
 /** Off by default: the phone's voice reads breathing phases and practice steps. */

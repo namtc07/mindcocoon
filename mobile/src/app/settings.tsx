@@ -6,7 +6,7 @@ import { Screen } from "@/components/Screen";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { TextField } from "@/components/ui/TextField";
-import { NightDimSetting, ReleaseSoundSetting, VoiceGuideSetting, WritingPromptsSetting } from "@/components/settings/ReleaseSoundSetting";
+import { NightDimSetting, ReleaseSoundSetting, VoiceGuideSetting, WeeklyLetterSetting, WritingPromptsSetting } from "@/components/settings/ReleaseSoundSetting";
 import Constants from "expo-constants";
 import appConfig from "../../app.json";
 import { Download, LifeBuoy, Lock, RotateCcw, ShieldCheck, Sparkles, Trash2 } from "lucide-react-native";
@@ -157,6 +157,7 @@ export default function SettingsScreen() {
 
           <SettingsGroup title={t.settings.reminderTitle} testID="group-reminder">
             <ReminderSettings />
+            <WeeklyLetterSetting />
           </SettingsGroup>
 
           <SettingsGroup title={t.settings.groupUsing} testID="group-using">

@@ -10,6 +10,7 @@ import { Sky } from "@/components/art/Sky";
 import { Screen } from "@/components/Screen";
 import { HeavyNudge } from "@/components/safety/HeavyNudge";
 import { EntryLinks } from "@/components/today/EntryLinks";
+import { LetterCard } from "@/components/today/LetterCard";
 import { QuickCheckin } from "@/components/today/QuickCheckin";
 import { SuggestionCard } from "@/components/today/SuggestionCard";
 import { WorryReadyLine } from "@/components/today/WorryReadyLine";
@@ -73,6 +74,7 @@ export default function TodayScreen() {
       <Text style={{ fontFamily: fonts.sans, fontSize: 14, color: c.mutedForeground, marginTop: -space.sm }}>{formatDay(now, locale)}</Text>
       <View style={styles.sections}>
         <HeavyNudge now={now} />
+        <LetterCard now={now} />
         {/* One keyed list, so blocks move (not remount) when 18:00 / 05:00 comes — a note being typed survives. */}
         {todayOrder(evening, intents)
           .filter((key) => ideas || key !== "prompt")

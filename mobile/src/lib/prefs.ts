@@ -53,6 +53,10 @@ export interface Prefs {
   pro?: { plan: PlanId; since: number };
   /** Development only: plans "bought" in the test store, so Restore can find them. */
   testPurchases?: PlanId[];
+  /** Kén's Sunday letter (on unless set to false). */
+  weeklyLetter?: boolean;
+  /** The Sunday (day key) whose letter was read. */
+  letterReadOn?: string;
   /** Which part of Sanctuary was open last. */
   sanctuaryTab?: "sounds" | "breathe" | "practices";
   /** Optional name for the greeting (device only). */
