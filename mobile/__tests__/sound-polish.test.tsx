@@ -6,6 +6,7 @@ import { ToastHost } from "@/components/ui/Toast";
 import { audio } from "@/lib/audio";
 import { getPref, setPref } from "@/lib/prefs";
 import { playReleaseSound, SFX_SOURCES } from "@/lib/release-sound";
+import { remoteConfig } from "@/lib/remote-config";
 import { renderWithApp } from "@/test-utils/render";
 
 const withToasts = (ui: React.ReactElement) => (
@@ -39,14 +40,24 @@ describe("Sounds never fail silently", () => {
 
   it("a mix that can't play says so and keeps what's playing", async () => {
     const user = userEvent.setup();
+    // Only when extra sounds are locked (remote premium_sounds_locked) can a saved mix be unplayable.
     await act(async () => {
+      await setPref("flags", { value: { adsEnabled: false, rewardedEnabled: false, quietHours: null, premiumSoundsLocked: true }, fetchedAt: Date.now() });
+      remoteConfig.reload();
       await setPref("mixes", [{ id: "a", n: 1, mix: { volumes: { thunder: 0.5 } }, createdAt: "2026-10-19T00:00:00.000Z" }]);
       await audio.play("ocean");
     });
-    await renderWithApp(withToasts(<SanctuaryScreen />));
-    await user.press(await screen.findByRole("button", { name: "My mix 1" }));
-    expect(await screen.findByText("That mix couldn't play.")).toBeOnTheScreen();
-    expect(audio.getState().playing).toEqual(["ocean"]);
+    try {
+      await renderWithApp(withToasts(<SanctuaryScreen />));
+      await user.press(await screen.findByRole("button", { name: "My mix 1" }));
+      expect(await screen.findByText("That mix couldn't play.")).toBeOnTheScreen();
+      expect(audio.getState().playing).toEqual(["ocean"]);
+    } finally {
+      await act(async () => {
+        await setPref("flags", undefined);
+        remoteConfig.reload();
+      });
+    }
   });
 
   it("sliders save once when released, not on every step", async () => {

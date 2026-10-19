@@ -10,6 +10,7 @@ import { useI18n } from "@/i18n/i18n";
 import { audio, useAudio } from "@/lib/audio";
 import { unlockedUntilIn } from "@/lib/unlocks-core";
 import { useUnlocks } from "@/lib/unlocks";
+import { useFlags } from "@/lib/remote-config";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
@@ -124,8 +125,12 @@ export function SoundMixer() {
   const state = useAudio();
   const now = useNow();
   const unlocks = useUnlocks();
+  const flags = useFlags();
   const { offer, busy, unlock, unlockAll } = useRewardedUnlock();
-  const premium = PREMIUM_TRACKS.map((track) => ({ id: track.id, until: unlockedUntilIn(unlocks, track.id, now.getTime()) })).filter(
+  // Extra sounds are free unless the remote premium_sounds_locked switch is on.
+  const locked = flags.premiumSoundsLocked === true;
+  const freeTracks = locked ? AMBIENT_TRACKS : [...AMBIENT_TRACKS, ...PREMIUM_TRACKS];
+  const premium = (locked ? PREMIUM_TRACKS : []).map((track) => ({ id: track.id, until: unlockedUntilIn(unlocks, track.id, now.getTime()) })).filter(
     (p) => p.until !== null || offer,
   );
   const sliderColors = { minimumTrackTintColor: c.primary, maximumTrackTintColor: c.border, thumbTintColor: c.primary };
@@ -137,7 +142,7 @@ export function SoundMixer() {
       {/* The "Sounds" tab names this part; no second heading. */}
       <MixChips />
       <View style={styles.grid}>
-        {AMBIENT_TRACKS.map((track) => (
+        {freeTracks.map((track) => (
           <SoundTile key={track.id} id={track.id} />
         ))}
       </View>

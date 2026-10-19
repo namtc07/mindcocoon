@@ -10,7 +10,7 @@ import { getPref, setPref } from "@/lib/prefs";
 import { remoteConfig } from "@/lib/remote-config";
 import { renderWithApp } from "@/test-utils/render";
 
-const ON: RemoteFlags = { adsEnabled: true, rewardedEnabled: true, quietHours: null };
+const ON: RemoteFlags = { adsEnabled: true, rewardedEnabled: true, quietHours: null, premiumSoundsLocked: true };
 const rewarded = () => (jest.requireMock("react-native-google-mobile-ads") as { __rewarded: { emit(t: string, p?: unknown): void } }).__rewarded;
 
 async function adsOn(flags: RemoteFlags = ON) {

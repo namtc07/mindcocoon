@@ -10,7 +10,7 @@ import { captureFocusEffects } from "@/test-utils/focus";
 import { renderWithApp } from "@/test-utils/render";
 import { AppState, type AppStateStatus } from "react-native";
 
-const ON: RemoteFlags = { adsEnabled: true, rewardedEnabled: true, quietHours: [23, 5] };
+const ON: RemoteFlags = { adsEnabled: true, rewardedEnabled: true, quietHours: [23, 5], premiumSoundsLocked: true };
 const rewarded = () => (jest.requireMock("react-native-google-mobile-ads") as { __rewarded: { emit(t: string, p?: unknown): void; load: jest.Mock; show: jest.Mock } }).__rewarded;
 const UNLOCK = "Watch an ad to unlock Distant thunder for 24 hours";
 const UNLOCK_STREAM = "Watch an ad to unlock Forest stream for 24 hours";

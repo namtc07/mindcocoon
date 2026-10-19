@@ -13,6 +13,7 @@ import { audio, useAudio } from "@/lib/audio";
 import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
 import { isUnlockedIn } from "@/lib/unlocks-core";
 import { useUnlocks } from "@/lib/unlocks";
+import { useFlags } from "@/lib/remote-config";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
@@ -30,7 +31,9 @@ export function MixChips() {
   const now = useNow();
   const unlocks = useUnlocks();
   const saved = useSyncExternalStore(subscribePrefs, readMixes, readMixes);
-  const playable = (id: string) => !PREMIUM.has(id) || isUnlockedIn(unlocks, id, now.getTime());
+  const flags = useFlags();
+  // All sounds are free unless the remote premium_sounds_locked switch is on.
+  const playable = (id: string) => flags.premiumSoundsLocked !== true || !PREMIUM.has(id) || isUnlockedIn(unlocks, id, now.getTime());
   const matches = (mix: Mix) => mixMatches(mix, state.playing, state.volumes);
   const nameOf = (m: SavedMix) => t.sanctuary.myMix.replace("{n}", String(m.n));
   const extra = useSyncExternalStore(subscribePrefs, readExtra, readExtra);

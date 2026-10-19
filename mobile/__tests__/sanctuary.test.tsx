@@ -12,6 +12,7 @@ import { audio } from "@/lib/audio";
 import { fakePlayer } from "@/test-utils/audio";
 import { captureFocusEffects } from "@/test-utils/focus";
 import { getPref, setPref } from "@/lib/prefs";
+import { remoteConfig } from "@/lib/remote-config";
 import { renderWithApp } from "@/test-utils/render";
 import { createAudioPlayer } from "expo-audio";
 import * as Haptics from "expo-haptics";
@@ -320,10 +321,18 @@ describe("Mixes", () => {
 
   it("a saved mix with a now-locked premium sound plays the rest", async () => {
     const user = userEvent.setup();
+    await act(async () => {
+      await setPref("flags", { value: { adsEnabled: false, rewardedEnabled: false, quietHours: null, premiumSoundsLocked: true }, fetchedAt: Date.now() });
+      remoteConfig.reload();
+    });
     await act(() => setPref("mixes", [{ id: "a", n: 1, mix: { volumes: { rain: 0.5, thunder: 0.5 } }, createdAt: "2026-10-18T00:00:00.000Z" }]));
     await renderWithApp(<SanctuaryScreen />);
     await user.press(await screen.findByRole("button", { name: "My mix 1" }));
     await waitFor(() => expect(audio.getState().playing).toEqual(["rain"]));
+    await act(async () => {
+      await setPref("flags", undefined);
+      remoteConfig.reload();
+    });
   });
 });
 

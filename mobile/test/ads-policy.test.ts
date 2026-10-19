@@ -6,7 +6,7 @@ const at = (h: number, m = 0) => new Date(2026, 9, 17, h, m);
 
 describe("parseFlags", () => {
   it("defaults keep ads off", () => {
-    expect(DEFAULT_FLAGS).toEqual({ adsEnabled: false, rewardedEnabled: false, quietHours: [23, 5], adFreeEnabled: true, adFreeHours: 24 });
+    expect(DEFAULT_FLAGS).toEqual({ adsEnabled: false, rewardedEnabled: false, quietHours: [23, 5], adFreeEnabled: true, adFreeHours: 24, premiumSoundsLocked: false });
     expect(parseFlags([])).toEqual(DEFAULT_FLAGS);
   });
 
@@ -50,6 +50,14 @@ describe("ad-free switches", () => {
     for (const bad of [0, 73, 1.5, "12", null, -3]) expect(parseFlags([{ key: "ad_free_hours", value: bad }]).adFreeHours).toBe(24);
     expect(parseFlags([{ key: "ad_free_hours", value: 72 }]).adFreeHours).toBe(72);
     expect(parseFlags([{ key: "ad_free_enabled", value: "no" }]).adFreeEnabled).toBe(true);
+  });
+});
+
+describe("premium sounds switch", () => {
+  it("sounds are all free unless premium_sounds_locked is true", () => {
+    expect(parseFlags([]).premiumSoundsLocked).toBe(false);
+    expect(parseFlags([{ key: "premium_sounds_locked", value: true }]).premiumSoundsLocked).toBe(true);
+    expect(parseFlags([{ key: "premium_sounds_locked", value: "yes" }]).premiumSoundsLocked).toBe(false);
   });
 });
 
