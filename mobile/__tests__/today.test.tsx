@@ -100,4 +100,36 @@ describe("Today", () => {
     await user.press(await screen.findByRole("button", { name: "Write about this" }));
     expect(router.push).toHaveBeenCalledWith({ pathname: "/vent", params: { prompt: "0" } });
   });
+
+  describe("feeling words", () => {
+    it("picking a feeling word after a quick check-in saves it", async () => {
+      const user = userEvent.setup();
+      await renderWithApp(<TodayScreen />);
+      await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+      expect(await screen.findByText("More precisely?")).toBeOnTheScreen();
+      await user.press(screen.getByRole("button", { name: "lonely" }));
+      await waitFor(async () => expect((await getStorage().moods.list())[0].feelings).toEqual(["lonely"]));
+      expect(screen.getByRole("button", { name: "lonely" })).toBeSelected();
+    });
+
+    it("at most three words", async () => {
+      const user = userEvent.setup();
+      await renderWithApp(<TodayScreen />);
+      await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+      for (const w of ["lonely", "sad", "hurt", "exhausted"]) await user.press(await screen.findByRole("button", { name: w }));
+      await waitFor(async () => expect((await getStorage().moods.list())[0].feelings).toEqual(["lonely", "sad", "hurt"]));
+      expect(screen.getByRole("button", { name: "exhausted" })).not.toBeSelected();
+    });
+
+    it("changing the mood shows that mood's words and drops the old ones", async () => {
+      const user = userEvent.setup();
+      await renderWithApp(<TodayScreen />);
+      await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+      await user.press(await screen.findByRole("button", { name: "lonely" }));
+      await user.press(screen.getByRole("radio", { name: "Anxious" }));
+      expect(await screen.findByRole("button", { name: "worried" })).toBeOnTheScreen();
+      expect(screen.queryByRole("button", { name: "lonely" })).not.toBeOnTheScreen();
+      await waitFor(async () => expect((await getStorage().moods.list())[0].feelings).toBeUndefined());
+    });
+  });
 });

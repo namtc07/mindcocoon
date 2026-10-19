@@ -4,6 +4,7 @@ import type { MoodType } from "@mindcocoon/core/types";
 import { VaultLockedError, unlockWithPasscode } from "@mindcocoon/core/vault/session";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { FeelingChips } from "@/components/mood/FeelingChips";
 import { MoodPicker } from "@/components/mood/MoodPicker";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -32,6 +33,7 @@ export function CheckinForm() {
   const locked = vault.status === "locked";
   const [mood, setMood] = useState<MoodType | null>(null);
   const [tags, setTags] = useState<string[]>([]);
+  const [feelings, setFeelings] = useState<string[]>([]);
   const [customTags, setCustomTags] = useState<string[]>(() => getPref("customTags") ?? []);
   const [newTag, setNewTag] = useState("");
   const [note, setNote] = useState("");
@@ -57,10 +59,11 @@ export function CheckinForm() {
         setError(t.vault.wrongPasscode);
         return;
       }
-      await addMood({ mood, tags, note });
+      await addMood({ mood, tags, note, feelings });
       toast.show(t.moodPage.saved);
       setMood(null);
       setTags([]);
+      setFeelings([]);
       setNote("");
       setPasscode("");
     } catch (e) {
@@ -73,7 +76,16 @@ export function CheckinForm() {
       <Text accessibilityRole="header" style={[styles.h, { color: c.foreground }]}>
         {t.moodPage.checkIn}
       </Text>
-      <MoodPicker value={mood} onChange={setMood} label={t.today.checkinQuestion} size="md" />
+      <MoodPicker
+        value={mood}
+        onChange={(m) => {
+          setMood(m);
+          setFeelings([]);
+        }}
+        label={t.today.checkinQuestion}
+        size="md"
+      />
+      {mood && <FeelingChips mood={mood} value={feelings} onChange={setFeelings} />}
       <Text style={[styles.label, { color: c.mutedForeground }]}>{t.moodPage.tagsLabel}</Text>
       <View style={styles.tags}>
         {[...DEFAULT_TAGS, ...customTags].map((tag) => (

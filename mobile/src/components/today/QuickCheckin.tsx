@@ -6,6 +6,7 @@ import { VaultLockedError, unlockWithPasscode } from "@mindcocoon/core/vault/ses
 import { Check } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { FeelingChips } from "@/components/mood/FeelingChips";
 import { MoodPicker } from "@/components/mood/MoodPicker";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -47,6 +48,11 @@ export function QuickCheckin() {
     setMessage(t.today.saved);
   }
 
+  async function pickFeelings(feelings: string[]) {
+    if (!today) return;
+    setSaved(await updateMoodDetails(today, { tags: today.tags, feelings }));
+  }
+
   async function saveDetails() {
     if (!today) return;
     try {
@@ -78,6 +84,7 @@ export function QuickCheckin() {
           </>
         )}
       </View>
+      {today && <FeelingChips mood={today.mood} value={today.feelings ?? []} onChange={(f) => void pickFeelings(f)} />}
       {today && !open && (
         <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setOpen(true)} style={styles.link}>
           <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground, textDecorationLine: "underline" }}>

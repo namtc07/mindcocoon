@@ -82,4 +82,15 @@ describe("Mood journey", () => {
     await waitFor(async () => expect(await getStorage().moods.list()).toEqual([]));
     await waitFor(() => expect(within(screen.getByLabelText("This week")).getAllByRole("listitem")[6]).not.toHaveAccessibleName(/anxious/i));
   });
+
+  it("the full form saves feelings and the day detail shows them", async () => {
+    const user = await setup();
+    const form = await screen.findByLabelText("Check in");
+    await user.press(within(form).getByRole("radio", { name: "Anxious" }));
+    await user.press(within(form).getByRole("button", { name: "overwhelmed" }));
+    await user.press(within(form).getByRole("button", { name: "Save check-in" }));
+    await waitFor(async () => expect((await getStorage().moods.list())[0].feelings).toEqual(["overwhelmed"]));
+    await user.press(screen.getByRole("button", { name: /anxious.*today/i }));
+    expect(await screen.findByText(/overwhelmed/)).toBeOnTheScreen();
+  });
 });

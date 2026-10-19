@@ -11,11 +11,13 @@ import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 import { useTagLabel } from "./CheckinForm";
+import { useFeelingLabels } from "./FeelingChips";
 
 function LogRow({ log }: { log: MoodLog }) {
   const { t, locale } = useI18n();
   const { c } = useTheme();
   const tagLabel = useTagLabel();
+  const feelingLabels = useFeelingLabels();
   const [note, setNote] = useState<string | null>(null);
   const vaultStatus = useSyncExternalStore(subscribeVault, () => getVaultState().status, () => getVaultServerState().status);
   useEffect(() => {
@@ -37,6 +39,7 @@ function LogRow({ log }: { log: MoodLog }) {
         <Text style={{ fontFamily: fonts.sansMedium, fontSize: 15, color: c.foreground }}>
           {t.mood.states[log.mood].label} · {formatTime(log.createdAt, locale)}
         </Text>
+        {(log.feelings?.length ?? 0) > 0 && <Text style={{ fontFamily: fonts.sans, fontSize: 14, color: c.foreground }}>{feelingLabels(log.feelings)}</Text>}
         {log.tags.length > 0 && <Text style={{ fontFamily: fonts.sans, fontSize: 14, color: c.mutedForeground }}>{log.tags.map(tagLabel).join(", ")}</Text>}
         {shownNote ? <Text style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 25, color: c.foreground }}>{shownNote}</Text> : null}
       </View>
