@@ -117,15 +117,15 @@ const N = MOODS.length;
 const SLOTS = Array.from({ length: N * ARC_COPIES }, (_, i) => ({ slot: i, mood: MOODS[i % N], copy: Math.floor(i / N) }));
 /** Index of a mood's slot in the middle copy. */
 const middleSlot = (moodIndex: number) => ARC_MIDDLE * N + moodIndex;
-/** Room above for the rising neighbours, and below so the middle label is never cut off. */
-const RISE = 40;
-const BELOW = 18;
+/** Room above for the rising neighbours (at most 2.5² × 4.5 ≈ 28), and below so the middle label is never cut off. */
+const RISE = 28;
+const BELOW = 12;
 
 function ArcOrb({ index, scrollX, children }: { index: number; scrollX: SharedValue<number>; children: ReactNode }) {
   // The middle orb is lowest; neighbours rise and fade — a soft smile-shaped arc.
   const style = useAnimatedStyle(() => {
     const d = Math.min(Math.abs(index * ARC_ITEM - scrollX.get()) / ARC_ITEM, 2.5);
-    return { opacity: 1 - d * 0.26, transform: [{ translateY: -d * d * 6 }] };
+    return { opacity: 1 - d * 0.26, transform: [{ translateY: -d * d * 4.5 }] };
   });
   return <Animated.View style={[styles.slot, style]}>{children}</Animated.View>;
 }
@@ -386,13 +386,13 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", justifyContent: "space-between", gap: 4 },
   item: { flex: 1, alignItems: "center", gap: 8, minHeight: 44, paddingVertical: 4 },
   label: { fontFamily: fonts.sans, fontSize: 12, textAlign: "center", lineHeight: 15 },
-  orbs: { gap: space.sm },
+  orbs: { gap: space.xs },
   arc: { flexDirection: "row" },
   slot: { width: ARC_ITEM, alignItems: "center" },
   cell: { alignItems: "center", gap: 10, minHeight: 44, width: ARC_ITEM },
   halo: { borderRadius: ORB, padding: 6 },
   glow: { borderRadius: ORB },
   orbLabel: { fontFamily: fonts.sansMedium, fontSize: 12 },
-  // Two lines are always reserved, so a longer description never pushes the page down.
-  caption: { minHeight: 46, fontFamily: fonts.serif, fontSize: 17, lineHeight: 23, textAlign: "center" },
+  // One line is always reserved, so the caption appearing never pushes the page down.
+  caption: { minHeight: 23, fontFamily: fonts.serif, fontSize: 17, lineHeight: 23, textAlign: "center" },
 });

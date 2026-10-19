@@ -27,6 +27,12 @@ const stored = async () => (await getStorage().moods.list()).map((l) => l.mood);
 afterEach(() => jest.useRealTimers());
 
 describe("Today", () => {
+  it("no empty space is held for the saved message while choosing", async () => {
+    await renderWithApp(<TodayScreen />);
+    await screen.findByRole("radio", { name: "Heavy" });
+    expect(screen.queryByTestId("checkin-message")).not.toBeOnTheScreen();
+  });
+
   it("choosing a mood saves nothing until Save", async () => {
     const user = userEvent.setup();
     await renderWithApp(<TodayScreen />);

@@ -85,7 +85,7 @@ export default function TodayScreen() {
 }
 
 const styles = StyleSheet.create({
-  sections: { gap: space.xxl, marginTop: space.lg },
-  group: { gap: space.xxl },
+  sections: { gap: space.xl, marginTop: space.lg },
+  group: { gap: space.lg },
   ken: { position: "absolute", right: space.xl, bottom: -space.sm },
 });

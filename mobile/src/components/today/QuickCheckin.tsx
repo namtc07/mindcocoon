@@ -177,14 +177,12 @@ export function QuickCheckin() {
           </View>
         )
       )}
-      <View accessibilityLiveRegion="polite" style={styles.message}>
-        {today && !picking && message && (
-          <>
-            <Check size={16} color={c.primary} />
-            <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.primary }}>{message}</Text>
-          </>
-        )}
-      </View>
+      {today && !picking && message && (
+        <View testID="checkin-message" accessibilityLiveRegion="polite" style={styles.message}>
+          <Check size={16} color={c.primary} />
+          <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.primary }}>{message}</Text>
+        </View>
+      )}
       {today && !picking && !open && (
         <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setOpen(true)} style={styles.link}>
           <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground, textDecorationLine: "underline" }}>
@@ -218,9 +216,9 @@ export function QuickCheckin() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: space.lg },
+  wrap: { gap: space.md },
   question: { fontFamily: fonts.sans, fontSize: 15 },
-  message: { flexDirection: "row", alignItems: "center", gap: 6, minHeight: 22 },
+  message: { flexDirection: "row", alignItems: "center", gap: 6 },
   link: { minHeight: 44, justifyContent: "center", alignSelf: "flex-start" },
   details: { gap: space.lg },
   tags: { flexDirection: "row", flexWrap: "wrap", gap: space.sm },
