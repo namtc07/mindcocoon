@@ -63,8 +63,8 @@ export function SuggestionCard({ now }: { now: Date }) {
         name={mixName}
         onPress={() =>
           void playPreset(s.mix)
-            .then(() => toast.show(t.suggest.playing.replace("{name}", mixName)))
-            .catch(() => toast.show(t.sanctuary.playError))
+            .then((started) => toast.show(started > 0 ? t.suggest.playing.replace("{name}", mixName) : t.sanctuary.mixError))
+            .catch(() => toast.show(t.sanctuary.mixError))
         }
       />
       {practice && <Row Icon={Flower2} kind={t.suggest.try} name={practice.title} onPress={() => openPractice(practice.id)} />}

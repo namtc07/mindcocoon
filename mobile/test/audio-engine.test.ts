@@ -350,6 +350,28 @@ describe("restorePrefs", () => {
   });
 });
 
+describe("applyMix result and saving", () => {
+  it("tells how many sounds started, and leaves the current mix alone when none can", async () => {
+    const { engine } = setup();
+    await engine.play("ocean");
+    expect(await engine.applyMix({ volumes: { rain: 0.5 } }, () => true)).toBe(1);
+    expect(await engine.applyMix({ volumes: { rain: 0.5, ocean: 0.3 } }, (id) => id !== "ocean")).toBe(1);
+    expect(await engine.applyMix({ volumes: { thunder: 0.5 } }, () => false)).toBe(0);
+    expect(engine.getState().playing).toEqual(["rain"]);
+  });
+
+  it("a volume can be changed without saving, then saved once", async () => {
+    let saves = 0;
+    const { engine } = setup({ savePrefs: () => void saves++ });
+    engine.setTrackVolume("rain", 0.3, false);
+    engine.setMasterVolume(0.5, false);
+    expect(saves).toBe(0);
+    expect(engine.getState().volumes.rain).toBe(0.3);
+    engine.setTrackVolume("rain", 0.31);
+    expect(saves).toBe(1);
+  });
+});
+
 describe("applyMix", () => {
   it("stops sounds outside the mix and sets volumes", async () => {
     const { engine } = setup();

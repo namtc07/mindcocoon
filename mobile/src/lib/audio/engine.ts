@@ -70,8 +70,9 @@ export interface AudioEngine {
   pauseAll(): void;
   resumeAll(): Promise<void>;
   stopAll(): void;
-  setTrackVolume(id: string, volume: number): void;
-  setMasterVolume(master: number): void;
+  /** `save: false` while a slider is dragged; save once when it is released. */
+  setTrackVolume(id: string, volume: number, save?: boolean): void;
+  setMasterVolume(master: number, save?: boolean): void;
   setLoop(loop: boolean): void;
   setSleepTimer(minutes: SleepMinutes | null): void;
   /** Sleep-timer check; runs every second while a timer is set and when the app returns to the foreground. */
@@ -80,7 +81,8 @@ export interface AudioEngine {
   /** Stops everything, drops the players and returns to defaults (ignoring stored prefs). */
   reset(): void;
   /** Plays exactly this mix (sounds outside it stop; the sleep timer keeps running); unplayable ids are skipped. */
-  applyMix(mix: { volumes: Record<string, number> }, playable: (id: string) => boolean): Promise<void>;
+  /** Resolves to how many of the mix's sounds started (0 → nothing changed). */
+  applyMix(mix: { volumes: Record<string, number> }, playable: (id: string) => boolean): Promise<number>;
   /** Forget the prepared audio session (something else changed it); the next play prepares it again. */
   invalidateSession(): void;
   /** Re-reads stored prefs (they load asynchronously after the engine is created at startup). */
@@ -325,15 +327,15 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
       setState({ playing: [], held: [], sleepEndsAt: null, sleepMinutes: null });
     },
 
-    setTrackVolume(id, volume) {
+    setTrackVolume(id, volume, save = true) {
       setState({ volumes: { ...state.volumes, [id]: volume } });
-      savePrefs();
+      if (save) savePrefs();
       applyVolumes();
     },
 
-    setMasterVolume(master) {
+    setMasterVolume(master, save = true) {
       setState({ master });
-      savePrefs();
+      if (save) savePrefs();
       applyVolumes();
     },
 
@@ -376,6 +378,7 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
       const targets = Object.entries(mix.volumes)
         .filter(([id, v]) => v > 0 && deps.trackIds.includes(id) && playable(id))
         .map(([id]) => id);
+      if (targets.length === 0) return 0; // nothing playable: keep what's playing
       const volumes = { ...state.volumes };
       targets.forEach((id) => {
         volumes[id] = mix.volumes[id];
@@ -389,7 +392,8 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
       setState({ volumes, playing: state.playing.filter((id) => targets.includes(id)), held: [] });
       savePrefs();
       applyVolumes();
-      await Promise.allSettled(targets.map((id) => engine.play(id)));
+      const results = await Promise.allSettled(targets.map((id) => engine.play(id)));
+      return results.filter((r) => r.status === "fulfilled").length;
     },
 
     invalidateSession() {

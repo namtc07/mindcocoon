@@ -14,7 +14,7 @@ export async function openSuggestedBreathing(breath: Suggestion["breath"]) {
 /** Plays a ready-made mix (presets only use free sounds). */
 export function playPreset(id: PresetMixId) {
   const preset = PRESET_MIXES.find((p) => p.id === id);
-  return preset ? audio.applyMix(preset.mix, () => true) : Promise.resolve();
+  return preset ? audio.applyMix(preset.mix, () => true) : Promise.resolve(0);
 }
 
 export function openPractice(id: PracticeId) {

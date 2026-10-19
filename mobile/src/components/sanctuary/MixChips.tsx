@@ -33,7 +33,24 @@ export function MixChips() {
   const full = saved.length >= MAX_SAVED_MIXES;
 
   function play(mix: Mix) {
-    audio.applyMix(mix, playable).catch(() => toast.show(t.sanctuary.playError));
+    audio
+      .applyMix(mix, playable)
+      .then((started) => {
+        if (started === 0) toast.show(t.sanctuary.mixError);
+      })
+      .catch(() => toast.show(t.sanctuary.mixError));
+  }
+
+  /** Removing is one tap, so it can be undone for a few seconds. */
+  function remove(m: SavedMix) {
+    void setPref("mixes", saved.filter((x) => x.id !== m.id));
+    toast.show(t.sanctuary.mixRemoved.replace("{name}", nameOf(m)), {
+      label: t.sanctuary.undo,
+      onPress: () => {
+        const current = getPref("mixes") ?? [];
+        if (!current.some((x) => x.id === m.id)) void setPref("mixes", [...current, m].sort((a, b) => a.n - b.n));
+      },
+    });
   }
 
   async function save() {
@@ -63,7 +80,7 @@ export function MixChips() {
               accessibilityRole="button"
               accessibilityLabel={t.sanctuary.removeMix.replace("{name}", nameOf(m))}
               hitSlop={8}
-              onPress={() => void setPref("mixes", saved.filter((x) => x.id !== m.id))}
+              onPress={() => remove(m)}
               style={styles.remove}
             >
               <X size={14} color={c.mutedForeground} />

@@ -37,7 +37,8 @@ function TrackRow({ id, note }: { id: string; note?: string }) {
           minimumValue={0}
           maximumValue={1}
           step={0.01}
-          onValueChange={(v) => audio.setTrackVolume(id, v)}
+          onValueChange={(v) => audio.setTrackVolume(id, v, false)}
+          onSlidingComplete={(v) => audio.setTrackVolume(id, v)}
           accessibilityLabel={t.sanctuary.volumeFor.replace("{name}", name)}
           minimumTrackTintColor={c.primary}
           maximumTrackTintColor={c.border}
@@ -118,7 +119,8 @@ export function SoundMixer() {
             minimumValue={0}
             maximumValue={1}
             step={0.01}
-            onValueChange={(v) => audio.setMasterVolume(v)}
+            onValueChange={(v) => audio.setMasterVolume(v, false)}
+            onSlidingComplete={(v) => audio.setMasterVolume(v)}
             accessibilityLabel={t.sanctuary.master}
             {...sliderColors}
           />

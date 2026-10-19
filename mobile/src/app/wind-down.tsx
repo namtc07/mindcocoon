@@ -18,7 +18,7 @@ import { toast } from "@/components/ui/Toast";
 import { useMoodLogs } from "@/hooks/use-mood-logs";
 import { useNow } from "@/hooks/use-now";
 import { useI18n } from "@/i18n/i18n";
-import { audio } from "@/lib/audio";
+import { audio, useAudio } from "@/lib/audio";
 import type { SleepMinutes } from "@/lib/audio/engine";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
@@ -39,7 +39,8 @@ export default function WindDownScreen() {
   const todayLog = logs.find((l) => dayKeyFromISO(l.createdAt) === dayKey(now)) ?? null;
   const [step, setStep] = useState<Step>("checkin");
   const [mood, setMood] = useState<MoodType | null>(null);
-  const [mixChoice, setMixChoice] = useState<PresetMixId | null>(null);
+  const [mixChoice, setMixChoice] = useState<PresetMixId | "keep" | null>(null);
+  const { playing } = useAudio();
   const [minutes, setMinutes] = useState<SleepMinutes>(30);
   const [starting, setStarting] = useState(false);
   // Mood taps are saved one after another on today's check-in as it is by then (never duplicated).
@@ -47,7 +48,8 @@ export default function WindDownScreen() {
 
   const currentMood = mood ?? todayLog?.mood ?? null;
   const suggestion = currentMood ? suggestionFor(currentMood) : null;
-  const mix = mixChoice ?? suggestion?.mix ?? "rainy-night";
+  // If something is already playing, the default is to keep it (Goodnight then only sets the timer).
+  const mix = mixChoice ?? (playing.length > 0 ? "keep" : (suggestion?.mix ?? "rainy-night"));
 
   function pickMood(next: MoodType) {
     setMood(next);
@@ -64,7 +66,10 @@ export default function WindDownScreen() {
     setStarting(true);
     const preset = PRESET_MIXES.find((p) => p.id === mix);
     try {
-      if (preset) await audio.applyMix(preset.mix, () => true);
+      if (preset && (await audio.applyMix(preset.mix, () => true)) === 0) {
+        toast.show(t.sanctuary.mixError);
+        return;
+      }
       audio.setSleepTimer(minutes);
       setStep("night");
     } catch {
@@ -113,6 +118,11 @@ export default function WindDownScreen() {
           <View style={styles.step}>
             <Text style={[styles.h, { color: c.foreground }]}>{t.windDown.soundsTitle}</Text>
             <View style={styles.chips}>
+              {playing.length > 0 && (
+                <Chip selected={mix === "keep"} onPress={() => setMixChoice("keep")}>
+                  {t.windDown.keepPlaying}
+                </Chip>
+              )}
               {PRESET_MIXES.map((p) => (
                 <Chip key={p.id} selected={mix === p.id} onPress={() => setMixChoice(p.id)}>
                   {t.sanctuary.presets[p.id]}

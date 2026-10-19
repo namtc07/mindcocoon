@@ -2,6 +2,7 @@ import { useSyncExternalStore } from "react";
 import { StyleSheet, Switch, Text, View } from "react-native";
 import { useI18n } from "@/i18n/i18n";
 import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
+import { stopReleaseSound } from "@/lib/release-sound";
 import { fonts } from "@/theme/fonts";
 import { useTheme } from "@/theme/theme";
 
@@ -18,7 +19,10 @@ function PrefSwitch({ pref, label }: { pref: BoolPref; label: string }) {
       <Switch
         accessibilityLabel={label}
         value={enabled}
-        onValueChange={(v) => void setPref(pref, v)}
+        onValueChange={(v) => {
+          if (pref === "releaseSound" && !v) stopReleaseSound();
+          void setPref(pref, v);
+        }}
         trackColor={{ true: c.primary, false: c.muted }}
       />
     </View>
