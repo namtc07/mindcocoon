@@ -380,7 +380,7 @@ export const vi: Dictionary = {
   settings: {
     adPrivacy: "Lựa chọn quyền riêng tư quảng cáo",
     nightDim: "Dịu màn hình sau 22 giờ",
-    adFreeWithAd: "Xem một quảng cáo để tắt quảng cáo trong 24 giờ",
+    adFreeWithAd: "Xem một quảng cáo để tắt quảng cáo trong {hours} giờ",
     adFreeUntil: "Đã tắt quảng cáo đến {time}",
     writingPrompts: "Gợi ý viết ở Hôm nay",
     releaseSound: "Âm thanh khi thả đi",
@@ -483,7 +483,7 @@ export const vi: Dictionary = {
     label: "Quảng cáo",
     hideToday: "Ẩn quảng cáo này hôm nay",
     hidden: "Đã ẩn tới ngày mai.",
-    adFree24h: "Tắt quảng cáo 24 giờ",
+    adFree24h: "Tắt quảng cáo {hours} giờ",
   },
   pwa: {
     installTitle: "Giữ MindCocoon trên màn hình chính",

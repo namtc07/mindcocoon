@@ -379,7 +379,7 @@ export const en = {
   settings: {
     adPrivacy: "Ad privacy choices",
     nightDim: "Dim after 10 pm",
-    adFreeWithAd: "Watch one ad to turn ads off for 24 hours",
+    adFreeWithAd: "Watch one ad to turn ads off for {hours} hours",
     adFreeUntil: "Ads are off until {time}",
     writingPrompts: "Writing ideas on Today",
     releaseSound: "Sound when letting go",
@@ -482,7 +482,7 @@ export const en = {
     label: "Ad",
     hideToday: "Hide this ad for today",
     hidden: "Hidden until tomorrow.",
-    adFree24h: "No ads for 24 hours",
+    adFree24h: "No ads for {hours} hours",
   },
   pwa: {
     installTitle: "Keep MindCocoon on your home screen",

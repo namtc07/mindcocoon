@@ -14,14 +14,14 @@ jest.mock("@/hooks/use-now", () => ({ useNow: () => mockNow }));
 const ON: RemoteFlags = { adsEnabled: true, rewardedEnabled: true, quietHours: null };
 const rewarded = () => (jest.requireMock("react-native-google-mobile-ads") as { __rewarded: { emit(t: string, p?: unknown): void } }).__rewarded;
 
-async function adsOn() {
+async function adsOn(flags: RemoteFlags = ON) {
   jest.clearAllMocks();
   __resetAdsForTests();
   await renderWithApp(<></>);
   await act(async () => {
     await setPref("nativeHiddenOn", undefined);
     await setPref("adFreeUntil", undefined);
-    await setPref("flags", { value: ON, fetchedAt: Date.now() });
+    await setPref("flags", { value: flags, fetchedAt: Date.now() });
     remoteConfig.reload();
     await startAds();
   });
@@ -87,5 +87,30 @@ describe("Ads off for 24 hours", () => {
     await screen.findByText(/Good/);
     expect(screen.queryByTestId("ad-banner")).not.toBeOnTheScreen();
     expect(screen.queryByTestId("native-ad")).not.toBeOnTheScreen();
+  });
+});
+
+describe("Remote switches for the ad-free option", () => {
+  it("ad_free_enabled = false hides the offer everywhere", async () => {
+    await adsOn({ ...ON, adFreeEnabled: false });
+    const user = userEvent.setup();
+    await renderWithApp(<SettingsScreen />, { keepState: true });
+    await screen.findByText("Settings");
+    expect(screen.queryByRole("button", { name: "Watch one ad to turn ads off for 24 hours" })).not.toBeOnTheScreen();
+    await renderWithApp(today, { keepState: true });
+    await user.press(await screen.findByRole("button", { name: "Hide this ad for today" }));
+    expect(await screen.findByText("Hidden until tomorrow.")).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: /No ads for/ })).not.toBeOnTheScreen();
+  });
+
+  it("ad_free_hours sets how long it lasts, and the wording follows", async () => {
+    await adsOn({ ...ON, adFreeHours: 12 });
+    const user = userEvent.setup();
+    await renderWithApp(<SettingsScreen />, { keepState: true });
+    await user.press(await screen.findByRole("button", { name: "Watch one ad to turn ads off for 12 hours" }));
+    await earn();
+    const until = getPref("adFreeUntil") ?? 0;
+    expect(until).toBeGreaterThan(Date.now() + 11.9 * 3600_000);
+    expect(until).toBeLessThan(Date.now() + 12.1 * 3600_000);
   });
 });

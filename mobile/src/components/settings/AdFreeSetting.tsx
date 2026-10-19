@@ -9,13 +9,13 @@ import { useAdFreeUntil } from "@/lib/ads/ad-free";
 import { fonts } from "@/theme/fonts";
 import { useTheme } from "@/theme/theme";
 
-/** "Watch one ad to turn ads off for 24 hours" — or, while it lasts, until when. Only when rewarded ads are on. */
+/** "Watch one ad to turn ads off for N hours" (remote ad_free_*) — or, while it lasts, until when. */
 export function AdFreeSetting() {
   const { t, locale } = useI18n();
   const { c } = useTheme();
   const now = useNow();
   const until = useAdFreeUntil();
-  const { offer, busy, adFree24h } = useRewardedUnlock();
+  const { adFreeOffer, adFreeHours, busy, adFree } = useRewardedUnlock();
   if (until > now.getTime()) {
     return (
       <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground }}>
@@ -23,18 +23,18 @@ export function AdFreeSetting() {
       </Text>
     );
   }
-  if (!offer) return null;
+  if (!adFreeOffer) return null;
   return (
     <Button
       variant="outline"
       disabled={busy}
       onPress={() =>
-        void adFree24h().then((r) => {
+        void adFree().then((r) => {
           if (r === "unavailable") toast.show(t.sanctuary.adUnavailable);
         })
       }
     >
-      {t.settings.adFreeWithAd}
+      {t.settings.adFreeWithAd.replace("{hours}", String(adFreeHours))}
     </Button>
   );
 }

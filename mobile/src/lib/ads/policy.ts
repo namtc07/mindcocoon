@@ -13,10 +13,14 @@ export interface RemoteFlags {
   rewardedEnabled: boolean;
   /** [startHour, endHour) in local time, may wrap past midnight; null = no quiet hours. */
   quietHours: [number, number] | null;
+  /** "Watch one ad, no ads for a while" is offered (on unless set to false). */
+  adFreeEnabled?: boolean;
+  /** How long that lasts, in whole hours 1–72 (24 unless set). */
+  adFreeHours?: number;
 }
 
 /** Ads stay off until the remote flag turns them on. */
-export const DEFAULT_FLAGS: RemoteFlags = { adsEnabled: false, rewardedEnabled: false, quietHours: [23, 5] };
+export const DEFAULT_FLAGS: RemoteFlags = { adsEnabled: false, rewardedEnabled: false, quietHours: [23, 5], adFreeEnabled: true, adFreeHours: 24 };
 
 const isHour = (n: unknown): n is number => typeof n === "number" && Number.isInteger(n) && n >= 0 && n <= 23;
 
@@ -37,6 +41,8 @@ export function parseFlags(rows: unknown): RemoteFlags {
     const { key, value } = row as { key?: unknown; value?: unknown };
     if (key === "ads_enabled" && typeof value === "boolean") flags.adsEnabled = value;
     else if (key === "rewarded_enabled" && typeof value === "boolean") flags.rewardedEnabled = value;
+    else if (key === "ad_free_enabled" && typeof value === "boolean") flags.adFreeEnabled = value;
+    else if (key === "ad_free_hours" && typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 72) flags.adFreeHours = value;
     else if (key === "quiet_hours") {
       const parsed = parseQuietHours(value);
       if (parsed !== undefined) flags.quietHours = parsed;

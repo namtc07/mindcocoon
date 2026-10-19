@@ -6,7 +6,7 @@ const at = (h: number, m = 0) => new Date(2026, 9, 17, h, m);
 
 describe("parseFlags", () => {
   it("defaults keep ads off", () => {
-    expect(DEFAULT_FLAGS).toEqual({ adsEnabled: false, rewardedEnabled: false, quietHours: [23, 5] });
+    expect(DEFAULT_FLAGS).toEqual({ adsEnabled: false, rewardedEnabled: false, quietHours: [23, 5], adFreeEnabled: true, adFreeHours: 24 });
     expect(parseFlags([])).toEqual(DEFAULT_FLAGS);
   });
 
@@ -17,7 +17,7 @@ describe("parseFlags", () => {
         { key: "rewarded_enabled", value: true },
         { key: "quiet_hours", value: [0, 6] },
       ]),
-    ).toEqual({ adsEnabled: true, rewardedEnabled: true, quietHours: [0, 6] });
+    ).toEqual({ ...DEFAULT_FLAGS, adsEnabled: true, rewardedEnabled: true, quietHours: [0, 6] });
     expect(parseFlags([{ key: "quiet_hours", value: null }]).quietHours).toBeNull();
   });
 
@@ -31,6 +31,23 @@ describe("parseFlags", () => {
     expect(parseFlags([{ key: "quiet_hours", value: [1.5, 3] }]).quietHours).toEqual([23, 5]);
     expect(parseFlags("oops")).toEqual(DEFAULT_FLAGS);
     expect(parseFlags([null, 3, { key: 1 }])).toEqual(DEFAULT_FLAGS);
+  });
+});
+
+describe("ad-free switches", () => {
+  it("reads ad_free_enabled and ad_free_hours", () => {
+    const flags = parseFlags([
+      { key: "ad_free_enabled", value: false },
+      { key: "ad_free_hours", value: 12 },
+    ]);
+    expect(flags.adFreeEnabled).toBe(false);
+    expect(flags.adFreeHours).toBe(12);
+  });
+
+  it("hours must be a whole number from 1 to 72; anything else keeps 24", () => {
+    for (const bad of [0, 73, 1.5, "12", null, -3]) expect(parseFlags([{ key: "ad_free_hours", value: bad }]).adFreeHours).toBe(24);
+    expect(parseFlags([{ key: "ad_free_hours", value: 72 }]).adFreeHours).toBe(72);
+    expect(parseFlags([{ key: "ad_free_enabled", value: "no" }]).adFreeEnabled).toBe(true);
   });
 });
 

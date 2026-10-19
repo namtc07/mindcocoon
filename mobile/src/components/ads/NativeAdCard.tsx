@@ -34,15 +34,16 @@ export function NativeAdCard({ placement }: { placement: "today" | "mood" }) {
   const now = useNow();
   const adFreeUntil = useAdFreeUntil();
   const hiddenOn = useSyncExternalStore(subscribePrefs, readHidden, readHidden);
-  const { offer, adFree24h } = useRewardedUnlock();
+  const { adFreeOffer, adFreeHours, adFree } = useRewardedUnlock();
   // Hidden by the person for today, or ads off for 24 hours: no request at all.
   const allowed =
     canShowBanner({ placement, now, flags, ready }) && hiddenOn !== dayKey(now) && now.getTime() >= adFreeUntil;
 
-  /** × : gone until tomorrow; then, only if they want, one short ad turns all ads off for a day. */
+  /** × : gone until tomorrow; then, only if they want, one short ad turns all ads off for a while. */
   function hide() {
     void setPref("nativeHiddenOn", dayKey(now));
-    toast.show(t.ads.hidden, offer ? { label: t.ads.adFree24h, onPress: () => void adFree24h() } : undefined);
+    const label = t.ads.adFree24h.replace("{hours}", String(adFreeHours));
+    toast.show(t.ads.hidden, adFreeOffer ? { label, onPress: () => void adFree() } : undefined);
   }
   const unitId = adUnitId(placement === "today" ? "native-today" : "native-mood");
   const [ad, setAd] = useState<NativeAd | null>(null);

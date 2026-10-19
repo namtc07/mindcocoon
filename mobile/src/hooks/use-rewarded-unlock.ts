@@ -89,15 +89,20 @@ export function useRewardedUnlock() {
     });
     return () => sub.remove();
   }, []);
+  const offer = canOfferRewarded({ flags, ready });
+  const adFreeHours = flags.adFreeHours ?? 24;
   return {
-    offer: canOfferRewarded({ flags, ready }),
+    offer,
     busy,
     /** One extra sound for 24 hours. */
     unlock: (id: string) => showRewarded(() => unlockFor24h(id)),
     /** Every extra sound for 24 hours. */
     unlockAll: () => showRewarded(() => unlockAllFor24h(PREMIUM_IDS)),
-    /** No banner or native ad for 24 hours. */
-    adFree24h: () => showRewarded(() => startAdFree()),
+    /** "One ad, no ads for a while" is on (remote ad_free_enabled), and for how many hours. */
+    adFreeOffer: offer && flags.adFreeEnabled !== false,
+    adFreeHours,
+    /** No banner or native ad for `adFreeHours`. */
+    adFree: () => showRewarded(() => startAdFree(adFreeHours)),
     /** Room for one more saved mix (up to ten in all). */
     earnMixSlot: () =>
       showRewarded(() => setPref("extraMixSlots", Math.min((getPref("extraMixSlots") ?? 0) + 1, MAX_EXTRA_MIX_SLOTS))),
