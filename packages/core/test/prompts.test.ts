@@ -45,3 +45,13 @@ describe("prompt themes", () => {
     for (const theme of PROMPT_THEMES) expect(PROMPT_THEME_OF).toContain(theme);
   });
 });
+
+describe("isEveningMode", () => {
+  it("is evening from 18:00 until 04:59", async () => {
+    const { isEveningMode } = await import("@mindcocoon/core/dates");
+    expect(isEveningMode(new Date(2026, 9, 19, 17, 59))).toBe(false);
+    expect(isEveningMode(new Date(2026, 9, 19, 18, 0))).toBe(true);
+    expect(isEveningMode(new Date(2026, 9, 20, 4, 59))).toBe(true);
+    expect(isEveningMode(new Date(2026, 9, 20, 5, 0))).toBe(false);
+  });
+});

@@ -26,6 +26,12 @@ export function weekdayIndex(date: Date): number {
   return (date.getDay() + 6) % 7;
 }
 
+/** The night-time path leads from 18:00 until 04:59 (check in, wind down); the day path otherwise. */
+export function isEveningMode(date: Date): boolean {
+  const h = date.getHours();
+  return h >= 18 || h < 5;
+}
+
 export function partOfDay(date: Date): "morning" | "afternoon" | "evening" | "night" {
   const h = date.getHours();
   if (h >= 5 && h < 12) return "morning";

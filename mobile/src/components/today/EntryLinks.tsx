@@ -24,16 +24,23 @@ function Entry({ href, Icon, title, body, first }: { href: Href; Icon: LucideIco
   );
 }
 
-export function EntryLinks() {
+/** Ways in. At night "Wind down for sleep" leads; by day "Let it out" leads and wind-down waits at the end. */
+export function EntryLinks({ evening = false }: { evening?: boolean }) {
   const { t } = useI18n();
   const { c } = useTheme();
+  const windDown = { key: "wind", href: "/wind-down" as Href, Icon: Moon, title: t.today.tiles.windDownTitle, body: t.today.tiles.windDownBody };
+  const rest = [
+    { key: "vent", href: "/vent" as Href, Icon: Feather, title: t.today.tiles.ventTitle, body: t.today.tiles.ventBody },
+    { key: "breathe", href: { pathname: "/sanctuary", params: { section: "breathe" } } as Href, Icon: Wind, title: t.today.tiles.breatheTitle, body: t.today.tiles.breatheChoicesBody },
+    { key: "practices", href: "/practices" as Href, Icon: Flower2, title: t.today.tiles.practicesTitle, body: t.today.tiles.practicesBody },
+    { key: "music", href: { pathname: "/sanctuary", params: { section: "tonight" } } as Href, Icon: Music2, title: t.today.tiles.musicTitle, body: t.today.tiles.musicBody },
+  ];
+  const entries = evening ? [windDown, ...rest] : [...rest, windDown];
   return (
     <View style={[styles.card, { backgroundColor: c.surface }]}>
-      <Entry first href="/wind-down" Icon={Moon} title={t.today.tiles.windDownTitle} body={t.today.tiles.windDownBody} />
-      <Entry href="/vent" Icon={Feather} title={t.today.tiles.ventTitle} body={t.today.tiles.ventBody} />
-      <Entry href={{ pathname: "/sanctuary", params: { section: "breathe" } }} Icon={Wind} title={t.today.tiles.breatheTitle} body={t.today.tiles.breatheChoicesBody} />
-      <Entry href={{ pathname: "/sanctuary", params: { section: "tonight" } }} Icon={Music2} title={t.today.tiles.musicTitle} body={t.today.tiles.musicBody} />
-      <Entry href="/practices" Icon={Flower2} title={t.today.tiles.practicesTitle} body={t.today.tiles.practicesBody} />
+      {entries.map((e, i) => (
+        <Entry key={e.key} first={i === 0} href={e.href} Icon={e.Icon} title={e.title} body={e.body} />
+      ))}
     </View>
   );
 }
