@@ -272,6 +272,7 @@ export const en = {
   },
   feelings: {
     prompt: "More precisely?",
+    tapOne: "Tap the one closest to now",
     meter: { moreEnergy: "More energy", lessEnergy: "Less energy", unpleasant: "Unpleasant", pleasant: "Pleasant" },
     words: {
       calm: "calm", content: "content", relieved: "relieved", grateful: "grateful", safe: "safe",

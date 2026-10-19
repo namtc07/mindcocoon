@@ -91,5 +91,5 @@ it("a name being edited in Settings is kept when leaving the screen", async () =
 
 it("the full check-in form uses the mood meter too", async () => {
   await renderWithApp(<CheckinForm />);
-  expect(screen.getByTestId("feelings-meter")).toBeOnTheScreen();
+  expect(screen.getByTestId("feeling-orbs")).toBeOnTheScreen();
 });

@@ -273,6 +273,7 @@ export const vi: Dictionary = {
   },
   feelings: {
     prompt: "Cụ thể hơn?",
+    tapOne: "Chạm vào cảm xúc gần nhất lúc này",
     meter: { moreEnergy: "Nhiều năng lượng", lessEnergy: "Ít năng lượng", unpleasant: "Khó chịu", pleasant: "Dễ chịu" },
     words: {
       calm: "bình thản", content: "hài lòng", relieved: "nhẹ nhõm", grateful: "biết ơn", safe: "an toàn",

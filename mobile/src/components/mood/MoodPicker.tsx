@@ -2,11 +2,11 @@ import { MOOD_METER } from "@mindcocoon/core/feelings";
 import { MOODS } from "@mindcocoon/core/moods";
 import type { MoodType } from "@mindcocoon/core/types";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import Svg, { Circle, Defs, RadialGradient, Rect, Stop } from "react-native-svg";
+import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
 import { useSvgId } from "@/components/art/activity";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
-import { radius, space } from "@/theme/tokens";
+import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 
 type Props = {
@@ -14,13 +14,13 @@ type Props = {
   onChange: (mood: MoodType) => void;
   label: string;
   size?: "md" | "lg";
-  /** "row": five dots in a line (compact). "meter": energy × pleasantness map with large orbs. */
-  variant?: "row" | "meter";
+  /** "row": five dots in a line (compact). "orbs": glowing orbs on a soft arc, with a caption. */
+  variant?: "row" | "orbs";
 };
 
-/** Five coloured states as a radio group: a compact row, or a two-axis meter. */
+/** Five coloured states as a radio group: a compact row, or glowing orbs on an arc. */
 export function MoodPicker(props: Props) {
-  return props.variant === "meter" ? <MoodMeter {...props} /> : <MoodRow {...props} />;
+  return props.variant === "orbs" ? <MoodOrbs {...props} /> : <MoodRow {...props} />;
 }
 
 function useMoodRadio(value: MoodType | null, onChange: (m: MoodType) => void) {
@@ -86,67 +86,38 @@ function Orb({ color, size }: { color: string; size: number }) {
   );
 }
 
-const ORB = 60;
-/** Side labels sit between the radios; screen readers get the same idea from each mood's hint. */
-const SIDE_LABEL = { accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" } as const;
+const ORB = 52;
+/** Heavier on the left, lighter on the right (by pleasantness, then energy). */
+const ARC_ORDER = [...MOODS].sort((x, y) => MOOD_METER[x.id].pleasant - MOOD_METER[y.id].pleasant || MOOD_METER[x.id].energy - MOOD_METER[y.id].energy);
+/** How far each orb dips, so the five lie on a soft smile-shaped curve. */
+const DIP = [0, 14, 22, 14, 0];
 
-function MoodMeter({ value, onChange, label }: Props) {
+function MoodOrbs({ value, onChange, label }: Props) {
   const { t } = useI18n();
   const { c } = useTheme();
   const radio = useMoodRadio(value, onChange);
-  const gid = useSvgId();
-  const at = (energy: number, pleasant: number) => MOODS.find((m) => MOOD_METER[m.id].energy === energy && MOOD_METER[m.id].pleasant === pleasant)!.id;
-  const cell = (id: MoodType) => {
-    const checked = id === value;
-    return (
-      <Pressable key={id} {...radio(id)} style={styles.cell}>
-        <View style={[styles.orb, checked && { borderColor: c.foreground, transform: [{ scale: 1.1 }] }]}>
-          <Orb color={c.mood[id]} size={ORB} />
-        </View>
-        <Text numberOfLines={1} style={[styles.orbLabel, { color: checked ? c.foreground : c.mutedForeground }]}>
-          {t.mood.states[id].label}
-        </Text>
-      </Pressable>
-    );
-  };
-  const axis = [styles.axis, { color: c.mutedForeground }];
-  const AXIS_SCALE = 1.3;
   return (
-    <View testID="feelings-meter" style={[styles.meter, { borderColor: c.border }]}>
-      {/* Soft corner glows in each corner mood's colour (decorative). */}
-      <View style={StyleSheet.absoluteFill} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <Svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <Defs>
-            {(["anxious", "hopeful", "heavy", "peaceful"] as const).map((id) => (
-              <RadialGradient key={id} id={`${gid}-${id}`} cx="50%" cy="50%" r="50%">
-                <Stop offset="0" stopColor={c.mood[id]} stopOpacity={0.28} />
-                <Stop offset="1" stopColor={c.mood[id]} stopOpacity={0} />
-              </RadialGradient>
-            ))}
-          </Defs>
-          <Rect x={-30} y={-30} width={90} height={90} fill={`url(#${gid}-anxious)`} />
-          <Rect x={40} y={-30} width={90} height={90} fill={`url(#${gid}-hopeful)`} />
-          <Rect x={-30} y={40} width={90} height={90} fill={`url(#${gid}-heavy)`} />
-          <Rect x={40} y={40} width={90} height={90} fill={`url(#${gid}-peaceful)`} />
-        </Svg>
+    <View testID="feeling-orbs" style={styles.orbs}>
+      <View accessibilityRole="radiogroup" accessibilityLabel={label} style={styles.arc}>
+        {ARC_ORDER.map((m, i) => {
+          const checked = m.id === value;
+          return (
+            <Pressable key={m.id} {...radio(m.id)} style={[styles.cell, { marginTop: DIP[i] }]}>
+              <View style={[styles.halo, checked && { backgroundColor: c.mood[m.id] + "33", transform: [{ scale: 1.15 }] }]}>
+                <View style={{ opacity: value && !checked ? 0.6 : 1 }}>
+                  <Orb color={c.mood[m.id]} size={ORB} />
+                </View>
+              </View>
+              <Text numberOfLines={1} style={[styles.orbLabel, { color: checked ? c.foreground : c.mutedForeground }]}>
+                {t.mood.states[m.id].label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
-      <Text maxFontSizeMultiplier={AXIS_SCALE} style={[axis, styles.center]}>{t.feelings.meter.moreEnergy}</Text>
-      <View accessibilityRole="radiogroup" accessibilityLabel={label} style={styles.grid}>
-        <View style={styles.line}>
-          {cell(at(1, -1))}
-          {cell(at(1, 1))}
-        </View>
-        <View style={styles.line}>
-          <Text {...SIDE_LABEL} maxFontSizeMultiplier={AXIS_SCALE} style={[axis, styles.side]}>{t.feelings.meter.unpleasant}</Text>
-          {cell(at(0, 0))}
-          <Text {...SIDE_LABEL} maxFontSizeMultiplier={AXIS_SCALE} style={[axis, styles.side, { textAlign: "right" }]}>{t.feelings.meter.pleasant}</Text>
-        </View>
-        <View style={styles.line}>
-          {cell(at(-1, -1))}
-          {cell(at(-1, 1))}
-        </View>
-      </View>
-      <Text maxFontSizeMultiplier={AXIS_SCALE} style={[axis, styles.center]}>{t.feelings.meter.lessEnergy}</Text>
+      <Text accessibilityLiveRegion="polite" style={[styles.caption, { color: value ? c.foreground : c.mutedForeground }]}>
+        {value ? t.mood.states[value].description : t.feelings.tapOne}
+      </Text>
     </View>
   );
 }
@@ -155,14 +126,10 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", justifyContent: "space-between", gap: 4 },
   item: { flex: 1, alignItems: "center", gap: 8, minHeight: 44, paddingVertical: 4 },
   label: { fontFamily: fonts.sans, fontSize: 12, textAlign: "center", lineHeight: 15 },
-  meter: { borderWidth: StyleSheet.hairlineWidth, borderRadius: radius.xl, overflow: "hidden", paddingVertical: space.md, paddingHorizontal: space.lg, gap: space.xs },
-  grid: { gap: space.xs },
-  line: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  // The orb cell keeps its size; side labels give way (and wrap) at large text sizes.
-  cell: { alignItems: "center", gap: 6, minWidth: 88, maxWidth: 104, minHeight: 44, flexShrink: 0 },
-  orb: { borderRadius: ORB, borderWidth: 3, borderColor: "transparent" },
-  orbLabel: { fontFamily: fonts.sansMedium, fontSize: 13 },
-  axis: { fontFamily: fonts.sans, fontSize: 11, opacity: 0.85 },
-  center: { textAlign: "center" },
-  side: { flex: 1, flexShrink: 1 },
+  orbs: { gap: space.md, paddingTop: space.xs },
+  arc: { flexDirection: "row", justifyContent: "space-between" },
+  cell: { flex: 1, alignItems: "center", gap: 6, minHeight: 44 },
+  halo: { borderRadius: ORB, padding: 6 },
+  orbLabel: { fontFamily: fonts.sansMedium, fontSize: 12 },
+  caption: { fontFamily: fonts.serif, fontSize: 17, lineHeight: 23, textAlign: "center" },
 });

@@ -5,7 +5,6 @@ import { AnimationsActive } from "@/components/art/activity";
 import { Ken } from "@/components/art/Ken";
 import { Scene } from "@/components/art/Scene";
 import { Sky } from "@/components/art/Sky";
-import { MoodPicker } from "@/components/mood/MoodPicker";
 import { MixChips } from "@/components/sanctuary/MixChips";
 import { audio } from "@/lib/audio";
 import { setPref } from "@/lib/prefs";
@@ -30,13 +29,6 @@ function svgIds(type: string) {
   walk(screen.toJSON());
   return ids;
 }
-
-it("the meter's side labels stay out of the radio group for screen readers", async () => {
-  await renderWithApp(<MoodPicker variant="meter" value={null} onChange={() => {}} label="How are you?" />);
-  expect(screen.queryByText("Pleasant")).toBeNull();
-  expect(screen.getByText("Pleasant", HIDDEN)).toBeOnTheScreen();
-  expect(screen.getByText("More energy")).toBeOnTheScreen();
-});
 
 it("each picture uses its own gradient ids", async () => {
   await render(

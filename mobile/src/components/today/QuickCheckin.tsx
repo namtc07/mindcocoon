@@ -95,7 +95,7 @@ export function QuickCheckin() {
   return (
     <View style={styles.wrap}>
       <Text style={[styles.question, { color: c.mutedForeground }]}>{t.today.checkinQuestion}</Text>
-      <MoodPicker variant="meter" value={today?.mood ?? null} onChange={(m) => void pick(m)} label={t.today.checkinQuestion} />
+      <MoodPicker variant="orbs" value={today?.mood ?? null} onChange={(m) => void pick(m)} label={t.today.checkinQuestion} />
       <View accessibilityLiveRegion="polite" style={styles.message}>
         {today && message && (
           <>
