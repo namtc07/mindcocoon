@@ -7,7 +7,8 @@ Plan: `docs/superpowers/plans/2026-10-19-mobile-polish.md`. No new native module
 
 - **Today follows the time of day.** From 18:00 to 04:59: check-in (+ suggestions) first, then the
   ways in with "Wind down for sleep" leading, the writing prompt last. By day: the worry-box line,
-  the prompt, check-in, then the ways in with "Let it out" first and wind-down last.
+  the prompt, check-in, then the ways in with "Let it out" first and wind-down last. A worry that's
+  ready shows at any time. Switching at 18:00 / 05:00 keeps anything being typed.
 - **Calmer Mood tab:** check-in → gently noticed → week → month/year (+ picture) → history, which
   shows the latest five with "Show earlier check-ins".
 - **Sounds never fail silently:** a mix that can't play says "That mix couldn't play." and keeps what
@@ -25,7 +26,12 @@ Plan: `docs/superpowers/plans/2026-10-19-mobile-polish.md`. No new native module
 
 ## Tests
 
-Mobile Vitest 80, Jest 238; web+core green.
+Mobile Vitest 80, Jest 241; web+core green.
+
+## Before release
+
+AdMob test App IDs live in two places in `mobile/app.json`: the `react-native-google-mobile-ads`
+plugin entry and a root-level `react-native-google-mobile-ads` key (written by the library). Replace both.
 
 ## Owner checklist
 
@@ -33,6 +39,7 @@ Mobile Vitest 80, Jest 238; web+core green.
 2. Mood: history shows five, "Show earlier check-ins" shows more.
 3. Sanctuary: save a mix, remove it, tap Undo; drag a volume slider.
 4. Play Campfire → Wind down → the sounds step preselects "Keep what's playing".
-5. Swipe up to the app switcher on any screen (Vault open, a worry open): only "MindCocoon" shows.
+5. Swipe up to the app switcher on any screen, also with a sheet open (a day's notes, the recovery code):
+   only "MindCocoon" shows.
 6. Today: add a note with the keyboard open — the field stays visible.
 7. Breathe, then pull down Control Center and back — still breathing.
