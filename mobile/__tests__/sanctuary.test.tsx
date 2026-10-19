@@ -256,8 +256,11 @@ describe("Box breathing", () => {
   });
 
   it("is on the Sanctuary screen", async () => {
+    const user = userEvent.setup();
     await renderWithApp(<SanctuaryScreen />);
-    expect(screen.getByText("Breathe")).toBeOnTheScreen();
+    await user.press(screen.getByRole("tab", { name: "Breathe" }));
+    expect(screen.getByRole("button", { name: "Begin" })).toBeOnTheScreen();
+    await act(() => setPref("sanctuaryTab", undefined));
   });
 });
 

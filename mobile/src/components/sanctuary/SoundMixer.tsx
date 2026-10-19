@@ -1,9 +1,8 @@
 import { formatTime } from "@mindcocoon/core/dates";
 import { AMBIENT_TRACKS, SOUND_TRACKS } from "@mindcocoon/core/sounds";
 import Slider from "@react-native-community/slider";
-import { Lock } from "lucide-react-native";
-import { StyleSheet, Switch, Text, View } from "react-native";
-import { Button } from "@/components/ui/Button";
+import { AudioLines, Bell, CloudLightning, CloudRain, Droplets, Flame, Lock, Waves, Wind, type LucideIcon } from "lucide-react-native";
+import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import { toast } from "@/components/ui/Toast";
 import { useNow } from "@/hooks/use-now";
 import { useRewardedUnlock } from "@/hooks/use-rewarded-unlock";
@@ -12,13 +11,54 @@ import { audio, useAudio } from "@/lib/audio";
 import { unlockedUntilIn } from "@/lib/unlocks-core";
 import { useUnlocks } from "@/lib/unlocks";
 import { fonts } from "@/theme/fonts";
-import { space } from "@/theme/tokens";
+import { radius, space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 import { MixChips } from "./MixChips";
-import { PlayButton } from "./PlayButton";
 import { toggleSound } from "./play";
 
 const PREMIUM_TRACKS = SOUND_TRACKS.filter((t) => t.category === "ambient" && t.isPremium);
+const ICONS: Record<string, LucideIcon> = {
+  rain: CloudRain,
+  ocean: Waves,
+  "night-wind": Wind,
+  campfire: Flame,
+  thunder: CloudLightning,
+  stream: Droplets,
+  "singing-bowl": Bell,
+  "deep-hum": AudioLines,
+};
+
+/** One sound as a tile: tap to play or pause ("Play: Rain" / "Pause: Rain"). */
+function SoundTile({ id, note }: { id: string; note?: string }) {
+  const { t } = useI18n();
+  const { c } = useTheme();
+  const { playing } = useAudio();
+  const on = playing.includes(id);
+  const name = t.sounds[id as keyof typeof t.sounds];
+  const Icon = ICONS[id] ?? AudioLines;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${on ? t.sanctuary.pause : t.sanctuary.play}: ${name}`}
+      accessibilityState={{ selected: on }}
+      onPress={() => void toggleSound(id, t.sanctuary.playError)}
+      style={({ pressed }) => [
+        styles.tile,
+        { backgroundColor: on ? c.surface : "transparent", borderColor: on ? c.primary : c.border, opacity: pressed ? 0.7 : 1 },
+      ]}
+    >
+      <View style={[styles.tileIcon, { backgroundColor: on ? c.primary : c.surface }]}>
+        <Icon size={20} color={on ? c.primaryForeground : c.mutedForeground} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text numberOfLines={1} style={[styles.tileName, { color: on ? c.foreground : c.mutedForeground }]}>
+          {name}
+        </Text>
+        {note && <Text style={[styles.tileNote, { color: c.mutedForeground }]}>{note}</Text>}
+      </View>
+    </Pressable>
+  );
+}
 
 function TrackRow({ id, note }: { id: string; note?: string }) {
   const { t } = useI18n();
@@ -29,8 +69,7 @@ function TrackRow({ id, note }: { id: string; note?: string }) {
   return (
     <View>
       <View style={styles.row}>
-        <PlayButton name={name} playing={playing} onPress={() => void toggleSound(id, t.sanctuary.playError)} />
-        <Text style={[styles.name, { color: playing ? c.foreground : c.mutedForeground }]}>{name}</Text>
+        <Text numberOfLines={1} style={[styles.name, { color: playing ? c.foreground : c.mutedForeground }]}>{name}</Text>
         <Slider
           style={styles.slider}
           value={state.volumes[id] ?? 0.6}
@@ -51,7 +90,7 @@ function TrackRow({ id, note }: { id: string; note?: string }) {
 }
 
 /** Rewarded unlock for one premium sound: only on the person's tap, never automatic. */
-function LockedRow({ id, busy, unlock }: { id: string; busy: boolean; unlock: (id: string) => Promise<string> }) {
+function LockedTile({ id, busy, unlock }: { id: string; busy: boolean; unlock: (id: string) => Promise<string> }) {
   const { t } = useI18n();
   const { c } = useTheme();
   const name = t.sounds[id as keyof typeof t.sounds];
@@ -60,21 +99,25 @@ function LockedRow({ id, busy, unlock }: { id: string; busy: boolean; unlock: (i
     if (result === "unavailable") toast.show(t.sanctuary.adUnavailable);
   }
   return (
-    <View style={styles.locked}>
-      <View style={styles.row}>
-        <View style={styles.lockIcon}>
-          <Lock size={16} color={c.mutedForeground} />
-        </View>
-        <Text style={[styles.name, { color: c.mutedForeground, width: undefined, flex: 1 }]}>{name}</Text>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={t.sanctuary.unlockWithAd.replace("{name}", name)}
+      accessibilityState={{ disabled: busy }}
+      disabled={busy}
+      onPress={() => void watch()}
+      style={[styles.tile, { borderColor: c.border, borderStyle: "dashed", opacity: busy ? 0.5 : 1 }]}
+    >
+      <View style={[styles.tileIcon, { backgroundColor: c.surface }]}>
+        <Lock size={18} color={c.mutedForeground} />
       </View>
-      <Button variant="outline" disabled={busy} onPress={() => void watch()}>
-        {t.sanctuary.unlockWithAd.replace("{name}", name)}
-      </Button>
-    </View>
+      <Text numberOfLines={1} style={[styles.tileName, { color: c.mutedForeground, flex: 1 }]}>
+        {name}
+      </Text>
+    </Pressable>
   );
 }
 
-/** Ambient sounds, mixed: each with its own volume, plus overall volume and loop. */
+/** Ambient sounds as tiles; the ones playing get a volume slider; overall volume and loop. */
 export function SoundMixer() {
   const { t, locale } = useI18n();
   const { c } = useTheme();
@@ -87,30 +130,43 @@ export function SoundMixer() {
   );
   const sliderColors = { minimumTrackTintColor: c.primary, maximumTrackTintColor: c.border, thumbTintColor: c.primary };
 
+  const playingNow = state.playing.filter((id) => SOUND_TRACKS.some((tr) => tr.id === id && tr.category === "ambient"));
+
   return (
     <View style={styles.wrap}>
-      <Text accessibilityRole="header" style={[styles.title, { color: c.foreground }]}>
-        {t.sanctuary.soundsTitle}
-      </Text>
+      {/* The "Sounds" tab names this part; no second heading. */}
       <MixChips />
-      {AMBIENT_TRACKS.map((track) => (
-        <TrackRow key={track.id} id={track.id} />
-      ))}
+      <View style={styles.grid}>
+        {AMBIENT_TRACKS.map((track) => (
+          <SoundTile key={track.id} id={track.id} />
+        ))}
+      </View>
       {premium.length > 0 && (
         <View style={styles.group}>
           <Text accessibilityRole="header" style={[styles.label, { color: c.mutedForeground }]}>
             {t.sanctuary.moreSounds}
           </Text>
-          {premium.map(({ id, until }) =>
-            until !== null ? (
-              <TrackRow key={id} id={id} note={t.sanctuary.unlockedUntil.replace("{time}", formatTime(new Date(until).toISOString(), locale))} />
-            ) : (
-              <LockedRow key={id} id={id} busy={busy} unlock={unlock} />
-            ),
-          )}
+          <View style={styles.grid}>
+            {premium.map(({ id, until }) =>
+              until !== null ? (
+                <SoundTile key={id} id={id} note={t.sanctuary.unlockedUntil.replace("{time}", formatTime(new Date(until).toISOString(), locale))} />
+              ) : (
+                <LockedTile key={id} id={id} busy={busy} unlock={unlock} />
+              ),
+            )}
+          </View>
         </View>
       )}
       <View style={[styles.footer, { borderTopColor: c.border }]}>
+        {/* Only what is playing gets a slider, so the page stays calm. */}
+        {playingNow.length > 0 && (
+          <Text accessibilityRole="header" style={[styles.label, { color: c.mutedForeground }]}>
+            {t.sanctuary.volumes}
+          </Text>
+        )}
+        {playingNow.map((id) => (
+          <TrackRow key={id} id={id} />
+        ))}
         <View style={styles.row}>
           <Text style={[styles.label, { color: c.mutedForeground }]}>{t.sanctuary.master}</Text>
           <Slider
@@ -136,7 +192,6 @@ export function SoundMixer() {
 
 const styles = StyleSheet.create({
   wrap: { gap: space.sm },
-  title: { fontFamily: fonts.serif, fontSize: 24, lineHeight: 30, marginBottom: space.sm },
   row: { flexDirection: "row", alignItems: "center", gap: space.lg, minHeight: 48 },
   name: { fontFamily: fonts.sans, fontSize: 15, width: 92 },
   note: { fontFamily: fonts.sans, fontSize: 13, marginLeft: 44 + space.lg },
@@ -145,5 +200,10 @@ const styles = StyleSheet.create({
   group: { gap: space.sm, marginTop: space.md },
   locked: { gap: space.sm },
   lockIcon: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: space.sm },
+  tile: { width: "48.5%", flexDirection: "row", alignItems: "center", gap: space.md, borderWidth: 1, borderRadius: radius.lg, padding: space.sm, minHeight: 56 },
+  tileIcon: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
+  tileName: { fontFamily: fonts.sansMedium, fontSize: 14 },
+  tileNote: { fontFamily: fonts.sans, fontSize: 11 },
   footer: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: space.md, marginTop: space.sm, gap: space.xs },
 });

@@ -56,13 +56,14 @@ function Fire({ glow }: { glow: string }) {
 
 /**
  * A small night picture for a sound mix (rain, fire, sea, rain at sea). Static: it sits on a card.
- * `fill` takes the full width at the drawing's own shape (nothing cropped); otherwise `height`.
+ * `fill` takes the full width at the drawing's own shape (nothing cropped); otherwise `height`, keeping the
+ * ground (fire, waves) in view and trimming sky first.
  */
 export function Scene({ kind, height = H, fill = false }: { kind: SceneKind; height?: number; fill?: boolean }) {
   const id = useSvgId();
   return (
     <View testID={`scene-${kind}`} {...decorative} style={[{ overflow: "hidden" }, fill ? { width: "100%", aspectRatio: W / H } : { height }]}>
-      <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice">
+      <Svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax slice">
         <Defs>
           <LinearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor="#0b1224" />

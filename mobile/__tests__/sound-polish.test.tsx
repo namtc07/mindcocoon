@@ -51,6 +51,7 @@ describe("Sounds never fail silently", () => {
 
   it("sliders save once when released, not on every step", async () => {
     await renderWithApp(<SanctuaryScreen />);
+    await act(() => audio.play("rain"));
     const slider = await screen.findByLabelText("Volume for Rain");
     await act(async () => {
       fireEvent(slider, "valueChange", 0.3);

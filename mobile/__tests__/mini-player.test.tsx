@@ -1,12 +1,10 @@
-import { act, fireEvent, screen, userEvent } from "@testing-library/react-native";
+import { act, screen, userEvent } from "@testing-library/react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { ScrollView } from "react-native";
 import SanctuaryScreen from "@/app/(tabs)/sanctuary";
 import { MiniPlayer } from "@/components/sanctuary/MiniPlayer";
 import { EntryLinks } from "@/components/today/EntryLinks";
 import { audio } from "@/lib/audio";
 import { renderWithApp } from "@/test-utils/render";
-import { space } from "@/theme/tokens";
 
 beforeEach(async () => {
   jest.clearAllMocks();
@@ -67,13 +65,12 @@ describe("Links into Sanctuary", () => {
     expect(router.push).toHaveBeenCalledWith({ pathname: "/sanctuary", params: { section: "tonight" } });
   });
 
-  it("Sanctuary scrolls to the requested section", async () => {
-    const scrollTo = ScrollView.prototype.scrollTo as unknown as jest.Mock;
+  it("Sanctuary opens the requested part", async () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ section: "tonight" });
     try {
       await renderWithApp(<SanctuaryScreen />);
-      await act(async () => fireEvent(screen.getByTestId("section-tonight"), "layout", { nativeEvent: { layout: { x: 0, y: 640, width: 390, height: 120 } } }));
-      expect(scrollTo).toHaveBeenCalledWith({ y: 640 - space.lg, animated: true });
+      expect(screen.getByRole("tab", { name: "Sounds" })).toBeSelected();
+      expect(screen.getByText("Tonight's music")).toBeOnTheScreen();
       expect(router.setParams).toHaveBeenCalledWith({ section: undefined });
     } finally {
       (useLocalSearchParams as jest.Mock).mockReturnValue({});

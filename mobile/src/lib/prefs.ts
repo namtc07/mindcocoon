@@ -40,6 +40,8 @@ export interface Prefs {
   breathCues?: boolean;
   /** Why the person came (welcome screens); only reorders Today. */
   intents?: OnboardingIntent[];
+  /** Which part of Sanctuary was open last. */
+  sanctuaryTab?: "sounds" | "breathe" | "practices";
   /** Optional name for the greeting (device only). */
   name?: string;
 }
