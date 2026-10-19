@@ -316,6 +316,7 @@ export const en = {
     title: "Wind down for sleep",
     intro: "A minute to check in, a minute to breathe, then sounds that fade out on their own.",
     howTonight: "How are you tonight?",
+    saveContinue: "Save and continue",
     skip: "Skip",
     soundsTitle: "Sounds for sleep",
     timerLabel: "Fade out after",

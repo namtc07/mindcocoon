@@ -75,7 +75,7 @@ it("the goodnight picture follows what is actually playing", async () => {
   });
   await renderWithApp(<WindDownScreen />, { keepState: true });
   await user.press(await screen.findByRole("radio", { name: "Anxious" }));
-  await user.press(screen.getByRole("button", { name: "Next" }));
+  await user.press(screen.getByRole("button", { name: "Save and continue" }));
   await user.press(screen.getByRole("button", { name: "Next" }));
   await user.press(screen.getByRole("button", { name: "Goodnight" }));
   expect(await screen.findByTestId("scene-rain-sea", HIDDEN)).toBeOnTheScreen();

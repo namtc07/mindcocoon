@@ -27,7 +27,8 @@ describe("Wind down", () => {
   it("saves the check-in, then Goodnight plays the matching mix with a 30-minute timer", async () => {
     const { user } = await open();
     await user.press(await screen.findByRole("radio", { name: "Anxious" }));
-    await user.press(screen.getByRole("button", { name: "Next" }));
+    expect(await getStorage().moods.list()).toEqual([]);
+    await user.press(screen.getByRole("button", { name: "Save and continue" }));
     expect(await screen.findByText("Breathe")).toBeOnTheScreen();
     expect(screen.getByText(/In 4 · out 6/)).toBeOnTheScreen();
     await user.press(screen.getByRole("button", { name: "Next" }));
@@ -54,7 +55,7 @@ describe("Wind down", () => {
   it("an existing check-in today isn't duplicated", async () => {
     const { user } = await open("heavy");
     expect(await screen.findByRole("radio", { name: "Heavy" })).toBeChecked();
-    await user.press(screen.getByRole("button", { name: "Next" }));
+    await user.press(screen.getByRole("button", { name: "Save and continue" }));
     await user.press(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByRole("button", { name: "Rainy night" })).toBeSelected();
     expect(await getStorage().moods.list()).toHaveLength(1);
@@ -70,15 +71,32 @@ describe("Wind down", () => {
     expect(audio.getState().sleepEndsAt).toBeNull();
   });
 
-  it("two quick mood taps make one check-in with the last mood", async () => {
-    await open();
-    const heavy = await screen.findByRole("radio", { name: "Heavy" });
-    const anxious = screen.getByRole("radio", { name: "Anxious" });
-    await act(async () => {
-      fireEvent.press(heavy);
-      fireEvent.press(anxious);
-    });
+  it("several taps before saving make one check-in with the last mood", async () => {
+    const { user } = await open();
+    await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+    await user.press(screen.getByRole("radio", { name: "Anxious" }));
+    expect(await getStorage().moods.list()).toEqual([]);
+    await user.press(screen.getByRole("button", { name: "Save and continue" }));
     await waitFor(async () => expect((await getStorage().moods.list()).map((l) => l.mood)).toEqual(["anxious"]));
+  });
+
+  it("Cancel lets the choice go; Skip then moves on without saving", async () => {
+    const { user } = await open();
+    await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+    await user.press(screen.getByRole("button", { name: "sad" }));
+    await user.press(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.getByRole("radio", { name: "Heavy" })).not.toBeChecked();
+    await user.press(screen.getByRole("button", { name: "Skip" }));
+    expect(await screen.findByText("Breathe")).toBeOnTheScreen();
+    expect(await getStorage().moods.list()).toEqual([]);
+  });
+
+  it("feeling words chosen here are saved with the check-in", async () => {
+    const { user } = await open();
+    await user.press(await screen.findByRole("radio", { name: "Lonely" }));
+    await user.press(screen.getByRole("button", { name: "longing" }));
+    await user.press(screen.getByRole("button", { name: "Save and continue" }));
+    await waitFor(async () => expect((await getStorage().moods.list())[0]).toMatchObject({ mood: "alone", feelings: ["longing"] }));
   });
 
   it("the night screen shows what's playing and can stop it", async () => {

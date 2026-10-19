@@ -317,6 +317,7 @@ export const vi: Dictionary = {
     title: "Thư giãn trước khi ngủ",
     intro: "Một phút ghi lại cảm xúc, một phút để thở, rồi âm thanh sẽ tự nhỏ dần.",
     howTonight: "Tối nay bạn thấy thế nào?",
+    saveContinue: "Lưu và tiếp tục",
     skip: "Bỏ qua",
     soundsTitle: "Âm thanh để ngủ",
     timerLabel: "Tắt dần sau",

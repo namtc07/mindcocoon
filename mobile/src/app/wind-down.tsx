@@ -1,12 +1,14 @@
 import { mixMatches, PRESET_MIXES, type PresetMixId } from "@mindcocoon/core/audio/mixes";
 import { dayKey, dayKeyFromISO } from "@mindcocoon/core/dates";
 import { suggestionFor } from "@mindcocoon/core/feelings";
-import { addMood, changeMood, getMoodState } from "@mindcocoon/core/mood/store";
+import { addMood, changeMood, getMoodState, updateMoodDetails } from "@mindcocoon/core/mood/store";
 import type { MoodType } from "@mindcocoon/core/types";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { Ken } from "@/components/art/Ken";
+import { FeelingChips } from "@/components/mood/FeelingChips";
 import { MoodPicker } from "@/components/mood/MoodPicker";
 import { BoxBreathing } from "@/components/sanctuary/BoxBreathing";
 import { MiniPlayer } from "@/components/sanctuary/MiniPlayer";
@@ -45,7 +47,8 @@ export default function WindDownScreen() {
   const { playing, held, volumes } = useAudio();
   const [minutes, setMinutes] = useState<SleepMinutes>(30);
   const [starting, setStarting] = useState(false);
-  // Mood taps are saved one after another on today's check-in as it is by then (never duplicated).
+  const [feelings, setFeelings] = useState<string[] | null>(null);
+  // Saves go one after another on today's check-in as it is by then (never duplicated).
   const queue = useRef<Promise<unknown>>(Promise.resolve());
 
   const currentMood = mood ?? todayLog?.mood ?? null;
@@ -56,14 +59,38 @@ export default function WindDownScreen() {
   const nightPreset = PRESET_MIXES.find((p) => mixMatches(p.mix, sounding, volumes))?.id;
   const mix = mixChoice ?? (playing.length > 0 ? "keep" : (suggestion?.mix ?? "rainy-night"));
 
+  // Words for the mood being chosen: today's own words while it is today's mood, else the new picks.
+  const currentFeelings = feelings ?? (currentMood && currentMood === todayLog?.mood ? (todayLog.feelings ?? []) : []);
+
+  /** Choosing only changes the draft; "Save and continue" keeps it. */
   function pickMood(next: MoodType) {
+    if (next !== currentMood) setFeelings([]);
     setMood(next);
-    queue.current = queue.current
-      .then(async () => {
-        const current = getMoodState().logs.find((l) => dayKeyFromISO(l.createdAt) === dayKey(new Date()));
-        await (current ? changeMood(current, next) : addMood({ mood: next, tags: [] }));
-      })
-      .catch(() => toast.show(t.vault.unavailable));
+  }
+
+  /** Lets the choice go (back to today's saved check-in, if there is one). */
+  function cancelMood() {
+    setMood(null);
+    setFeelings(null);
+  }
+
+  function saveAndContinue() {
+    const next = currentMood;
+    const words = currentFeelings;
+    if (next) {
+      queue.current = queue.current
+        .then(async () => {
+          const current = getMoodState().logs.find((l) => dayKeyFromISO(l.createdAt) === dayKey(new Date()));
+          if (!current) return void (await addMood({ mood: next, tags: [], feelings: words }));
+          const unchanged = current.mood === next && (current.feelings ?? []).join() === words.join();
+          if (unchanged) return;
+          // Same mood keeps the check-in (id, time); a new mood is a fresh moment.
+          const base = current.mood === next ? current : await changeMood(current, next);
+          await updateMoodDetails(base, { tags: base.tags, feelings: words });
+        })
+        .catch(() => toast.show(t.vault.unavailable));
+    }
+    setStep("breathe");
   }
 
   async function goodnight() {
@@ -95,14 +122,21 @@ export default function WindDownScreen() {
             <Muted>{t.windDown.intro}</Muted>
             <Text style={[styles.h, { color: c.foreground }]}>{t.windDown.howTonight}</Text>
             <MoodPicker variant="orbs" value={currentMood} onChange={pickMood} label={t.windDown.howTonight} />
-            <View style={styles.actions}>
-              <Button variant="ghost" onPress={() => setStep("breathe")}>
-                {t.windDown.skip}
-              </Button>
-              <Button disabled={!currentMood} onPress={() => setStep("breathe")}>
-                {t.practices.next}
-              </Button>
-            </View>
+            {currentMood && <FeelingChips mood={currentMood} value={currentFeelings} onChange={setFeelings} />}
+            {currentMood ? (
+              <Animated.View entering={FadeIn.duration(240)} style={styles.actions}>
+                <Button variant="ghost" onPress={cancelMood}>
+                  {t.common.cancel}
+                </Button>
+                <Button onPress={saveAndContinue}>{t.windDown.saveContinue}</Button>
+              </Animated.View>
+            ) : (
+              <View style={styles.actions}>
+                <Button variant="ghost" onPress={() => setStep("breathe")}>
+                  {t.windDown.skip}
+                </Button>
+              </View>
+            )}
           </View>
         )}
 
