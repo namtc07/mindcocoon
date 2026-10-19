@@ -2,12 +2,20 @@ import { LOCALES, type Locale } from "@mindcocoon/core/i18n/config";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Muted, Screen } from "@/components/Screen";
+import { Screen } from "@/components/Screen";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { TextField } from "@/components/ui/TextField";
 import { NightDimSetting, ReleaseSoundSetting, WritingPromptsSetting } from "@/components/settings/ReleaseSoundSetting";
+import Constants from "expo-constants";
+import appConfig from "../../app.json";
+import { Download, LifeBuoy, Lock, ShieldCheck, Trash2 } from "lucide-react-native";
+import { Ken } from "@/components/art/Ken";
 import { AdFreeSetting } from "@/components/settings/AdFreeSetting";
+import { SettingsGroup, SettingsRow } from "@/components/settings/SettingsGroup";
+import { useNow } from "@/hooks/use-now";
+import { useRewardedUnlock } from "@/hooks/use-rewarded-unlock";
+import { useAdFreeUntil } from "@/lib/ads/ad-free";
 import { NameSetting } from "@/components/settings/NameSetting";
 import { ReminderSettings } from "@/components/settings/ReminderSettings";
 import { StackHeader } from "@/components/StackHeader";
@@ -21,6 +29,7 @@ import type { ThemeName } from "@/theme/tokens";
 
 const LANGUAGE_NAMES: Record<Locale, string> = { vi: "Tiếng Việt", en: "English" };
 
+/** A setting with a few options, as a row: the name on the left, the options as small pills. */
 function Choice<T extends string>({
   label,
   value,
@@ -34,9 +43,9 @@ function Choice<T extends string>({
 }) {
   const { c } = useTheme();
   return (
-    <View style={styles.section}>
-      <Muted>{label}</Muted>
-      <View accessibilityRole="radiogroup" accessibilityLabel={label} style={styles.row}>
+    <View style={styles.choice}>
+      <Text style={[styles.rowLabel, { color: c.foreground }]}>{label}</Text>
+      <View accessibilityRole="radiogroup" accessibilityLabel={label} style={[styles.pills, { backgroundColor: c.background }]}>
         {options.map((o) => {
           const checked = o.id === value;
           return (
@@ -45,14 +54,9 @@ function Choice<T extends string>({
               accessibilityRole="radio"
               accessibilityState={{ checked }}
               onPress={() => onChange(o.id)}
-              style={[
-                styles.chip,
-                { borderColor: checked ? c.primary : c.border, backgroundColor: checked ? c.surface : "transparent" },
-              ]}
+              style={[styles.pill, checked && { backgroundColor: c.card, borderColor: c.border }]}
             >
-              <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: checked ? c.foreground : c.mutedForeground }}>
-                {o.label}
-              </Text>
+              <Text style={{ fontFamily: fonts.sansMedium, fontSize: 14, color: checked ? c.foreground : c.mutedForeground }}>{o.label}</Text>
             </Pressable>
           );
         })}
@@ -93,88 +97,95 @@ function EraseSheet({ visible, onClose }: { visible: boolean; onClose: () => voi
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  const { c } = useTheme();
-  return (
-    <View style={[styles.section, { borderTopColor: c.border, borderTopWidth: StyleSheet.hairlineWidth }]}>
-      <Text accessibilityRole="header" style={{ fontFamily: fonts.sansMedium, fontSize: 16, color: c.foreground }}>
-        {title}
-      </Text>
-      {children}
-    </View>
-  );
-}
-
-/** Language, appearance, vault, your data (export / erase) and about. Account & backup arrive in M5. */
+/** Grouped like a phone's own settings: you, appearance, reminder, while using, vault, ads, data, about. */
 export default function SettingsScreen() {
   const { t, locale, setLocale } = useI18n();
-  const { name, setTheme } = useTheme();
+  const { name, setTheme, c } = useTheme();
   const [eraseOpen, setEraseOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const adPrivacy = useAdPrivacyRequired();
+  const { adFreeOffer } = useRewardedUnlock();
+  const adFreeUntil = useAdFreeUntil();
+  const now = useNow();
+  // The ad-free row shows while it is offered, or while ads are off (to say until when).
+  const adFree = adFreeOffer || adFreeUntil > now.getTime();
   return (
     <>
       <StackHeader />
       <Screen title={t.settings.title}>
-        <NameSetting />
-        <Choice
-          label={t.settings.language}
-          value={locale}
-          onChange={(l) => void setLocale(l)}
-          options={LOCALES.map((l) => ({ id: l, label: LANGUAGE_NAMES[l] }))}
-        />
-        <Choice<ThemeName>
-          label={t.settings.appearance}
-          value={name}
-          onChange={(v) => void setTheme(v)}
-          options={[
-            { id: "dusk", label: t.settings.themeDusk },
-            { id: "mist", label: t.settings.themeMist },
-          ]}
-        />
-        <Section title={t.settings.reminderTitle}>
-          <ReminderSettings />
-        </Section>
-        <NightDimSetting />
-        <WritingPromptsSetting />
-        <ReleaseSoundSetting />
-        <Section title={t.settings.vault}>
-          <Button variant="outline" onPress={() => router.navigate("/vault")}>
-            {t.settings.vaultLink}
-          </Button>
-        </Section>
-        <Section title={t.settings.data}>
-          <Muted>{t.settings.exportHint}</Muted>
-          <Button
-            variant="outline"
-            disabled={exporting}
-            onPress={async () => {
-              setExporting(true);
-              try {
-                await shareExport();
-              } finally {
-                setExporting(false);
-              }
-            }}
-          >
-            {t.settings.export}
-          </Button>
-          <AdFreeSetting />
-          {adPrivacy && (
-            <Button variant="outline" onPress={() => void showAdPrivacyOptions()}>
-              {t.settings.adPrivacy}
-            </Button>
-          )}
-          <Button variant="destructive" onPress={() => setEraseOpen(true)}>
-            {t.settings.erase}
-          </Button>
-        </Section>
-        <Section title={t.settings.about}>
-          <Muted>{t.settings.disclaimer}</Muted>
-          <Button variant="ghost" onPress={() => router.push("/help")}>
-            {t.settings.helpLink}
-          </Button>
-        </Section>
+        <View style={styles.groups}>
+          <SettingsGroup title={t.settings.groupYou} testID="group-you">
+            <View style={styles.you}>
+              <Ken size={44} />
+              <View style={{ flex: 1 }}>
+                <NameSetting />
+              </View>
+            </View>
+          </SettingsGroup>
+
+          <SettingsGroup title={t.settings.appearance} testID="group-appearance">
+            <Choice
+              label={t.settings.language}
+              value={locale}
+              onChange={(l) => void setLocale(l)}
+              options={LOCALES.map((l) => ({ id: l, label: LANGUAGE_NAMES[l] }))}
+            />
+            <Choice<ThemeName>
+              label={t.settings.theme}
+              value={name}
+              onChange={(v) => void setTheme(v)}
+              options={[
+                { id: "dusk", label: t.settings.themeDusk },
+                { id: "mist", label: t.settings.themeMist },
+              ]}
+            />
+            <NightDimSetting />
+          </SettingsGroup>
+
+          <SettingsGroup title={t.settings.reminderTitle} testID="group-reminder">
+            <ReminderSettings />
+          </SettingsGroup>
+
+          <SettingsGroup title={t.settings.groupUsing} testID="group-using">
+            <WritingPromptsSetting />
+            <ReleaseSoundSetting />
+          </SettingsGroup>
+
+          <SettingsGroup title={t.settings.vault} testID="group-vault">
+            <SettingsRow icon={Lock} label={t.settings.vaultLink} onPress={() => router.navigate("/vault")} />
+          </SettingsGroup>
+
+          <SettingsGroup title={t.settings.groupAds} testID="group-ads" footer={t.settings.adsNote}>
+            {adFree ? <AdFreeSetting /> : null}
+            {adPrivacy ? <SettingsRow icon={ShieldCheck} role="button" label={t.settings.adPrivacy} onPress={() => void showAdPrivacyOptions()} /> : null}
+          </SettingsGroup>
+
+          <SettingsGroup title={t.settings.data} testID="group-data" footer={t.settings.exportHint}>
+            <SettingsRow
+              icon={Download}
+              role="button"
+              label={t.settings.export}
+              disabled={exporting}
+              onPress={async () => {
+                setExporting(true);
+                try {
+                  await shareExport();
+                } finally {
+                  setExporting(false);
+                }
+              }}
+            />
+            <SettingsRow icon={Trash2} role="button" destructive label={t.settings.erase} onPress={() => setEraseOpen(true)} />
+          </SettingsGroup>
+
+          <SettingsGroup title={t.settings.about} testID="group-about" footer={t.settings.disclaimer}>
+            <SettingsRow icon={LifeBuoy} label={t.settings.helpLink} onPress={() => router.push("/help")} />
+          </SettingsGroup>
+
+          <Text style={[styles.version, { color: c.mutedForeground }]}>
+            {t.settings.versionLabel.replace("{version}", Constants.expoConfig?.version ?? appConfig.expo.version)}
+          </Text>
+        </View>
         <EraseSheet visible={eraseOpen} onClose={() => setEraseOpen(false)} />
       </Screen>
     </>
@@ -182,7 +193,11 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  section: { gap: space.md, paddingTop: space.xl },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: space.sm },
-  chip: { borderWidth: 1, borderRadius: radius.full, paddingHorizontal: space.lg, paddingVertical: space.sm },
+  groups: { gap: space.xl, marginTop: space.md },
+  you: { flexDirection: "row", alignItems: "center", gap: space.md },
+  choice: { flexDirection: "row", alignItems: "center", gap: space.md, minHeight: 44, flexWrap: "wrap" },
+  rowLabel: { flex: 1, fontFamily: fonts.sans, fontSize: 16 },
+  pills: { flexDirection: "row", borderRadius: radius.full, padding: 3, gap: 2 },
+  pill: { borderRadius: radius.full, borderWidth: 1, borderColor: "transparent", paddingHorizontal: space.md, paddingVertical: 6 },
+  version: { fontFamily: fonts.sans, fontSize: 12, textAlign: "center", marginTop: space.sm },
 });
