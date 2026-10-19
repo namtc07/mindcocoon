@@ -4,9 +4,9 @@ import { suggestionFor } from "@mindcocoon/core/feelings";
 import { addMood, changeMood, getMoodState } from "@mindcocoon/core/mood/store";
 import type { MoodType } from "@mindcocoon/core/types";
 import { router } from "expo-router";
-import { Moon } from "lucide-react-native";
 import { useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { Ken } from "@/components/art/Ken";
 import { MoodPicker } from "@/components/mood/MoodPicker";
 import { BoxBreathing } from "@/components/sanctuary/BoxBreathing";
 import { MiniPlayer } from "@/components/sanctuary/MiniPlayer";
@@ -147,7 +147,7 @@ export default function WindDownScreen() {
 
         {step === "night" && (
           <View style={[styles.step, styles.night]}>
-            <Moon size={36} color={c.mutedForeground} />
+            <Ken mood="sleepy" size={72} />
             <Muted>{t.windDown.sleepWellBody}</Muted>
             {/* What's playing, the timer, pause and stop — right where the phone gets put down. */}
             <View style={styles.player}>

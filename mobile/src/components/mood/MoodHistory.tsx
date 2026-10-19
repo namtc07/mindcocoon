@@ -4,6 +4,7 @@ import type { MoodLog } from "@mindcocoon/core/types";
 import { Trash2 } from "lucide-react-native";
 import { useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Ken } from "@/components/art/Ken";
 import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
@@ -34,7 +35,10 @@ export function MoodHistory({ logs }: { logs: MoodLog[] }) {
     <View style={{ gap: space.md }}>
       <Text style={{ fontFamily: fonts.sansMedium, fontSize: 16, color: c.foreground }}>{t.moodPage.history}</Text>
       {latest.length === 0 ? (
-        <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground }}>{t.moodPage.emptyHistory}</Text>
+        <View style={styles.empty}>
+          <Ken size={48} />
+          <Text style={{ flex: 1, fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground }}>{t.moodPage.emptyHistory}</Text>
+        </View>
       ) : (
         <View role="list" accessibilityLabel={t.moodPage.history}>
           {latest.map((log, i) => (
@@ -63,6 +67,7 @@ export function MoodHistory({ logs }: { logs: MoodLog[] }) {
 }
 
 const styles = StyleSheet.create({
+  empty: { flexDirection: "row", alignItems: "center", gap: space.lg },
   item: { flexDirection: "row", alignItems: "center", gap: space.md, paddingVertical: space.md },
   dot: { width: 14, height: 14, borderRadius: 7 },
   del: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },

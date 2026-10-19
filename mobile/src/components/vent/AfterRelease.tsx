@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
+import { Ken } from "@/components/art/Ken";
 import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
@@ -13,6 +14,7 @@ export function AfterRelease({ onWriteAgain }: { onWriteAgain: () => void }) {
   const { c } = useTheme();
   return (
     <Animated.View entering={FadeIn.duration(1000)} style={styles.wrap}>
+      <Ken mood="glad" size={80} />
       <Text accessibilityRole="header" style={[styles.title, { color: c.foreground }]}>
         {t.vent.releasedTitle}
       </Text>

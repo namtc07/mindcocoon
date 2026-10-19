@@ -2,6 +2,7 @@ import { formatDay } from "@mindcocoon/core/dates";
 import { saveVaultEntry } from "@mindcocoon/core/vault/session";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { Ken } from "@/components/art/Ken";
 import { Muted, Screen } from "@/components/Screen";
 import { StackHeader } from "@/components/StackHeader";
 import { Button } from "@/components/ui/Button";
@@ -87,7 +88,12 @@ export default function WorriesScreen() {
               </View>
             ))}
             {waiting && <Muted>{t.worries.waiting}</Muted>}
-            {worries.length === 0 && <Muted>{t.worries.empty}</Muted>}
+            {worries.length === 0 && (
+              <>
+                <Ken size={64} />
+                <Muted>{t.worries.empty}</Muted>
+              </>
+            )}
           </View>
         )}
       </Screen>

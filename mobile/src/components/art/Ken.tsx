@@ -1,0 +1,77 @@
+import { useEffect } from "react";
+import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
+import Svg, { Circle, Defs, Ellipse, G, LinearGradient, Path, Stop, Text as SvgText } from "react-native-svg";
+import { decorative } from "./seeded";
+
+export type KenMood = "calm" | "sleepy" | "glad";
+
+/** Same tapered cocoon as the app icon, in a 100 × 120 box. */
+const BODY = "M50 14 C68 14 88 40 88 70 C88 100 70 116 50 116 C30 116 12 100 12 70 C12 40 32 14 50 14 Z";
+const INK = "#1f2a44";
+
+function Face({ mood }: { mood: KenMood }) {
+  if (mood === "sleepy") {
+    return (
+      <G stroke={INK} strokeWidth={2.4} strokeLinecap="round" fill="none">
+        <Path d="M33 64 Q38 69 43 64" />
+        <Path d="M57 64 Q62 69 67 64" />
+        <Circle cx={50} cy={78} r={2.2} fill={INK} stroke="none" />
+      </G>
+    );
+  }
+  if (mood === "glad") {
+    return (
+      <G stroke={INK} strokeWidth={2.4} strokeLinecap="round" fill="none">
+        <Path d="M33 66 Q38 60 43 66" />
+        <Path d="M57 66 Q62 60 67 66" />
+        <Path d="M42 76 Q50 84 58 76" />
+      </G>
+    );
+  }
+  return (
+    <G>
+      <Ellipse cx={38} cy={64} rx={3} ry={3.6} fill={INK} />
+      <Ellipse cx={62} cy={64} rx={3} ry={3.6} fill={INK} />
+      <Path d="M44 76 Q50 80 56 76" stroke={INK} strokeWidth={2.2} strokeLinecap="round" fill="none" />
+    </G>
+  );
+}
+
+/**
+ * Kén, a small cocoon who keeps you company. Only a face — no needs, no levels, nothing to feed.
+ * Floats gently unless Reduce Motion is on.
+ */
+export function Ken({ mood = "calm", size = 72 }: { mood?: KenMood; size?: number }) {
+  const still = useReducedMotion();
+  const y = useSharedValue(0);
+  useEffect(() => {
+    if (still) return;
+    y.set(withRepeat(withTiming(-3, { duration: 1800, easing: Easing.inOut(Easing.sin) }), -1, true));
+  }, [still, y]);
+  const float = useAnimatedStyle(() => ({ transform: [{ translateY: y.get() }] }));
+  return (
+    <Animated.View testID={`ken-${mood}`} {...decorative} style={[{ width: size, height: size * 1.2 }, float]}>
+      <Svg width="100%" height="100%" viewBox="0 0 100 120">
+        <Defs>
+          <LinearGradient id="ken-body" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor="#b6dcd2" />
+            <Stop offset="0.6" stopColor="#8cc0b3" />
+            <Stop offset="1" stopColor="#e2b77f" />
+          </LinearGradient>
+        </Defs>
+        <Path d="M50 0 L50 14" stroke="#7fb5a8" strokeWidth={2} strokeLinecap="round" />
+        <Path d={BODY} fill="url(#ken-body)" />
+        <Path d="M16 48 C36 40 64 54 86 46" stroke="#f1f5f9" strokeOpacity={0.4} strokeWidth={3} strokeLinecap="round" fill="none" />
+        <Path d="M14 96 C36 88 64 104 86 94" stroke="#f1f5f9" strokeOpacity={0.35} strokeWidth={3} strokeLinecap="round" fill="none" />
+        <Ellipse cx={30} cy={74} rx={6} ry={3.5} fill="#e08a7e" opacity={0.35} />
+        <Ellipse cx={70} cy={74} rx={6} ry={3.5} fill="#e08a7e" opacity={0.35} />
+        <Face mood={mood} />
+        {mood === "sleepy" && (
+          <SvgText x={80} y={22} fontSize={14} fill="#f1f5f9" opacity={0.75}>
+            z
+          </SvgText>
+        )}
+      </Svg>
+    </Animated.View>
+  );
+}

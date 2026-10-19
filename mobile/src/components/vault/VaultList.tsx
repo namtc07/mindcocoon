@@ -2,6 +2,7 @@ import { formatDay } from "@mindcocoon/core/dates";
 import type { DecryptedJournalEntry } from "@mindcocoon/core/types";
 import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Ken } from "@/components/art/Ken";
 import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
@@ -16,6 +17,7 @@ export function VaultList({ entries, onOpen }: { entries: DecryptedJournalEntry[
   if (entries.length === 0) {
     return (
       <View style={styles.empty}>
+        <Ken size={64} />
         <Text style={{ fontFamily: fonts.serif, fontSize: 20, lineHeight: 28, color: c.mutedForeground }}>{t.vault.empty}</Text>
         <Button variant="outline" onPress={() => router.navigate("/vent")}>
           {t.vault.writeFirst}

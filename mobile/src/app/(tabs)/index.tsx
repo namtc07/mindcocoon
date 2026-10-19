@@ -3,6 +3,7 @@ import { Link } from "expo-router";
 import { Fragment } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { AdBanner } from "@/components/ads/AdBanner";
+import { Ken } from "@/components/art/Ken";
 import { Sky } from "@/components/art/Sky";
 import { Screen } from "@/components/Screen";
 import { HeavyNudge } from "@/components/safety/HeavyNudge";
@@ -42,7 +43,14 @@ export default function TodayScreen() {
   // The worry-box line shows at any time (it's the only way back to the box).
   const blocks = { checkin, worry: <WorryReadyLine now={now} />, entries, prompt };
   return (
-    <Screen title={t.today.greeting[partOfDay(now)]} hero={<Sky part={partOfDay(now)} />}>
+    <Screen title={t.today.greeting[partOfDay(now)]} hero={
+        <View>
+          <Sky part={partOfDay(now)} />
+          <View style={styles.ken}>
+            <Ken mood={partOfDay(now) === "night" ? "sleepy" : "calm"} size={56} />
+          </View>
+        </View>
+      }>
       <Text style={{ fontFamily: fonts.sans, fontSize: 14, color: c.mutedForeground, marginTop: -space.sm }}>{formatDay(now, locale)}</Text>
       <View style={styles.sections}>
         <HeavyNudge now={now} />
@@ -61,4 +69,8 @@ export default function TodayScreen() {
   );
 }
 
-const styles = StyleSheet.create({ sections: { gap: space.xxl, marginTop: space.lg }, group: { gap: space.xxl } });
+const styles = StyleSheet.create({
+  sections: { gap: space.xxl, marginTop: space.lg },
+  group: { gap: space.xxl },
+  ken: { position: "absolute", right: space.xl, bottom: -space.sm },
+});
