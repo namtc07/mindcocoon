@@ -125,6 +125,7 @@ export const vi: Dictionary = {
     nextMonth: "Tháng sau",
     today: "Hôm nay",
     legend: "Chú giải",
+    openMonth: "Mở {month}",
     history: "Lịch sử",
     deleteEntry: "Xóa lần ghi",
     emptyDay: "Ngày này chưa ghi gì.",

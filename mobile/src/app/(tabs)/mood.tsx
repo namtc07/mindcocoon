@@ -7,7 +7,8 @@ import { CheckinForm } from "@/components/mood/CheckinForm";
 import { DayDetail } from "@/components/mood/DayDetail";
 import { GentleInsights } from "@/components/mood/GentleInsights";
 import { JourneyCard } from "@/components/mood/JourneyCard";
-import { MonthHeatmap } from "@/components/mood/MonthHeatmap";
+import { MoodLegend } from "@/components/mood/MoodLegend";
+import { MonthHeatmap, type MonthView } from "@/components/mood/MonthHeatmap";
 import { MoodHistory } from "@/components/mood/MoodHistory";
 import { WeekStrip } from "@/components/mood/WeekStrip";
 import { YearPixels } from "@/components/mood/YearPixels";
@@ -27,6 +28,7 @@ export default function MoodScreen() {
   const { logs } = useMoodLogs();
   const [selected, setSelected] = useState<DayCell | null>(null);
   const [view, setView] = useState<"month" | "year">("month");
+  const [month, setMonth] = useState<MonthView>({ year: now.getFullYear(), month: now.getMonth() });
   return (
     <ScreenActive>
     <Screen title={t.moodPage.title}>
@@ -48,7 +50,19 @@ export default function MoodScreen() {
               {t.moodPage.viewYear}
             </Chip>
           </View>
-          {view === "month" ? <MonthHeatmap logs={logs} now={now} onSelect={setSelected} /> : <YearPixels logs={logs} now={now} />}
+          {view === "month" ? (
+            <MonthHeatmap logs={logs} now={now} onSelect={setSelected} view={month} onViewChange={setMonth} />
+          ) : (
+            <YearPixels
+              logs={logs}
+              now={now}
+              onOpenMonth={(m) => {
+                setMonth({ year: now.getFullYear(), month: m });
+                setView("month");
+              }}
+            />
+          )}
+          <MoodLegend />
           <JourneyCard logs={logs} now={now} />
         </View>
         <View testID="mood-history">

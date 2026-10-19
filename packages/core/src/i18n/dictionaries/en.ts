@@ -124,6 +124,7 @@ export const en = {
     nextMonth: "Next month",
     today: "Today",
     legend: "Legend",
+    openMonth: "Open {month}",
     history: "History",
     deleteEntry: "Delete check-in",
     emptyDay: "Nothing logged this day.",

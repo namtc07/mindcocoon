@@ -1,7 +1,7 @@
 import { yearGrid } from "@mindcocoon/core/mood/selectors";
 import type { MoodLog } from "@mindcocoon/core/types";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
@@ -11,20 +11,29 @@ const MAX_CELL = 8;
 const GAP = 2;
 const MAX_DAYS = 31;
 
-/** The whole year: one row per month, one small square per day in that day's mood colour. Nothing counted. */
-export function YearPixels({ logs, now }: { logs: MoodLog[]; now: Date }) {
+/** The whole year: one row per month, one small square per day in that day's mood colour; tap a month to open it. Nothing counted. */
+export function YearPixels({ logs, now, onOpenMonth }: { logs: MoodLog[]; now: Date; onOpenMonth: (month: number) => void }) {
   const { t, locale } = useI18n();
   const { c } = useTheme();
   const year = now.getFullYear();
   const months = yearGrid(logs, year);
   // Squares shrink so a 31-day month always fits on one line, whatever the phone width.
   const [cell, setCell] = useState(MAX_CELL);
-  const monthName = (m: number) => new Date(year, m, 1).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", { month: "short" });
+  const tag = locale === "vi" ? "vi-VN" : "en-US";
+  const monthName = (m: number) => new Date(year, m, 1).toLocaleDateString(tag, { month: "short" });
+  const monthLong = (m: number) => new Date(year, m, 1).toLocaleDateString(tag, { month: "long" });
   return (
-    <View accessible accessibilityLabel={t.moodPage.yearLabel} style={styles.wrap}>
+    <View accessibilityLabel={t.moodPage.yearLabel} style={styles.wrap}>
       <Text style={{ fontFamily: fonts.serif, fontSize: 20, color: c.foreground }}>{year}</Text>
       {months.map((days, m) => (
-        <View key={m} testID="year-month" style={styles.row}>
+        <Pressable
+          key={m}
+          testID="year-month"
+          accessibilityRole="button"
+          accessibilityLabel={t.moodPage.openMonth.replace("{month}", monthLong(m))}
+          onPress={() => onOpenMonth(m)}
+          style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}
+        >
           <Text style={[styles.month, { color: c.mutedForeground }]}>{monthName(m)}</Text>
           <View
             testID="year-days"
@@ -46,7 +55,7 @@ export function YearPixels({ logs, now }: { logs: MoodLog[]; now: Date }) {
               />
             ))}
           </View>
-        </View>
+        </Pressable>
       ))}
     </View>
   );
@@ -54,7 +63,7 @@ export function YearPixels({ logs, now }: { logs: MoodLog[]; now: Date }) {
 
 const styles = StyleSheet.create({
   wrap: { gap: GAP + 2 },
-  row: { flexDirection: "row", alignItems: "center", gap: space.sm },
+  row: { flexDirection: "row", alignItems: "center", gap: space.sm, minHeight: 22 },
   month: { fontFamily: fonts.sans, fontSize: 11, width: 34 },
   days: { flexDirection: "row", flexWrap: "nowrap", gap: GAP, flex: 1 },
   cell: { borderRadius: 2 },
