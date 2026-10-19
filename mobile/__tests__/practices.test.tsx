@@ -40,6 +40,9 @@ describe("Gentle practices", () => {
     expect(screen.getByText("Body scan")).toBeOnTheScreen();
     expect(screen.getByText("Three good things")).toBeOnTheScreen();
     expect(screen.getByText("A kind letter to yourself")).toBeOnTheScreen();
+    expect(screen.getByText("An unsent letter")).toBeOnTheScreen();
+    expect(screen.getByText("A safe place")).toBeOnTheScreen();
+    expect(screen.getByText("Tense and release")).toBeOnTheScreen();
     expect(screen.getAllByText("4 min").length).toBeGreaterThan(0);
     await user.press(screen.getByRole("button", { name: /Body scan/ }));
     expect(router.push).toHaveBeenCalledWith({ pathname: "/practices/[id]", params: { id: "body-scan" } });

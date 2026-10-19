@@ -5,7 +5,7 @@ import type { Locale } from "./i18n/config";
  * (test/practices.test.ts). Nothing here measures, scores or counts the person.
  */
 
-export type PracticeId = "grounding" | "body-scan" | "three-good-things" | "kind-letter";
+export type PracticeId = "grounding" | "body-scan" | "three-good-things" | "kind-letter" | "unsent-letter" | "safe-place" | "muscle-release";
 
 export interface PracticeStep {
   text: string;
@@ -79,6 +79,46 @@ const en: Practice[] = [
       { text: "Read it back slowly. You deserve this kindness too." },
     ],
   },
+  {
+    id: "unsent-letter",
+    title: "An unsent letter",
+    summary: "Say what you never got to say, to someone, without sending it.",
+    minutes: 5,
+    steps: [
+      { text: "Think of someone you have words for: someone you miss, someone who hurt you, someone you love." },
+      { text: "Write to them. Say it the way you wish you could. Nobody else will read it.", input: "letter" },
+      { text: "You don't have to send it. Saying it is already something." },
+    ],
+  },
+  {
+    id: "safe-place",
+    title: "A safe place",
+    summary: "Picture somewhere you feel completely at ease.",
+    minutes: 3,
+    steps: [
+      { text: "Close your eyes if that feels okay. Think of a place, real or imagined, where you feel safe." },
+      { text: "Look around it. What colours and light are there?", seconds: 30 },
+      { text: "Listen. What sounds belong to this place?", seconds: 30 },
+      { text: "Notice the air, the temperature, what's under your feet or your hands.", seconds: 30 },
+      { text: "Let your shoulders settle. Nothing here asks anything of you.", seconds: 30 },
+      { text: "This place is yours. You can come back to it any time." },
+    ],
+  },
+  {
+    id: "muscle-release",
+    title: "Tense and release",
+    summary: "Squeeze, then let go, one part of the body at a time.",
+    minutes: 4,
+    steps: [
+      { text: "For each step, tighten gently for a few breaths, then let it all go. Never to the point of pain." },
+      { text: "Curl your toes and tighten your feet. Hold… then release.", seconds: 20 },
+      { text: "Tighten your legs. Hold… then let them go heavy.", seconds: 20 },
+      { text: "Make fists with both hands. Hold… then open them slowly.", seconds: 20 },
+      { text: "Lift your shoulders toward your ears. Hold… then drop them.", seconds: 20 },
+      { text: "Scrunch your face. Hold… then let it soften completely.", seconds: 20 },
+      { text: "Notice the difference between holding and letting go. You can always come back to it." },
+    ],
+  },
 ];
 
 const vi: Practice[] = [
@@ -135,6 +175,46 @@ const vi: Practice[] = [
       { text: "Nghĩ về điều đang đè nặng bạn tối nay. Bạn không cần phải giải quyết nó." },
       { text: "Viết cho mình như viết cho một người bạn thân đang cảm thấy như vậy. Hãy thật dịu dàng.", input: "letter" },
       { text: "Đọc lại thật chậm. Bạn cũng xứng đáng được đối xử tử tế như thế." },
+    ],
+  },
+  {
+    id: "unsent-letter",
+    title: "Lá thư chưa gửi",
+    summary: "Nói điều bạn chưa từng nói được với một người, mà không cần gửi đi.",
+    minutes: 5,
+    steps: [
+      { text: "Nghĩ về một người bạn còn điều muốn nói: người bạn nhớ, người làm bạn tổn thương, người bạn thương." },
+      { text: "Viết cho người ấy. Nói theo cách bạn ước mình đã nói. Không ai khác đọc được.", input: "letter" },
+      { text: "Bạn không cần gửi đi. Nói ra được đã là một điều rồi." },
+    ],
+  },
+  {
+    id: "safe-place",
+    title: "Một nơi bình yên",
+    summary: "Hình dung một nơi bạn thấy hoàn toàn thoải mái.",
+    minutes: 3,
+    steps: [
+      { text: "Nhắm mắt lại nếu bạn thấy ổn. Nghĩ về một nơi, có thật hay tưởng tượng, nơi bạn thấy an toàn." },
+      { text: "Nhìn quanh nơi đó. Có những màu sắc và ánh sáng nào?", seconds: 30 },
+      { text: "Lắng nghe. Nơi đó có những âm thanh gì?", seconds: 30 },
+      { text: "Cảm nhận không khí, nhiệt độ, thứ đang ở dưới chân hay trong tay bạn.", seconds: 30 },
+      { text: "Để vai thả lỏng. Ở đây không có gì đòi hỏi bạn cả.", seconds: 30 },
+      { text: "Nơi này là của bạn. Bạn có thể quay lại bất cứ lúc nào." },
+    ],
+  },
+  {
+    id: "muscle-release",
+    title: "Gồng rồi thả",
+    summary: "Siết nhẹ rồi buông, từng phần cơ thể một.",
+    minutes: 4,
+    steps: [
+      { text: "Ở mỗi bước, siết nhẹ trong vài hơi thở rồi buông hết ra. Đừng siết tới mức đau." },
+      { text: "Co các ngón chân, siết bàn chân. Giữ… rồi thả ra.", seconds: 20 },
+      { text: "Siết hai chân. Giữ… rồi để chúng nặng xuống.", seconds: 20 },
+      { text: "Nắm chặt hai bàn tay. Giữ… rồi từ từ mở ra.", seconds: 20 },
+      { text: "Nhún vai lên sát tai. Giữ… rồi thả xuống.", seconds: 20 },
+      { text: "Nhăn cả khuôn mặt. Giữ… rồi để nó dịu hẳn lại.", seconds: 20 },
+      { text: "Để ý sự khác nhau giữa lúc gồng và lúc buông. Bạn có thể quay lại cảm giác này bất cứ lúc nào." },
     ],
   },
 ];

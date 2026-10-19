@@ -17,4 +17,10 @@ describe("practices", () => {
     expect(getPractice("vi", "kind-letter")?.steps.some((s) => s.input === "letter")).toBe(true);
     expect(getPractice("en", "nope")).toBeUndefined();
   });
+
+  it("has seven practices", () => {
+    expect(getPractices("en").map((p) => p.id)).toEqual([
+      "grounding", "body-scan", "three-good-things", "kind-letter", "unsent-letter", "safe-place", "muscle-release",
+    ]);
+  });
 });
