@@ -81,12 +81,14 @@
         "ios": {
           "banner-today": "",
           "banner-mood": "",
-          "rewarded": ""
+          "rewarded": "",
+          "native-today": ""
         },
         "android": {
           "banner-today": "",
           "banner-mood": "",
-          "rewarded": ""
+          "rewarded": "",
+          "native-today": ""
         }
       }
     }
