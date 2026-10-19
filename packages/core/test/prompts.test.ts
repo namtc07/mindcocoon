@@ -36,3 +36,12 @@ describe("promptAt", () => {
     expect(promptAt("en", -1)).toBe(REFLECTION_PROMPTS.en[PROMPT_COUNT - 1]);
   });
 });
+
+describe("prompt themes", () => {
+  it("every prompt has a theme", async () => {
+    const { PROMPT_COUNT, PROMPT_THEME_OF, PROMPT_THEMES } = await import("@mindcocoon/core/prompts");
+    expect(PROMPT_THEME_OF).toHaveLength(PROMPT_COUNT);
+    for (const theme of PROMPT_THEME_OF) expect(PROMPT_THEMES).toContain(theme);
+    for (const theme of PROMPT_THEMES) expect(PROMPT_THEME_OF).toContain(theme);
+  });
+});

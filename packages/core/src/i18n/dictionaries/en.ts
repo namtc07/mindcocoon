@@ -242,6 +242,8 @@ export const en = {
     timeLeft: "{n}s",
   },
   prompts: {
+    all: "All",
+    themes: { heavy: "Heavy days", relationships: "Relationships", "study-work": "Study & work", kindness: "Kindness to yourself", hope: "Hope", self: "Knowing yourself" },
     title: "Prompts",
     intro: "Pick one that speaks to you tonight, or let one find you.",
     surprise: "Surprise me",

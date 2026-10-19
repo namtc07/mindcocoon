@@ -243,6 +243,8 @@ export const vi: Dictionary = {
     timeLeft: "{n} giây",
   },
   prompts: {
+    all: "Tất cả",
+    themes: { heavy: "Ngày nặng nề", relationships: "Các mối quan hệ", "study-work": "Học & làm", kindness: "Dịu dàng với mình", hope: "Hy vọng", self: "Hiểu mình" },
     title: "Câu gợi mở",
     intro: "Chọn một câu chạm đến bạn tối nay, hoặc để một câu tự tìm đến.",
     surprise: "Chọn ngẫu nhiên",

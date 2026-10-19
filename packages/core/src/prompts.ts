@@ -97,3 +97,14 @@ export function promptAt(locale: Locale, index: number): string {
   const list = REFLECTION_PROMPTS[locale];
   return list[((index % list.length) + list.length) % list.length];
 }
+
+export const PROMPT_THEMES = ["heavy", "relationships", "study-work", "kindness", "hope", "self"] as const;
+export type PromptTheme = (typeof PROMPT_THEMES)[number];
+
+/** One theme per prompt, by index (the same in every language). */
+export const PROMPT_THEME_OF: PromptTheme[] = [
+  "heavy", "self", "kindness", "heavy", "hope", "self", "self", "heavy", "relationships", "kindness",
+  "hope", "relationships", "self", "hope", "relationships", "heavy", "self", "heavy", "kindness", "study-work",
+  "kindness", "heavy", "hope", "relationships", "kindness", "hope", "self", "kindness", "self", "heavy",
+  "study-work", "relationships", "relationships", "study-work", "study-work",
+];
