@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { checkText, normalizeForMatch } from "@mindcocoon/core/safety/detect";
-import { HOTLINES, isOpenNow, type Hotline } from "@mindcocoon/core/safety/hotlines";
+import { COUNTRY_NAMES, HOTLINES, isOpenNow, linesFor, type Hotline } from "@mindcocoon/core/safety/hotlines";
 
 describe("normalizeForMatch", () => {
   it("strips Vietnamese diacritics and case", () => {
@@ -58,6 +58,8 @@ describe("hotlines", () => {
     hours: { tz: "Asia/Ho_Chi_Minh", open: "08:00", close: "22:00" },
     audience: "all",
     verified: false,
+    source: "https://example.org",
+    checkedOn: "2026-10-19",
   };
 
   it("knows whether a line is open in its own time zone", () => {
@@ -69,6 +71,32 @@ describe("hotlines", () => {
 
   it("treats 24/7 lines as always open", () => {
     expect(isOpenNow({ ...line, hours: "24/7" }, new Date())).toBe(true);
+  });
+
+  it("honours open days (Ngày Mai answers Wednesday to Sunday only)", () => {
+    const ngayMai = HOTLINES.find((h) => h.id === "vn-ngay-mai")!;
+    // Tue 20 Oct 2026, 15:00 in Vietnam → closed; Wed 21 Oct 15:00 → open; Wed 21:00 → closed.
+    expect(isOpenNow(ngayMai, new Date("2026-10-20T08:00:00Z"))).toBe(false);
+    expect(isOpenNow(ngayMai, new Date("2026-10-21T08:00:00Z"))).toBe(true);
+    expect(isOpenNow(ngayMai, new Date("2026-10-21T14:00:00Z"))).toBe(false);
+  });
+
+  it("covers the countries we serve, each line with where and when it was checked", () => {
+    for (const country of ["VN", "US", "CA", "GB", "IE", "AU", "NZ", "SG", "MY", "PH", "ID", "IN"]) {
+      expect(HOTLINES.some((h) => h.country === country), country).toBe(true);
+      expect(COUNTRY_NAMES[country]?.en && COUNTRY_NAMES[country]?.vi, country).toBeTruthy();
+    }
+    for (const h of HOTLINES) {
+      expect(h.source, h.id).toMatch(/^https:\/\//);
+      expect(h.checkedOn, h.id).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it("puts a country's own lines first", () => {
+    expect(linesFor("PH").home.map((h) => h.id)).toEqual(["ph-ncmh"]);
+    expect(linesFor("PH").others.some((h) => h.country === "PH")).toBe(false);
+    expect(linesFor("FR").home).toEqual([]);
+    expect(linesFor(null).home).toEqual([]);
   });
 
   it("include an emergency number and a youth line for Vietnam", () => {

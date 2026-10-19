@@ -1,16 +1,18 @@
-import { FIND_A_HELPLINE_URL, HOTLINES, isOpenNow, telHref, type Hotline } from "@mindcocoon/core/safety/hotlines";
+import { COUNTRY_NAMES, FIND_A_HELPLINE_URL, isOpenNow, linesFor, telHref, type Hotline } from "@mindcocoon/core/safety/hotlines";
 import type { Locale } from "@mindcocoon/core/i18n/config";
 import { Stack } from "expo-router";
 import { Phone } from "lucide-react-native";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { Muted, Screen } from "@/components/Screen";
 import { useNow } from "@/hooks/use-now";
+import { deviceRegion } from "@/lib/region";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
 
-const HOME_COUNTRY: Record<Locale, string | null> = { vi: "VN", en: null };
+/** Without a region from the system, the language is the best hint we have. */
+const LANGUAGE_COUNTRY: Record<Locale, string | null> = { vi: "VN", en: null };
 
 function HotlineItem({ line, now, first }: { line: Hotline; now: Date; first: boolean }) {
   const { t, locale } = useI18n();
@@ -47,16 +49,25 @@ function HotlineItem({ line, now, first }: { line: Hotline; now: Date; first: bo
   );
 }
 
-/** Support lines: the user's country first, then lines answering now. Bundled, so it works offline. */
+/**
+ * Support lines for the phone's region first (open ones first), then other countries grouped under
+ * their names. Where we have no lines yet, the find-a-helpline link leads. Bundled: works offline.
+ */
 export default function HelpScreen() {
   const { t, locale } = useI18n();
   const { c } = useTheme();
   const now = useNow();
-  const home = HOME_COUNTRY[locale];
+  const country = deviceRegion() ?? LANGUAGE_COUNTRY[locale];
   const byOpen = (a: Hotline, b: Hotline) => Number(isOpenNow(b, now)) - Number(isOpenNow(a, now));
-  const local = HOTLINES.filter((h) => h.country === home).sort(byOpen);
-  const others = HOTLINES.filter((h) => h.country !== home).sort(byOpen);
+  const { home, others } = linesFor(country);
+  const local = [...home].sort(byOpen);
+  const otherCountries = [...new Set(others.map((h) => h.country))];
   const card = [styles.card, { backgroundColor: c.surface }];
+  const find = (testID: string) => (
+    <Pressable testID={testID} accessibilityRole="link" onPress={() => void Linking.openURL(FIND_A_HELPLINE_URL)} style={{ minHeight: 44, justifyContent: "center" }}>
+      <Text style={{ fontFamily: fonts.sansMedium, fontSize: 15, color: c.primary }}>{t.safety.findHelpline}</Text>
+    </Pressable>
+  );
 
   return (
     <>
@@ -73,26 +84,36 @@ export default function HelpScreen() {
       <Screen title={t.safety.helpTitle}>
         <Muted>{t.safety.helpIntro}</Muted>
         <View style={styles.sections}>
-          {__DEV__ && HOTLINES.some((h) => !h.verified) && (
+          {__DEV__ && (
             <Text style={[styles.unverified, { color: c.ember, borderColor: c.ember }]}>{t.safety.unverified}</Text>
           )}
-          {local.length > 0 && (
+          {local.length > 0 ? (
             <View testID="home-lines" style={card}>
               {local.map((h, i) => (
                 <HotlineItem key={h.id} line={h} now={now} first={i === 0} />
               ))}
             </View>
+          ) : (
+            find("find-helpline-first")
           )}
           <View style={{ gap: space.md }}>
-            {local.length > 0 && <Muted>{t.safety.otherCountries}</Muted>}
-            <View style={card}>
-              {others.map((h, i) => (
-                <HotlineItem key={h.id} line={h} now={now} first={i === 0} />
-              ))}
-            </View>
-            <Pressable accessibilityRole="link" onPress={() => void Linking.openURL(FIND_A_HELPLINE_URL)} style={{ minHeight: 44, justifyContent: "center" }}>
-              <Text style={{ fontFamily: fonts.sansMedium, fontSize: 15, color: c.primary }}>{t.safety.findHelpline}</Text>
-            </Pressable>
+            <Muted>{t.safety.otherCountries}</Muted>
+            {otherCountries.map((code) => {
+              const lines = others.filter((h) => h.country === code).sort(byOpen);
+              return (
+                <View key={code} testID={`country-${code}`} style={{ gap: space.xs }}>
+                  <Text accessibilityRole="header" style={{ fontFamily: fonts.sansMedium, fontSize: 14, color: c.mutedForeground }}>
+                    {COUNTRY_NAMES[code]?.[locale] ?? code}
+                  </Text>
+                  <View style={card}>
+                    {lines.map((h, i) => (
+                      <HotlineItem key={h.id} line={h} now={now} first={i === 0} />
+                    ))}
+                  </View>
+                </View>
+              );
+            })}
+            {local.length > 0 && find("find-helpline")}
           </View>
           <Muted>{t.safety.disclaimer}</Muted>
         </View>

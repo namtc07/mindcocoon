@@ -123,6 +123,7 @@ export function BoxBreathing({ fixed }: { fixed?: Choice } = {}) {
   };
 
   // Voice guidance (Settings, off by default): the phone says each new phase.
+  const phaseWord = phaseLabel[state.phase];
   const lastSpoken = useRef<string | null>(null);
   useEffect(() => {
     if (!phaseKey) {
@@ -131,8 +132,8 @@ export function BoxBreathing({ fixed }: { fixed?: Choice } = {}) {
     }
     if (lastSpoken.current === phaseKey) return;
     lastSpoken.current = phaseKey;
-    guide(phaseLabel[state.phase], locale);
-  }, [phaseKey, phaseLabel, state.phase, locale]);
+    guide(phaseWord, locale);
+  }, [phaseKey, phaseWord, locale]);
   useEffect(() => hush, []);
 
   // iOS has no live regions: announce each phase (and the end) for VoiceOver.
