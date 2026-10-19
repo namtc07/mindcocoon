@@ -256,6 +256,8 @@ export const en = {
     playError: "That sound couldn't play.",
     moreSounds: "More sounds",
     unlockWithAd: "Watch an ad to unlock {name} for 24 hours",
+    unlockAllWithAd: "Watch one ad to open all extra sounds for 24 hours",
+    moreMixWithAd: "Watch an ad to save one more mix",
     unlockedUntil: "Unlocked until {time}",
     adUnavailable: "No ad right now. Try again later.",
   },

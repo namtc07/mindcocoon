@@ -55,7 +55,7 @@ export default function TodayScreen() {
   const blocks = { checkin, worry: <WorryReadyLine now={now} />, entries, prompt };
   return (
     <ScreenActive>
-    <Screen title={greeting} hero={
+    <Screen title={greeting} footer={<AdBanner placement="today" />} hero={
         <View>
           <Sky part={part} />
           <View style={styles.ken}>
@@ -78,7 +78,6 @@ export default function TodayScreen() {
           </Link>
         )}
       </View>
-      <AdBanner placement="today" />
     </Screen>
     </ScreenActive>
   );

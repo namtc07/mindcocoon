@@ -7,6 +7,7 @@ import { Chip } from "@/components/ui/Chip";
 import { toast } from "@/components/ui/Toast";
 import { MixCard } from "./MixCard";
 import { useNow } from "@/hooks/use-now";
+import { MAX_EXTRA_MIX_SLOTS, useRewardedUnlock } from "@/hooks/use-rewarded-unlock";
 import { useI18n } from "@/i18n/i18n";
 import { audio, useAudio } from "@/lib/audio";
 import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
@@ -19,6 +20,7 @@ import { useTheme } from "@/theme/theme";
 const PREMIUM = new Set(SOUND_TRACKS.filter((t) => t.isPremium).map((t) => t.id));
 const NONE: SavedMix[] = [];
 const readMixes = () => getPref("mixes") ?? NONE;
+const readExtra = () => Math.min(getPref("extraMixSlots") ?? 0, MAX_EXTRA_MIX_SLOTS);
 
 /** One-tap mixes: ready-made ones, the person's own (up to 5), and "Save this mix". */
 export function MixChips() {
@@ -31,7 +33,11 @@ export function MixChips() {
   const playable = (id: string) => !PREMIUM.has(id) || isUnlockedIn(unlocks, id, now.getTime());
   const matches = (mix: Mix) => mixMatches(mix, state.playing, state.volumes);
   const nameOf = (m: SavedMix) => t.sanctuary.myMix.replace("{n}", String(m.n));
-  const full = saved.length >= MAX_SAVED_MIXES;
+  const extra = useSyncExternalStore(subscribePrefs, readExtra, readExtra);
+  const full = saved.length >= MAX_SAVED_MIXES + extra;
+  const { offer, busy, earnMixSlot } = useRewardedUnlock();
+  // Full, and room can still grow (up to ten): a short ad, only if the person taps it.
+  const canGrow = full && offer && extra < MAX_EXTRA_MIX_SLOTS;
 
   function play(mix: Mix) {
     audio
@@ -89,6 +95,19 @@ export function MixChips() {
         {state.playing.length > 0 && (
           <Chip selected={false} disabled={full} onPress={() => void save()}>
             {t.sanctuary.saveMix}
+          </Chip>
+        )}
+        {state.playing.length > 0 && canGrow && (
+          <Chip
+            selected={false}
+            disabled={busy}
+            onPress={() =>
+              void earnMixSlot().then((r) => {
+                if (r === "unavailable") toast.show(t.sanctuary.adUnavailable);
+              })
+            }
+          >
+            {t.sanctuary.moreMixWithAd}
           </Chip>
         )}
       </ScrollView>

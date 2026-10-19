@@ -124,7 +124,7 @@ export function SoundMixer() {
   const state = useAudio();
   const now = useNow();
   const unlocks = useUnlocks();
-  const { offer, busy, unlock } = useRewardedUnlock();
+  const { offer, busy, unlock, unlockAll } = useRewardedUnlock();
   const premium = PREMIUM_TRACKS.map((track) => ({ id: track.id, until: unlockedUntilIn(unlocks, track.id, now.getTime()) })).filter(
     (p) => p.until !== null || offer,
   );
@@ -146,6 +146,22 @@ export function SoundMixer() {
           <Text accessibilityRole="header" style={[styles.label, { color: c.mutedForeground }]}>
             {t.sanctuary.moreSounds}
           </Text>
+          {offer && premium.filter((p) => p.until === null).length > 1 && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ disabled: busy }}
+              disabled={busy}
+              onPress={() =>
+                void unlockAll().then((r) => {
+                  if (r === "unavailable") toast.show(t.sanctuary.adUnavailable);
+                })
+              }
+              style={[styles.allButton, { borderColor: c.ember, opacity: busy ? 0.5 : 1 }]}
+            >
+              <Lock size={14} color={c.ember} />
+              <Text style={{ fontFamily: fonts.sansMedium, fontSize: 14, color: c.ember, flexShrink: 1 }}>{t.sanctuary.unlockAllWithAd}</Text>
+            </Pressable>
+          )}
           <View style={styles.grid}>
             {premium.map(({ id, until }) =>
               until !== null ? (
@@ -200,6 +216,7 @@ const styles = StyleSheet.create({
   group: { gap: space.sm, marginTop: space.md },
   locked: { gap: space.sm },
   lockIcon: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
+  allButton: { flexDirection: "row", alignItems: "center", gap: space.sm, borderWidth: 1, borderRadius: radius.full, paddingHorizontal: space.lg, minHeight: 44 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: space.sm },
   tile: { width: "48.5%", flexDirection: "row", alignItems: "center", gap: space.md, borderWidth: 1, borderRadius: radius.lg, padding: space.sm, minHeight: 56 },
   tileIcon: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },

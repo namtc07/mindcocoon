@@ -42,6 +42,8 @@ export interface Prefs {
   intents?: OnboardingIntent[];
   /** Writing ideas card on Today (on unless set to false). */
   writingPrompts?: boolean;
+  /** Extra mix slots earned with rewarded ads (0–5, on top of the five). */
+  extraMixSlots?: number;
   /** Which part of Sanctuary was open last. */
   sanctuaryTab?: "sounds" | "breathe" | "practices";
   /** Optional name for the greeting (device only). */

@@ -1,5 +1,5 @@
 import type { ReactNode, Ref } from "react";
-import { ScrollView, StyleSheet, Text, type ScrollViewInstance } from "react-native";
+import { ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from "react-native";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
@@ -10,14 +10,17 @@ export function Screen({
   children,
   scrollRef,
   hero,
+  footer,
 }: {
   title: string;
   children?: ReactNode;
   scrollRef?: Ref<ScrollViewInstance>;
   hero?: ReactNode;
+  /** Pinned under the scrolling page (above the tab bar), e.g. the one banner. */
+  footer?: ReactNode;
 }) {
   const { c } = useTheme();
-  return (
+  const page = (
     <ScrollView
       testID="screen-scroll"
       ref={scrollRef}
@@ -31,6 +34,13 @@ export function Screen({
       </Text>
       {children}
     </ScrollView>
+  );
+  if (!footer) return page;
+  return (
+    <View style={{ flex: 1, backgroundColor: c.background }}>
+      {page}
+      {footer}
+    </View>
   );
 }
 

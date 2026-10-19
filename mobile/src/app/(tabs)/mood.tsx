@@ -31,7 +31,7 @@ export default function MoodScreen() {
   const [month, setMonth] = useState<MonthView>({ year: now.getFullYear(), month: now.getMonth() });
   return (
     <ScreenActive>
-    <Screen title={t.moodPage.title}>
+    <Screen title={t.moodPage.title} footer={<AdBanner placement="mood" />}>
       <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground }}>{t.moodPage.intro}</Text>
       <View style={styles.sections}>
         <View testID="mood-checkin">
@@ -70,7 +70,6 @@ export default function MoodScreen() {
         </View>
       </View>
       <DayDetail day={selected} logs={logs} onClose={() => setSelected(null)} />
-      <AdBanner placement="mood" />
     </Screen>
     </ScreenActive>
   );

@@ -5,7 +5,9 @@ import { AdEventType, RewardedAd, RewardedAdEventType } from "react-native-googl
 import { AD_REQUEST, adUnitId, useAdsReady } from "@/lib/ads/admob";
 import { canOfferRewarded } from "@/lib/ads/policy";
 import { useFlags } from "@/lib/remote-config";
-import { unlockFor24h } from "@/lib/unlocks";
+import { SOUND_TRACKS } from "@mindcocoon/core/sounds";
+import { getPref, setPref } from "@/lib/prefs";
+import { unlockAllFor24h, unlockFor24h } from "@/lib/unlocks";
 
 export type UnlockResult = "unlocked" | "unavailable" | "dismissed";
 
@@ -21,8 +23,12 @@ export function cancelRewarded() {
   cancelPending?.();
 }
 
-/** Shows one rewarded ad on request; the sound unlocks for 24 hours only if the reward was earned. */
-function showRewarded(id: string): Promise<UnlockResult> {
+const PREMIUM_IDS = SOUND_TRACKS.filter((t) => t.category === "ambient" && t.isPremium).map((t) => t.id);
+/** Mixes can grow from five to at most ten, one rewarded ad per extra slot. */
+export const MAX_EXTRA_MIX_SLOTS = 5;
+
+/** Shows one rewarded ad on request; `reward` runs only if the reward was earned. */
+function showRewarded(reward: () => unknown): Promise<UnlockResult> {
   const unitId = adUnitId("rewarded");
   if (!unitId) return Promise.resolve("unavailable");
   if (cancelPending) return Promise.resolve("dismissed");
@@ -55,7 +61,7 @@ function showRewarded(id: string): Promise<UnlockResult> {
     });
     ad.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
       earned = true;
-      void unlockFor24h(id);
+      void reward();
     });
     ad.addAdEventListener(AdEventType.CLOSED, () => finish(earned ? "unlocked" : "dismissed"));
     ad.addAdEventListener(AdEventType.ERROR, () => finish(earned ? "unlocked" : "unavailable"));
@@ -82,5 +88,15 @@ export function useRewardedUnlock() {
     });
     return () => sub.remove();
   }, []);
-  return { offer: canOfferRewarded({ flags, ready }), busy, unlock: showRewarded };
+  return {
+    offer: canOfferRewarded({ flags, ready }),
+    busy,
+    /** One extra sound for 24 hours. */
+    unlock: (id: string) => showRewarded(() => unlockFor24h(id)),
+    /** Every extra sound for 24 hours. */
+    unlockAll: () => showRewarded(() => unlockAllFor24h(PREMIUM_IDS)),
+    /** Room for one more saved mix (up to ten in all). */
+    earnMixSlot: () =>
+      showRewarded(() => setPref("extraMixSlots", Math.min((getPref("extraMixSlots") ?? 0) + 1, MAX_EXTRA_MIX_SLOTS))),
+  };
 }

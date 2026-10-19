@@ -257,6 +257,8 @@ export const vi: Dictionary = {
     playError: "Không phát được âm thanh này.",
     moreSounds: "Thêm âm thanh",
     unlockWithAd: "Xem quảng cáo để mở {name} trong 24 giờ",
+    unlockAllWithAd: "Xem một quảng cáo để mở mọi âm thanh thêm trong 24 giờ",
+    moreMixWithAd: "Xem quảng cáo để lưu thêm một mix",
     unlockedUntil: "Mở đến {time}",
     adUnavailable: "Chưa có quảng cáo lúc này. Thử lại sau nhé.",
   },
