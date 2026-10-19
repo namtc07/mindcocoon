@@ -297,6 +297,13 @@ export const vi: Dictionary = {
     vaultTitle: "Từ hộp lo âu",
     letGoDone: "Đã buông.",
   },
+  insights: {
+    title: "Vài điều nhận ra",
+    hint: "Chỉ dựa trên những gì bạn ghi trên máy này. Là quy luật, không phải lời phán xét.",
+    tagMood: "Những ngày gắn thẻ {tag}, bạn hay thấy {mood}.",
+    feelingLately: "Dạo này, “{word}” xuất hiện nhiều hơn một lần.",
+    lateNight: "Những lúc thấy {mood} thường đến vào đêm muộn.",
+  },
   sounds: {
     rain: "Mưa",
     ocean: "Sóng biển",

@@ -296,6 +296,13 @@ export const en = {
     vaultTitle: "From the worry box",
     letGoDone: "Let go.",
   },
+  insights: {
+    title: "Gently noticed",
+    hint: "Only from what you've noted on this phone. Patterns, not judgements.",
+    tagMood: "On days tagged {tag}, you often felt {mood}.",
+    feelingLately: "Lately, “{word}” has come up more than once.",
+    lateNight: "Moments of feeling {mood} tend to come late at night.",
+  },
   sounds: {
     rain: "Rain",
     ocean: "Ocean",

@@ -5,6 +5,7 @@ import { AdBanner } from "@/components/ads/AdBanner";
 import { Screen } from "@/components/Screen";
 import { CheckinForm } from "@/components/mood/CheckinForm";
 import { DayDetail } from "@/components/mood/DayDetail";
+import { GentleInsights } from "@/components/mood/GentleInsights";
 import { MonthHeatmap } from "@/components/mood/MonthHeatmap";
 import { MoodHistory } from "@/components/mood/MoodHistory";
 import { WeekStrip } from "@/components/mood/WeekStrip";
@@ -28,6 +29,7 @@ export default function MoodScreen() {
         <CheckinForm />
         <WeekStrip logs={logs} now={now} />
         <MonthHeatmap logs={logs} now={now} onSelect={setSelected} />
+        <GentleInsights />
         <MoodHistory logs={logs} />
       </View>
       <DayDetail day={selected} logs={logs} onClose={() => setSelected(null)} />
