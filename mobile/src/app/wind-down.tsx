@@ -87,7 +87,7 @@ export default function WindDownScreen() {
           <View style={styles.step}>
             <Muted>{t.windDown.intro}</Muted>
             <Text style={[styles.h, { color: c.foreground }]}>{t.windDown.howTonight}</Text>
-            <MoodPicker value={currentMood} onChange={pickMood} label={t.windDown.howTonight} />
+            <MoodPicker variant="meter" value={currentMood} onChange={pickMood} label={t.windDown.howTonight} />
             <View style={styles.actions}>
               <Button variant="ghost" onPress={() => setStep("breathe")}>
                 {t.windDown.skip}

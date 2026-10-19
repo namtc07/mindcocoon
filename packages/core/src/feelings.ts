@@ -8,11 +8,23 @@ import type { MoodType } from "./types";
  * Naming a feeling precisely is itself calming; nothing here scores or judges it.
  */
 export const FEELINGS: Record<MoodType, string[]> = {
-  peaceful: ["calm", "content", "relieved", "grateful", "safe"],
-  hopeful: ["excited", "motivated", "proud", "loved", "curious"],
-  numb: ["empty", "tired", "bored", "disconnected", "flat"],
-  heavy: ["exhausted", "lonely", "sad", "hurt", "disappointed"],
-  anxious: ["worried", "overwhelmed", "restless", "scared", "irritated"],
+  peaceful: ["calm", "content", "relieved", "grateful", "safe", "at-ease", "cozy", "balanced"],
+  hopeful: ["excited", "motivated", "proud", "loved", "curious", "inspired", "playful", "confident"],
+  numb: ["empty", "tired", "bored", "disconnected", "flat", "distant", "drained", "meh"],
+  heavy: ["exhausted", "lonely", "sad", "hurt", "disappointed", "grieving", "ashamed", "homesick"],
+  anxious: ["worried", "overwhelmed", "restless", "scared", "irritated", "tense", "panicky", "jealous"],
+};
+
+/**
+ * Where each mood sits on a two-axis meter (energy up, pleasantness right), so feelings can be
+ * picked by "how much energy" and "how pleasant" rather than from a list.
+ */
+export const MOOD_METER: Record<MoodType, { energy: -1 | 0 | 1; pleasant: -1 | 0 | 1 }> = {
+  anxious: { energy: 1, pleasant: -1 },
+  hopeful: { energy: 1, pleasant: 1 },
+  numb: { energy: 0, pleasant: 0 },
+  heavy: { energy: -1, pleasant: -1 },
+  peaceful: { energy: -1, pleasant: 1 },
 };
 
 export const MAX_FEELINGS = 3;

@@ -266,12 +266,18 @@ export const en = {
   },
   feelings: {
     prompt: "More precisely?",
+    meter: { moreEnergy: "More energy", lessEnergy: "Less energy", unpleasant: "Unpleasant", pleasant: "Pleasant" },
     words: {
       calm: "calm", content: "content", relieved: "relieved", grateful: "grateful", safe: "safe",
       excited: "excited", motivated: "motivated", proud: "proud", loved: "loved", curious: "curious",
       empty: "empty", tired: "tired", bored: "bored", disconnected: "disconnected", flat: "flat",
       exhausted: "exhausted", lonely: "lonely", sad: "sad", hurt: "hurt", disappointed: "disappointed",
       worried: "worried", overwhelmed: "overwhelmed", restless: "restless", scared: "scared", irritated: "irritated",
+      "at-ease": "at ease", cozy: "cozy", balanced: "balanced",
+      inspired: "inspired", playful: "playful", confident: "confident",
+      distant: "distant", drained: "drained", meh: "meh",
+      grieving: "grieving", ashamed: "ashamed", homesick: "homesick",
+      tense: "tense", panicky: "panicky", jealous: "jealous",
     },
   },
   suggest: {

@@ -267,12 +267,18 @@ export const vi: Dictionary = {
   },
   feelings: {
     prompt: "Cụ thể hơn?",
+    meter: { moreEnergy: "Nhiều năng lượng", lessEnergy: "Ít năng lượng", unpleasant: "Khó chịu", pleasant: "Dễ chịu" },
     words: {
       calm: "bình thản", content: "hài lòng", relieved: "nhẹ nhõm", grateful: "biết ơn", safe: "an toàn",
       excited: "háo hức", motivated: "có động lực", proud: "tự hào", loved: "được thương", curious: "tò mò",
       empty: "trống trải", tired: "mệt mỏi", bored: "chán", disconnected: "lạc lõng", flat: "vô cảm",
       exhausted: "kiệt sức", lonely: "cô đơn", sad: "buồn", hurt: "tổn thương", disappointed: "thất vọng",
       worried: "lo lắng", overwhelmed: "quá tải", restless: "bồn chồn", scared: "sợ hãi", irritated: "bực bội",
+      "at-ease": "thư thái", cozy: "ấm áp", balanced: "cân bằng",
+      inspired: "hứng khởi", playful: "vui tươi", confident: "tự tin",
+      distant: "xa cách", drained: "cạn sức", meh: "lưng chừng",
+      grieving: "mất mát", ashamed: "xấu hổ", homesick: "nhớ nhà",
+      tense: "căng thẳng", panicky: "hoảng", jealous: "ghen tị",
     },
   },
   suggest: {
