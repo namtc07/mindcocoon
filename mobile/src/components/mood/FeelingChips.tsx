@@ -20,7 +20,7 @@ export function FeelingChips({ mood, value, onChange }: { mood: MoodType; value:
       <Text style={[styles.label, { color: c.mutedForeground }]}>{t.feelings.prompt}</Text>
       <View style={styles.row}>
         {FEELINGS[mood].map((word) => (
-          <Chip key={word} selected={value.includes(word)} onPress={() => toggle(word)}>
+          <Chip key={word} selected={value.includes(word)} disabled={!value.includes(word) && value.length >= MAX_FEELINGS} onPress={() => toggle(word)}>
             {t.feelings.words[word as keyof typeof t.feelings.words]}
           </Chip>
         ))}

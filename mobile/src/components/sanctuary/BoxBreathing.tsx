@@ -107,7 +107,8 @@ export function BoxBreathing({ fixed }: { fixed?: Choice } = {}) {
   useFocusEffect(useCallback(() => stop, [stop]));
   useEffect(() => {
     const sub = AppState.addEventListener("change", (s) => {
-      if (s !== "active") stop();
+      // Control Center, the notification shade or a call banner make the app "inactive" — keep going.
+      if (s === "background") stop();
     });
     return () => sub.remove();
   }, [stop]);

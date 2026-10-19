@@ -447,6 +447,7 @@ export const en = {
     dismiss: "Dismiss",
   },
   shell: {
+    privacyCover: "Hidden while MindCocoon is in the background",
     skipToContent: "Skip to content",
     openSettings: "Open settings",
   },

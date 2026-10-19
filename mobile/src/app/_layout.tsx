@@ -6,6 +6,7 @@ import { Fragment, useEffect, useState } from "react";
 import { View } from "react-native";
 import { AdsBootstrap } from "@/components/ads/AdsBootstrap";
 import { FirstRunNotice } from "@/components/FirstRunNotice";
+import { PrivacyCover } from "@/components/PrivacyCover";
 import { AudioLabelsSync } from "@/components/sanctuary/AudioLabelsSync";
 import { NotificationRouter } from "@/components/settings/NotificationRouter";
 import { ReminderSync } from "@/components/settings/ReminderSync";
@@ -74,6 +75,7 @@ export default function RootLayout() {
       <ReminderSync />
       <NotificationRouter />
       <ToastHost />
+      <PrivacyCover />
       <StatusBar style={isDark ? "light" : "dark"} />
     </View>
   );

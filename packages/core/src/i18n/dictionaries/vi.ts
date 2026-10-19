@@ -448,6 +448,7 @@ export const vi: Dictionary = {
     dismiss: "Ẩn đi",
   },
   shell: {
+    privacyCover: "Đang ẩn khi MindCocoon chạy nền",
     skipToContent: "Bỏ qua tới nội dung",
     openSettings: "Mở cài đặt",
   },

@@ -8,7 +8,13 @@ import { useTheme } from "@/theme/theme";
 export function Screen({ title, children, scrollRef }: { title: string; children?: ReactNode; scrollRef?: Ref<ScrollViewInstance> }) {
   const { c } = useTheme();
   return (
-    <ScrollView ref={scrollRef} style={{ backgroundColor: c.background }} contentContainerStyle={styles.content}>
+    <ScrollView
+      testID="screen-scroll"
+      ref={scrollRef}
+      // The focused field stays above the keyboard (Today's note, Mood's form), and taps still land.
+      keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
+      style={{ backgroundColor: c.background }} contentContainerStyle={styles.content}>
       <Text accessibilityRole="header" style={[styles.title, { color: c.foreground }]}>
         {title}
       </Text>

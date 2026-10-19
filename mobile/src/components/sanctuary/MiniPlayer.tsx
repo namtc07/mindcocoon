@@ -30,7 +30,7 @@ export function MiniPlayer({ safeBottom = false }: { safeBottom?: boolean }) {
 
   return (
     <View style={{ paddingBottom: safeBottom ? insets.bottom : 0, backgroundColor: c.background }}>
-      <View accessibilityLabel={t.sanctuary.nowPlaying} style={[styles.bar, { backgroundColor: c.card, borderColor: c.border }]}>
+      <View accessibilityRole="toolbar" accessibilityLabel={t.sanctuary.nowPlaying} style={[styles.bar, { backgroundColor: c.card, borderColor: c.border }]}>
         <Pressable accessibilityRole="link" accessibilityLabel={names} onPress={() => router.navigate("/sanctuary")} style={styles.names}>
           <Text numberOfLines={1} style={[styles.text, { color: c.foreground }]}>
             {names}

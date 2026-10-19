@@ -29,11 +29,17 @@ export function HeavyNudge({ now }: { now: Date }) {
     <View style={[styles.card, { backgroundColor: c.surface }]}>
       <View style={styles.text}>
         <Text style={{ fontFamily: fonts.sans, fontSize: 15, lineHeight: 21, color: c.foreground }}>{t.safety.heavyNudge}</Text>
-        <Pressable accessibilityRole="link" onPress={() => router.push("/help")} hitSlop={8}>
+        <Pressable accessibilityRole="link" onPress={() => router.push("/help")} hitSlop={8} style={{ minHeight: 44, justifyContent: "center" }}>
           <Text style={{ fontFamily: fonts.sansMedium, fontSize: 15, color: c.primary }}>{t.safety.heavyNudgeLink}</Text>
         </Pressable>
       </View>
-      <Pressable accessibilityRole="button" accessibilityLabel={t.safety.dismiss} hitSlop={12} onPress={() => setDismissed(true)}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t.safety.dismiss}
+        hitSlop={12}
+        onPress={() => setDismissed(true)}
+        style={{ minHeight: 44, minWidth: 44, alignItems: "center", justifyContent: "center" }}
+      >
         <X size={18} color={c.mutedForeground} />
       </Pressable>
     </View>
