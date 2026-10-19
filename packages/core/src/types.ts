@@ -4,7 +4,17 @@
  * Keep field names in sync with the SQL columns (snake_case there).
  */
 
-export type MoodType = "peaceful" | "numb" | "heavy" | "anxious" | "hopeful";
+export type MoodType =
+  | "angry"
+  | "confused"
+  | "anxious"
+  | "alone"
+  | "heavy"
+  | "numb"
+  | "peaceful"
+  | "hopeful"
+  | "thankful"
+  | "joyful";
 
 export interface MoodLog {
   id: string;

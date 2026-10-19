@@ -1,3 +1,4 @@
+import { MOODS } from "@mindcocoon/core/moods";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -49,7 +50,7 @@ describe.each([
   });
 
   it("use the validated mood colours", () => {
-    for (const mood of ["peaceful", "hopeful", "numb", "heavy", "anxious"] as const) {
+    for (const { id: mood } of MOODS) {
       expect(norm(tokens[theme].mood[mood]), mood).toBe(norm(vars[`mood-${mood}`]));
     }
   });

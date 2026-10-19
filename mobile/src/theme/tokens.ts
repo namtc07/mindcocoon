@@ -34,7 +34,10 @@ export const tokens: Record<ThemeName, ThemeColors> = {
     border: "rgba(241, 245, 249, 0.08)",
     ember: "#d9a86c",
     destructive: "#e08a7e",
-    mood: { peaceful: "#37a88a", hopeful: "#b88c2e", numb: "#9c83c9", heavy: "#3568b2", anxious: "#b14648" },
+    mood: {
+      peaceful: "#37a88a", hopeful: "#b88c2e", numb: "#9c83c9", heavy: "#3568b2", anxious: "#b14648",
+      angry: "#d0663a", confused: "#2ea3c7", alone: "#8d3cc9", thankful: "#cc7097", joyful: "#7f9f30",
+    },
   },
   mist: {
     background: "#f1f5f9",
@@ -48,7 +51,10 @@ export const tokens: Record<ThemeName, ThemeColors> = {
     border: "rgba(15, 23, 42, 0.1)",
     ember: "#a8712f",
     destructive: "#b4534a",
-    mood: { peaceful: "#269b7e", hopeful: "#b07a00", numb: "#9077bc", heavy: "#21539c", anxious: "#a43a3d" },
+    mood: {
+      peaceful: "#269b7e", hopeful: "#b07a00", numb: "#9077bc", heavy: "#21539c", anxious: "#a43a3d",
+      angry: "#bb5c34", confused: "#2993b3", alone: "#7f36b5", thankful: "#b86588", joyful: "#728f2b",
+    },
   },
 };
 
@@ -68,7 +74,10 @@ export const MIDNIGHT: ThemeColors = {
   border: "rgba(216, 210, 198, 0.07)",
   ember: "#c99a62",
   destructive: "#c97d72",
-  mood: { peaceful: "#2f9178", hopeful: "#a07a28", numb: "#8a74b3", heavy: "#2f5b9c", anxious: "#9c3f41" },
+  mood: {
+    peaceful: "#2f9178", hopeful: "#a07a28", numb: "#8a74b3", heavy: "#2f5b9c", anxious: "#9c3f41",
+    angry: "#b35832", confused: "#288cab", alone: "#8a3cc4", thankful: "#af6082", joyful: "#6d8929",
+  },
 };
 
 export const radius = { sm: 8, md: 12, lg: 16, xl: 22, full: 999 } as const;

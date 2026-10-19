@@ -33,6 +33,11 @@
   --color-mood-numb: var(--mood-numb);
   --color-mood-heavy: var(--mood-heavy);
   --color-mood-anxious: var(--mood-anxious);
+  --color-mood-angry: var(--mood-angry);
+  --color-mood-confused: var(--mood-confused);
+  --color-mood-alone: var(--mood-alone);
+  --color-mood-thankful: var(--mood-thankful);
+  --color-mood-joyful: var(--mood-joyful);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -77,6 +82,11 @@
   --mood-numb: #9077bc;
   --mood-heavy: #21539c;
   --mood-anxious: #a43a3d;
+  --mood-angry: #bb5c34;
+  --mood-confused: #2993b3;
+  --mood-alone: #7f36b5;
+  --mood-thankful: #b86588;
+  --mood-joyful: #728f2b;
 }
 
 .dark {
@@ -107,6 +117,11 @@
   --mood-numb: #9c83c9;
   --mood-heavy: #3568b2;
   --mood-anxious: #b14648;
+  --mood-angry: #d0663a;
+  --mood-confused: #2ea3c7;
+  --mood-alone: #8d3cc9;
+  --mood-thankful: #cc7097;
+  --mood-joyful: #7f9f30;
 }
 
 @layer base {

@@ -20,6 +20,11 @@ export const en = {
       numb: { label: "Numb", description: "Flat, far away from it all" },
       heavy: { label: "Heavy", description: "Weighed down, tired" },
       anxious: { label: "Anxious", description: "Restless, on edge" },
+      angry: { label: "Angry", description: "Hot inside, wanting to push back" },
+      confused: { label: "Confused", description: "Unsure, pulled different ways" },
+      alone: { label: "Lonely", description: "Far from everyone, even among people" },
+      thankful: { label: "Thankful", description: "Grateful for something or someone" },
+      joyful: { label: "Joyful", description: "Light, smiling inside" },
     },
     tags: {
       work: "Work",
@@ -275,8 +280,7 @@ export const en = {
   },
   feelings: {
     prompt: "More precisely?",
-    tapOne: "Tap the one closest to now",
-    meter: { moreEnergy: "More energy", lessEnergy: "Less energy", unpleasant: "Unpleasant", pleasant: "Pleasant" },
+    tapOne: "Swipe to see more, tap the one closest to now",
     words: {
       calm: "calm", content: "content", relieved: "relieved", grateful: "grateful", safe: "safe",
       excited: "excited", motivated: "motivated", proud: "proud", loved: "loved", curious: "curious",
@@ -288,6 +292,16 @@ export const en = {
       distant: "distant", drained: "drained", meh: "meh",
       grieving: "grieving", ashamed: "ashamed", homesick: "homesick",
       tense: "tense", panicky: "panicky", jealous: "jealous",
+      frustrated: "frustrated", resentful: "resentful", bitter: "bitter", impatient: "impatient",
+      betrayed: "betrayed", defensive: "defensive", "fed-up": "fed up", offended: "offended",
+      unsure: "unsure", torn: "torn", lost: "lost", stuck: "stuck",
+      doubtful: "doubtful", foggy: "foggy", conflicted: "conflicted", hesitant: "hesitant",
+      "left-out": "left out", isolated: "isolated", abandoned: "abandoned", longing: "longing",
+      misunderstood: "misunderstood", unseen: "unseen", forgotten: "forgotten", apart: "apart",
+      appreciative: "appreciative", fortunate: "fortunate", moved: "moved", humbled: "humbled",
+      "cared-for": "cared for", supported: "supported", warm: "warm", valued: "valued",
+      happy: "happy", cheerful: "cheerful", delighted: "delighted", amused: "amused",
+      energized: "energized", free: "free", lighthearted: "lighthearted", silly: "silly",
     },
   },
   suggest: {

@@ -75,6 +75,7 @@ export function QuickCheckin() {
     setChanging(true);
   }
 
+  /** Lets the choice go: back to the saved line when changing, or an empty picker on a first check-in. */
   function cancelChange() {
     setChanging(false);
     setDraftMood(null);
@@ -128,16 +129,14 @@ export function QuickCheckin() {
         <>
           <MoodPicker variant="orbs" value={draftMood} onChange={choose} label={t.today.checkinQuestion} />
           {draftMood && <FeelingChips mood={draftMood} value={draftFeelings} onChange={setDraftFeelings} />}
-          <View style={styles.row}>
-            <Button disabled={!draftMood} onPress={save}>
-              {t.today.saveMood}
-            </Button>
-            {today && (
+          {draftMood && (
+            <View style={styles.row}>
+              <Button onPress={save}>{t.today.saveMood}</Button>
               <Button variant="ghost" onPress={cancelChange}>
                 {t.common.cancel}
               </Button>
-            )}
-          </View>
+            </View>
+          )}
         </>
       ) : (
         today && (

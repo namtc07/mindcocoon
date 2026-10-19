@@ -1,7 +1,8 @@
-import { MOOD_METER } from "@mindcocoon/core/feelings";
 import { MOODS } from "@mindcocoon/core/moods";
 import type { MoodType } from "@mindcocoon/core/types";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Pressable, type ScrollViewInstance, StyleSheet, Text, View } from "react-native";
+import Animated, { type SharedValue, useAnimatedScrollHandler, useAnimatedStyle, useReducedMotion, useSharedValue } from "react-native-reanimated";
 import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
 import { useSvgId } from "@/components/art/activity";
 import { useI18n } from "@/i18n/i18n";
@@ -14,7 +15,7 @@ type Props = {
   onChange: (mood: MoodType) => void;
   label: string;
   size?: "md" | "lg";
-  /** "row": five dots in a line (compact). "orbs": glowing orbs on a soft arc, with a caption. */
+  /** "row": five dots in a line (compact). "orbs": a swipeable arc of glowing orbs (tap to choose), with a caption. */
   variant?: "row" | "orbs";
 };
 
@@ -87,34 +88,77 @@ function Orb({ color, size }: { color: string; size: number }) {
 }
 
 const ORB = 52;
-/** Heavier on the left, lighter on the right (by pleasantness, then energy). */
-const ARC_ORDER = [...MOODS].sort((x, y) => MOOD_METER[x.id].pleasant - MOOD_METER[y.id].pleasant || MOOD_METER[x.id].energy - MOOD_METER[y.id].energy);
-/** How far each orb dips, so the five lie on a soft smile-shaped curve. */
-const DIP = [0, 14, 22, 14, 0];
+/** Width of one orb's slot on the arc (the scroll snaps to it). */
+export const ARC_ITEM = 76;
+/** Where the arc starts when nothing is chosen yet: the middle of the list. */
+const START = Math.floor(MOODS.length / 2);
+
+function ArcOrb({ index, scrollX, children }: { index: number; scrollX: SharedValue<number>; children: ReactNode }) {
+  // The middle orb is largest and lowest; neighbours shrink, fade and rise — a soft smile-shaped arc.
+  const style = useAnimatedStyle(() => {
+    const d = Math.min(Math.abs(index * ARC_ITEM - scrollX.get()) / ARC_ITEM, 3);
+    return { opacity: 1 - d * 0.22, transform: [{ translateY: -d * d * 7 }, { scale: 1.2 - d * 0.18 }] };
+  });
+  return <Animated.View style={[styles.slot, style]}>{children}</Animated.View>;
+}
 
 function MoodOrbs({ value, onChange, label }: Props) {
   const { t } = useI18n();
   const { c } = useTheme();
   const radio = useMoodRadio(value, onChange);
+  const reduceMotion = useReducedMotion();
+  const ref = useRef<ScrollViewInstance>(null);
+  const [width, setWidth] = useState(0);
+  const startIndex = value ? MOODS.findIndex((m) => m.id === value) : START;
+  const scrollX = useSharedValue(startIndex * ARC_ITEM);
+  const onScroll = useAnimatedScrollHandler((e) => {
+    scrollX.set(e.contentOffset.x);
+  });
+  const centre = (index: number, animated: boolean) => ref.current?.scrollTo({ x: index * ARC_ITEM, animated });
+  // A choice made elsewhere (or on first layout) glides to the middle.
+  useEffect(() => {
+    if (width > 0) centre(startIndex, false);
+  }, [width, startIndex]);
+  const side = Math.max(0, (width - ARC_ITEM) / 2);
   return (
-    <View testID="feeling-orbs" style={styles.orbs}>
-      <View accessibilityRole="radiogroup" accessibilityLabel={label} style={styles.arc}>
-        {ARC_ORDER.map((m, i) => {
-          const checked = m.id === value;
-          return (
-            <Pressable key={m.id} {...radio(m.id)} style={[styles.cell, { marginTop: DIP[i] }]}>
-              <View style={[styles.halo, checked && { backgroundColor: c.mood[m.id] + "33", transform: [{ scale: 1.15 }] }]}>
-                <View style={{ opacity: value && !checked ? 0.6 : 1 }}>
-                  <Orb color={c.mood[m.id]} size={ORB} />
-                </View>
-              </View>
-              <Text numberOfLines={1} style={[styles.orbLabel, { color: checked ? c.foreground : c.mutedForeground }]}>
-                {t.mood.states[m.id].label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+    <View testID="feeling-orbs" style={styles.orbs} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+      <Animated.ScrollView
+        testID="feeling-arc"
+        ref={ref}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        snapToInterval={ARC_ITEM}
+        decelerationRate="fast"
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        contentContainerStyle={{ paddingHorizontal: side, paddingTop: 36 }}
+      >
+        <View accessibilityRole="radiogroup" accessibilityLabel={label} style={styles.arc}>
+          {MOODS.map((m, i) => {
+            const checked = m.id === value;
+            const { onPress, ...a11y } = radio(m.id);
+            return (
+              <ArcOrb key={m.id} index={i} scrollX={scrollX}>
+                <Pressable
+                  {...a11y}
+                  onPress={() => {
+                    onPress();
+                    centre(i, !reduceMotion);
+                  }}
+                  style={styles.cell}
+                >
+                  <View style={[styles.halo, checked && { backgroundColor: c.mood[m.id] + "40" }]}>
+                    <Orb color={c.mood[m.id]} size={ORB} />
+                  </View>
+                  <Text numberOfLines={1} style={[styles.orbLabel, { color: checked ? c.foreground : c.mutedForeground }]}>
+                    {t.mood.states[m.id].label}
+                  </Text>
+                </Pressable>
+              </ArcOrb>
+            );
+          })}
+        </View>
+      </Animated.ScrollView>
       <Text accessibilityLiveRegion="polite" style={[styles.caption, { color: value ? c.foreground : c.mutedForeground }]}>
         {value ? t.mood.states[value].description : t.feelings.tapOne}
       </Text>
@@ -126,9 +170,10 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", justifyContent: "space-between", gap: 4 },
   item: { flex: 1, alignItems: "center", gap: 8, minHeight: 44, paddingVertical: 4 },
   label: { fontFamily: fonts.sans, fontSize: 12, textAlign: "center", lineHeight: 15 },
-  orbs: { gap: space.md, paddingTop: space.xs },
-  arc: { flexDirection: "row", justifyContent: "space-between" },
-  cell: { flex: 1, alignItems: "center", gap: 6, minHeight: 44 },
+  orbs: { gap: space.sm, marginHorizontal: -space.xl },
+  arc: { flexDirection: "row" },
+  slot: { width: ARC_ITEM, alignItems: "center" },
+  cell: { alignItems: "center", gap: 6, minHeight: 44, width: ARC_ITEM },
   halo: { borderRadius: ORB, padding: 6 },
   orbLabel: { fontFamily: fonts.sansMedium, fontSize: 12 },
   caption: { fontFamily: fonts.serif, fontSize: 17, lineHeight: 23, textAlign: "center" },

@@ -34,6 +34,20 @@ describe("Today", () => {
     expect(await stored()).toEqual([]);
   });
 
+  it("Save and Cancel appear only after choosing; Cancel lets it go", async () => {
+    const user = userEvent.setup();
+    await renderWithApp(<TodayScreen />);
+    await screen.findByRole("radio", { name: "Heavy" });
+    expect(screen.queryByRole("button", { name: "Save" })).not.toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "Cancel" })).not.toBeOnTheScreen();
+    await user.press(screen.getByRole("radio", { name: "Heavy" }));
+    await user.press(screen.getByRole("button", { name: "sad" }));
+    await user.press(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.getByRole("radio", { name: "Heavy" })).not.toBeChecked();
+    expect(screen.queryByText("More precisely?")).not.toBeOnTheScreen();
+    expect(await stored()).toEqual([]);
+  });
+
   it("Save keeps the check-in and folds the picker into one line", async () => {
     const user = userEvent.setup();
     await renderWithApp(<TodayScreen />);

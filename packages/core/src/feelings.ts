@@ -13,18 +13,11 @@ export const FEELINGS: Record<MoodType, string[]> = {
   numb: ["empty", "tired", "bored", "disconnected", "flat", "distant", "drained", "meh"],
   heavy: ["exhausted", "lonely", "sad", "hurt", "disappointed", "grieving", "ashamed", "homesick"],
   anxious: ["worried", "overwhelmed", "restless", "scared", "irritated", "tense", "panicky", "jealous"],
-};
-
-/**
- * Where each mood sits on a two-axis meter (energy up, pleasantness right), so feelings can be
- * picked by "how much energy" and "how pleasant" rather than from a list.
- */
-export const MOOD_METER: Record<MoodType, { energy: -1 | 0 | 1; pleasant: -1 | 0 | 1 }> = {
-  anxious: { energy: 1, pleasant: -1 },
-  hopeful: { energy: 1, pleasant: 1 },
-  numb: { energy: 0, pleasant: 0 },
-  heavy: { energy: -1, pleasant: -1 },
-  peaceful: { energy: -1, pleasant: 1 },
+  angry: ["frustrated", "resentful", "bitter", "impatient", "betrayed", "defensive", "fed-up", "offended"],
+  confused: ["unsure", "torn", "lost", "stuck", "doubtful", "foggy", "conflicted", "hesitant"],
+  alone: ["left-out", "isolated", "abandoned", "longing", "misunderstood", "unseen", "forgotten", "apart"],
+  thankful: ["appreciative", "fortunate", "moved", "humbled", "cared-for", "supported", "warm", "valued"],
+  joyful: ["happy", "cheerful", "delighted", "amused", "energized", "free", "lighthearted", "silly"],
 };
 
 export const MAX_FEELINGS = 3;
@@ -47,6 +40,11 @@ const SUGGESTIONS: Record<MoodType, Suggestion> = {
   numb: { breath: { pattern: "box", minutes: 1 }, mix: "by-the-fire", practice: "grounding" },
   heavy: { breath: { pattern: "relax", minutes: 3 }, mix: "rainy-night", practice: "kind-letter" },
   anxious: { breath: { pattern: "calm", minutes: 3 }, mix: "rain-at-sea", practice: "grounding" },
+  angry: { breath: { pattern: "calm", minutes: 3 }, mix: "rainy-night", practice: "unsent-letter" },
+  confused: { breath: { pattern: "box", minutes: 3 }, mix: "sea-breeze", practice: "grounding" },
+  alone: { breath: { pattern: "relax", minutes: 3 }, mix: "by-the-fire", practice: "kind-letter" },
+  thankful: { breath: { pattern: "box", minutes: 1 }, mix: "sea-breeze", practice: "three-good-things" },
+  joyful: { breath: { pattern: "box", minutes: 1 }, mix: "by-the-fire", practice: "three-good-things" },
 };
 
 export function suggestionFor(mood: MoodType): Suggestion {

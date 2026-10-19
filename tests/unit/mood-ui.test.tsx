@@ -46,10 +46,10 @@ describe("Mood journey", () => {
     expect(screen.getAllByText("Study").length).toBeGreaterThan(0);
   });
 
-  it("keeps a legend for all five moods", async () => {
+  it("keeps a legend for all ten moods", async () => {
     renderWithProviders(<MoodView />);
     const legend = await screen.findByRole("list", { name: /legend/i });
-    expect(within(legend).getAllByRole("listitem")).toHaveLength(5);
+    expect(within(legend).getAllByRole("listitem")).toHaveLength(10);
   });
 
   it("removes a check-in from history", async () => {

@@ -21,6 +21,11 @@ export const vi: Dictionary = {
       numb: { label: "Trống rỗng", description: "Phẳng lặng, xa cách mọi thứ" },
       heavy: { label: "Nặng nề", description: "Trĩu xuống, mệt mỏi" },
       anxious: { label: "Lo âu", description: "Bồn chồn, bất an" },
+      angry: { label: "Giận", description: "Nóng trong người, muốn phản kháng" },
+      confused: { label: "Bối rối", description: "Rối bời, chưa biết nên thế nào" },
+      alone: { label: "Cô đơn", description: "Như một mình, kể cả giữa mọi người" },
+      thankful: { label: "Biết ơn", description: "Trân trọng một điều, một người" },
+      joyful: { label: "Vui", description: "Nhẹ tênh, cười trong lòng" },
     },
     tags: {
       work: "Công việc",
@@ -276,8 +281,7 @@ export const vi: Dictionary = {
   },
   feelings: {
     prompt: "Cụ thể hơn?",
-    tapOne: "Chạm vào cảm xúc gần nhất lúc này",
-    meter: { moreEnergy: "Nhiều năng lượng", lessEnergy: "Ít năng lượng", unpleasant: "Khó chịu", pleasant: "Dễ chịu" },
+    tapOne: "Lướt để xem thêm, chạm vào cảm xúc gần nhất lúc này",
     words: {
       calm: "bình thản", content: "hài lòng", relieved: "nhẹ nhõm", grateful: "biết ơn", safe: "an toàn",
       excited: "háo hức", motivated: "có động lực", proud: "tự hào", loved: "được thương", curious: "tò mò",
@@ -289,6 +293,16 @@ export const vi: Dictionary = {
       distant: "xa cách", drained: "cạn sức", meh: "lưng chừng",
       grieving: "mất mát", ashamed: "xấu hổ", homesick: "nhớ nhà",
       tense: "căng thẳng", panicky: "hoảng", jealous: "ghen tị",
+      frustrated: "bực tức", resentful: "oán giận", bitter: "cay đắng", impatient: "mất kiên nhẫn",
+      betrayed: "bị phản bội", defensive: "phòng thủ", "fed-up": "chán ngấy", offended: "bị xúc phạm",
+      unsure: "không chắc", torn: "giằng xé", lost: "lạc hướng", stuck: "bế tắc",
+      doubtful: "hoài nghi", foggy: "mơ hồ", conflicted: "mâu thuẫn", hesitant: "ngập ngừng",
+      "left-out": "bị gạt ra ngoài", isolated: "cô lập", abandoned: "bị bỏ rơi", longing: "mong nhớ",
+      misunderstood: "bị hiểu lầm", unseen: "không ai thấy", forgotten: "bị lãng quên", apart: "lẻ loi",
+      appreciative: "trân trọng", fortunate: "may mắn", moved: "xúc động", humbled: "khiêm nhường",
+      "cared-for": "được chăm sóc", supported: "được nâng đỡ", warm: "ấm lòng", valued: "được coi trọng",
+      happy: "hạnh phúc", cheerful: "vui vẻ", delighted: "hớn hở", amused: "khoái chí",
+      energized: "tràn năng lượng", free: "tự do", lighthearted: "thảnh thơi", silly: "nghịch ngợm",
     },
   },
   suggest: {

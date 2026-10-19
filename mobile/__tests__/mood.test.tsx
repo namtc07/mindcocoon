@@ -55,10 +55,10 @@ describe("Mood journey", () => {
     expect(screen.getByRole("button", { name: "Previous month" })).toBeEnabled();
   });
 
-  it("keeps a legend for all five moods", async () => {
+  it("keeps a legend for all ten moods", async () => {
     await setup();
     const legend = await screen.findByLabelText("Legend");
-    expect(within(legend).getAllByRole("listitem")).toHaveLength(5);
+    expect(within(legend).getAllByRole("listitem")).toHaveLength(10);
   });
 
   it("remembers a custom tag", async () => {

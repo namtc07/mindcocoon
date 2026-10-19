@@ -1,4 +1,5 @@
-import { screen, userEvent } from "@testing-library/react-native";
+import { act, fireEvent, screen, userEvent } from "@testing-library/react-native";
+import { ScrollView } from "react-native";
 import TodayScreen from "@/app/(tabs)/index";
 import { FeelingChips } from "@/components/mood/FeelingChips";
 import { MoodPicker } from "@/components/mood/MoodPicker";
@@ -18,16 +19,38 @@ describe("Mood orbs", () => {
     expect(onChange).toHaveBeenCalledWith("anxious");
   });
 
-  it("lies in one gentle arc from heavier to lighter, not a grid", async () => {
+  it("lies in one arc from heavier to lighter, not a grid", async () => {
     await renderWithApp(<MoodPicker variant="orbs" value={null} onChange={() => {}} label="How are you?" />);
-    expect(screen.getAllByRole("radio").map((r) => r.props.accessibilityLabel)).toEqual(["Heavy", "Anxious", "Numb", "Peaceful", "Hopeful"]);
+    expect(screen.getAllByRole("radio").map((r) => r.props.accessibilityLabel)).toEqual([
+      "Angry", "Confused", "Anxious", "Lonely", "Heavy", "Numb", "Peaceful", "Hopeful", "Thankful", "Joyful",
+    ]);
     expect(screen.queryByText("More energy", { includeHiddenElements: true })).toBeNull();
     expect(screen.queryByText("Pleasant", { includeHiddenElements: true })).toBeNull();
   });
 
-  it("says a few words about the chosen mood, and invites a tap before", async () => {
+  it("tapping an orb chooses it and glides it to the middle of the arc", async () => {
+    const user = userEvent.setup();
+    const scrollTo = ScrollView.prototype.scrollTo as unknown as jest.Mock;
+    scrollTo.mockClear();
+    const onChange = jest.fn();
+    await renderWithApp(<MoodPicker variant="orbs" value={null} onChange={onChange} label="How are you?" />);
+    await user.press(screen.getByRole("radio", { name: "Hopeful" }));
+    expect(onChange).toHaveBeenCalledWith("hopeful");
+    expect(scrollTo).toHaveBeenLastCalledWith(expect.objectContaining({ x: 7 * 76 }));
+  });
+
+  it("swiping only browses; nothing is chosen until a tap", async () => {
+    const onChange = jest.fn();
+    await renderWithApp(<MoodPicker variant="orbs" value={null} onChange={onChange} label="How are you?" />);
+    await act(async () =>
+      fireEvent(screen.getByTestId("feeling-arc"), "momentumScrollEnd", { nativeEvent: { contentOffset: { x: 2 * 76, y: 0 } } }),
+    );
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("says a few words about the chosen mood, and invites a swipe or tap before", async () => {
     const { rerender } = await renderWithApp(<MoodPicker variant="orbs" value={null} onChange={() => {}} label="How are you?" />);
-    expect(screen.getByText("Tap the one closest to now")).toBeOnTheScreen();
+    expect(screen.getByText("Swipe to see more, tap the one closest to now")).toBeOnTheScreen();
     await rerender(<MoodPicker variant="orbs" value="heavy" onChange={() => {}} label="How are you?" />);
     expect(screen.getByText("Weighed down, tired")).toBeOnTheScreen();
   });

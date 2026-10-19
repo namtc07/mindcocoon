@@ -10,11 +10,11 @@ import { renderWithApp } from "@/test-utils/render";
 const DAY = 86_400_000;
 
 describe("MoodPicker", () => {
-  it("is a radio group of five moods", async () => {
+  it("is a radio group of ten moods", async () => {
     const user = userEvent.setup();
     const onChange = jest.fn();
     await renderWithApp(<MoodPicker value="peaceful" onChange={onChange} label="How are you?" />);
-    expect(screen.getAllByRole("radio")).toHaveLength(5);
+    expect(screen.getAllByRole("radio")).toHaveLength(10);
     expect(screen.getByRole("radio", { name: "Peaceful" })).toBeChecked();
     await user.press(screen.getByRole("radio", { name: "Heavy" }));
     expect(onChange).toHaveBeenCalledWith("heavy");

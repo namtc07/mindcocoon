@@ -15,12 +15,12 @@ export const SOUND_TRACKS: SoundTrack[] = [
   { id: "stream", title: "Forest stream", category: "ambient", src: "/audio/stream.m4a", isPremium: true },
   { id: "singing-bowl", title: "Singing bowl", category: "ambient", src: "/audio/singing-bowl.m4a", isPremium: true },
   { id: "deep-hum", title: "Deep hum", category: "ambient", src: "/audio/deep-hum.m4a", isPremium: true },
-  { id: "piano-still", title: "Still", category: "music", src: "/audio/music/piano-still.m4a", isPremium: false, moods: ["heavy", "numb"] },
-  { id: "piano-dawn", title: "Dawn", category: "music", src: "/audio/music/piano-dawn.m4a", isPremium: false, moods: ["hopeful", "peaceful"] },
-  { id: "lofi-rain", title: "Rain on the window", category: "music", src: "/audio/music/lofi-rain.m4a", isPremium: false, moods: ["anxious", "heavy"] },
-  { id: "lofi-slow", title: "Slow down", category: "music", src: "/audio/music/lofi-slow.m4a", isPremium: false, moods: ["anxious", "numb"] },
-  { id: "piano-drift", title: "Drift", category: "music", src: "/audio/music/piano-drift.m4a", isPremium: false, moods: ["peaceful"] },
-  { id: "piano-letter", title: "A letter", category: "music", src: "/audio/music/piano-letter.m4a", isPremium: false, moods: ["heavy", "hopeful"] },
+  { id: "piano-still", title: "Still", category: "music", src: "/audio/music/piano-still.m4a", isPremium: false, moods: ["heavy", "numb", "alone"] },
+  { id: "piano-dawn", title: "Dawn", category: "music", src: "/audio/music/piano-dawn.m4a", isPremium: false, moods: ["hopeful", "peaceful", "joyful"] },
+  { id: "lofi-rain", title: "Rain on the window", category: "music", src: "/audio/music/lofi-rain.m4a", isPremium: false, moods: ["anxious", "heavy", "angry"] },
+  { id: "lofi-slow", title: "Slow down", category: "music", src: "/audio/music/lofi-slow.m4a", isPremium: false, moods: ["anxious", "numb", "confused"] },
+  { id: "piano-drift", title: "Drift", category: "music", src: "/audio/music/piano-drift.m4a", isPremium: false, moods: ["peaceful", "thankful"] },
+  { id: "piano-letter", title: "A letter", category: "music", src: "/audio/music/piano-letter.m4a", isPremium: false, moods: ["heavy", "hopeful", "alone"] },
 ];
 
 export const TRACK_BY_ID = Object.fromEntries(SOUND_TRACKS.map((t) => [t.id, t])) as Record<string, SoundTrack>;
