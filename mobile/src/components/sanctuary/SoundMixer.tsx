@@ -1,7 +1,7 @@
 import { formatTime } from "@mindcocoon/core/dates";
-import { AMBIENT_TRACKS, SOUND_TRACKS } from "@mindcocoon/core/sounds";
+import { AMBIENT_TRACKS, NOISE_TRACKS, SOUND_TRACKS } from "@mindcocoon/core/sounds";
 import Slider from "@react-native-community/slider";
-import { AudioLines, Bell, CloudLightning, CloudRain, Droplets, Flame, Lock, Waves, Wind, type LucideIcon } from "lucide-react-native";
+import { AudioLines, AudioWaveform, Bell, CloudLightning, CloudRain, Droplets, Flame, Lock, Waves, Wind, type LucideIcon } from "lucide-react-native";
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import { toast } from "@/components/ui/Toast";
 import { useNow } from "@/hooks/use-now";
@@ -27,6 +27,9 @@ const ICONS: Record<string, LucideIcon> = {
   stream: Droplets,
   "singing-bowl": Bell,
   "deep-hum": AudioLines,
+  "white-noise": AudioWaveform,
+  "pink-noise": AudioWaveform,
+  "brown-noise": AudioWaveform,
 };
 
 /** One sound as a tile: tap to play or pause ("Play: Rain" / "Pause: Rain"). */
@@ -135,7 +138,7 @@ export function SoundMixer() {
   );
   const sliderColors = { minimumTrackTintColor: c.primary, maximumTrackTintColor: c.border, thumbTintColor: c.primary };
 
-  const playingNow = state.playing.filter((id) => SOUND_TRACKS.some((tr) => tr.id === id && tr.category === "ambient"));
+  const playingNow = state.playing.filter((id) => SOUND_TRACKS.some((tr) => tr.id === id && (tr.category === "ambient" || tr.category === "noise")));
 
   return (
     <View style={styles.wrap}>
@@ -145,6 +148,16 @@ export function SoundMixer() {
         {freeTracks.map((track) => (
           <SoundTile key={track.id} id={track.id} />
         ))}
+      </View>
+      <View testID="noise-group" style={styles.group}>
+        <Text accessibilityRole="header" style={[styles.label, { color: c.mutedForeground }]}>
+          {t.sanctuary.noiseTitle}
+        </Text>
+        <View style={styles.grid}>
+          {NOISE_TRACKS.map((track) => (
+            <SoundTile key={track.id} id={track.id} />
+          ))}
+        </View>
       </View>
       {premium.length > 0 && (
         <View style={styles.group}>
