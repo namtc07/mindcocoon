@@ -20,13 +20,19 @@ Ideas from How We Feel (feeling words, strategies), Stoic / Calm Sleep (bedtime 
   plays it with the sleep timer and shows "Sleep well." Nothing plays before "Goodnight". Ad-free.
 - **Sound and touch when letting go** (Vent): crackle for Burn, water for Float away, a gust for
   Scatter, a soft chime for Fade, with matching light haptics. Settings → "Sound when letting go"
-  turns it off. Sounds are generated placeholders (`node scripts/generate-sfx.mjs`).
+  turns it off. With no Sanctuary sound playing, the effect mixes with your own music and stays
+  silent when the iPhone is on silent. Sounds are generated placeholders (`node scripts/generate-sfx.mjs`).
 
 ## Tests
 
 Core: feeling words, suggestions, store feelings. Mobile: feeling chips (Today, Mood, day detail),
 suggestion card, wind-down flow, release sounds + setting, ad-free list incl. wind-down.
-Totals: web+core 182, mobile Vitest 77, Jest 181.
+Totals: web+core 182, mobile Vitest 77, Jest 187.
+
+## Note
+
+Today's quick check-in now follows the stored check-in for today: tapping a mood changes today's
+check-in (even one made earlier or in wind-down) instead of adding a second one.
 
 ## Owner checklist
 
@@ -36,5 +42,5 @@ Totals: web+core 182, mobile Vitest 77, Jest 181.
    the practice opens. "Not now" hides the card.
 3. Mood tab → the day detail lists your feeling words.
 4. Today → Wind down for sleep → pick Heavy → breathe 1 min (4-7-8) → Rainy night is preselected →
-   Goodnight → sounds play, mini player shows the timer.
+   Goodnight → sounds play; the "Sleep well" screen shows what's playing, the timer, pause and stop.
 5. Vent → try each way of letting go and listen; Settings → turn "Sound when letting go" off → silent.

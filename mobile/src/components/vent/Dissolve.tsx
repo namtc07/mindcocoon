@@ -140,7 +140,7 @@ export function Dissolve({ plan, onDone }: { plan: DissolvePlan; onDone: () => v
 
   // Sound and touch start with the release (the sound may outlive a short Reduce Motion fade).
   useEffect(() => {
-    playReleaseSound(plan.ritual);
+    void playReleaseSound(plan.ritual);
     const timers = releaseHaptics(plan.ritual);
     return () => timers.forEach(clearTimeout);
   }, [plan]);

@@ -1,6 +1,7 @@
-import { createAudioPlayer } from "expo-audio";
+import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
 import * as Haptics from "expo-haptics";
 import type { Ritual } from "@/components/vent/Dissolve";
+import { audio } from "./audio";
 import { getPref } from "./prefs";
 
 /** Short generated sounds for each way of letting go (scripts/generate-sfx.mjs). */
@@ -17,8 +18,11 @@ const MAX_MS = 6_000;
 type OneShot = ReturnType<typeof createAudioPlayer>;
 let current: OneShot | null = null;
 let cleanup: ReturnType<typeof setTimeout> | null = null;
+/** Bumped by every stop, so a sound still preparing after the person left Vent never starts. */
+let generation = 0;
 
 export function stopReleaseSound() {
+  generation++;
   if (cleanup) clearTimeout(cleanup);
   cleanup = null;
   if (!current) return;
@@ -31,11 +35,21 @@ export function stopReleaseSound() {
   current = null;
 }
 
-/** Plays the ritual's sound once (unless turned off in Settings), quietly, and frees it afterwards. */
-export function playReleaseSound(ritual: Ritual) {
+/**
+ * Plays the ritual's sound once (unless turned off in Settings), quietly, and frees it afterwards.
+ * With no Sanctuary sound playing it mixes with other apps' audio and respects the silent switch;
+ * the mixer re-applies its own session (lock-screen controls) on its next sound.
+ */
+export async function playReleaseSound(ritual: Ritual) {
   if (getPref("releaseSound") === false) return;
   stopReleaseSound();
+  const mine = generation;
   try {
+    if (audio.getState().playing.length === 0) {
+      await setAudioModeAsync({ playsInSilentMode: false, shouldPlayInBackground: false, interruptionMode: "mixWithOthers" });
+      audio.invalidateSession();
+    }
+    if (mine !== generation) return;
     const player = createAudioPlayer(SFX_SOURCES[ritual]);
     player.volume = VOLUME;
     player.play();

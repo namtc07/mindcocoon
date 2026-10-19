@@ -1,14 +1,15 @@
 import { PRESET_MIXES, type PresetMixId } from "@mindcocoon/core/audio/mixes";
 import { dayKey, dayKeyFromISO } from "@mindcocoon/core/dates";
 import { suggestionFor } from "@mindcocoon/core/feelings";
-import { addMood, changeMood } from "@mindcocoon/core/mood/store";
+import { addMood, changeMood, getMoodState } from "@mindcocoon/core/mood/store";
 import type { MoodType } from "@mindcocoon/core/types";
 import { router } from "expo-router";
 import { Moon } from "lucide-react-native";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { MoodPicker } from "@/components/mood/MoodPicker";
 import { BoxBreathing } from "@/components/sanctuary/BoxBreathing";
+import { MiniPlayer } from "@/components/sanctuary/MiniPlayer";
 import { Muted, Screen } from "@/components/Screen";
 import { StackHeader } from "@/components/StackHeader";
 import { Button } from "@/components/ui/Button";
@@ -40,18 +41,27 @@ export default function WindDownScreen() {
   const [mood, setMood] = useState<MoodType | null>(null);
   const [mixChoice, setMixChoice] = useState<PresetMixId | null>(null);
   const [minutes, setMinutes] = useState<SleepMinutes>(30);
+  const [starting, setStarting] = useState(false);
+  // Mood taps are saved one after another on today's check-in as it is by then (never duplicated).
+  const queue = useRef<Promise<unknown>>(Promise.resolve());
 
   const currentMood = mood ?? todayLog?.mood ?? null;
   const suggestion = currentMood ? suggestionFor(currentMood) : null;
   const mix = mixChoice ?? suggestion?.mix ?? "rainy-night";
 
-  async function pickMood(next: MoodType) {
+  function pickMood(next: MoodType) {
     setMood(next);
-    if (todayLog) await changeMood(todayLog, next);
-    else await addMood({ mood: next, tags: [] });
+    queue.current = queue.current
+      .then(async () => {
+        const current = getMoodState().logs.find((l) => dayKeyFromISO(l.createdAt) === dayKey(new Date()));
+        await (current ? changeMood(current, next) : addMood({ mood: next, tags: [] }));
+      })
+      .catch(() => toast.show(t.vault.unavailable));
   }
 
   async function goodnight() {
+    if (starting) return;
+    setStarting(true);
     const preset = PRESET_MIXES.find((p) => p.id === mix);
     try {
       if (preset) await audio.applyMix(preset.mix, () => true);
@@ -59,6 +69,8 @@ export default function WindDownScreen() {
       setStep("night");
     } catch {
       toast.show(t.sanctuary.playError);
+    } finally {
+      setStarting(false);
     }
   }
 
@@ -70,7 +82,7 @@ export default function WindDownScreen() {
           <View style={styles.step}>
             <Muted>{t.windDown.intro}</Muted>
             <Text style={[styles.h, { color: c.foreground }]}>{t.windDown.howTonight}</Text>
-            <MoodPicker value={currentMood} onChange={(m) => void pickMood(m)} label={t.windDown.howTonight} />
+            <MoodPicker value={currentMood} onChange={pickMood} label={t.windDown.howTonight} />
             <View style={styles.actions}>
               <Button variant="ghost" onPress={() => setStep("breathe")}>
                 {t.windDown.skip}
@@ -119,7 +131,9 @@ export default function WindDownScreen() {
               <Button variant="ghost" onPress={() => setStep("breathe")}>
                 {t.practices.back}
               </Button>
-              <Button onPress={() => void goodnight()}>{t.windDown.goodnight}</Button>
+              <Button disabled={starting} onPress={() => void goodnight()}>
+                {t.windDown.goodnight}
+              </Button>
             </View>
           </View>
         )}
@@ -128,6 +142,10 @@ export default function WindDownScreen() {
           <View style={[styles.step, styles.night]}>
             <Moon size={36} color={c.mutedForeground} />
             <Muted>{t.windDown.sleepWellBody}</Muted>
+            {/* What's playing, the timer, pause and stop — right where the phone gets put down. */}
+            <View style={styles.player}>
+              <MiniPlayer />
+            </View>
             <Button variant="ghost" onPress={() => router.navigate("/")}>
               {t.windDown.backToday}
             </Button>
@@ -145,4 +163,5 @@ const styles = StyleSheet.create({
   chips: { flexDirection: "row", flexWrap: "wrap", gap: space.sm },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: space.md, justifyContent: "flex-end" },
   night: { alignItems: "flex-start", paddingTop: space.xl },
+  player: { alignSelf: "stretch", marginHorizontal: -space.md },
 });

@@ -81,6 +81,8 @@ export interface AudioEngine {
   reset(): void;
   /** Plays exactly this mix (sounds outside it stop; the sleep timer keeps running); unplayable ids are skipped. */
   applyMix(mix: { volumes: Record<string, number> }, playable: (id: string) => boolean): Promise<void>;
+  /** Forget the prepared audio session (something else changed it); the next play prepares it again. */
+  invalidateSession(): void;
   /** Re-reads stored prefs (they load asynchronously after the engine is created at startup). */
   restorePrefs(): void;
 }
@@ -388,6 +390,10 @@ export function createAudioEngine(deps: AudioEngineDeps): AudioEngine {
       savePrefs();
       applyVolumes();
       await Promise.allSettled(targets.map((id) => engine.play(id)));
+    },
+
+    invalidateSession() {
+      session = null;
     },
 
     restorePrefs() {

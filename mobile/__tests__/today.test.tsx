@@ -1,4 +1,4 @@
-import { readNote } from "@mindcocoon/core/mood/store";
+import { changeMood, getMoodState, readNote } from "@mindcocoon/core/mood/store";
 import { getStorage } from "@mindcocoon/core/storage/index";
 import { initVault, lockVault, setVaultPasscode } from "@mindcocoon/core/vault/session";
 import { act, screen, userEvent, waitFor } from "@testing-library/react-native";
@@ -131,5 +131,29 @@ describe("Today", () => {
       expect(screen.queryByRole("button", { name: "lonely" })).not.toBeOnTheScreen();
       await waitFor(async () => expect((await getStorage().moods.list())[0].feelings).toBeUndefined());
     });
+  });
+
+  it("follows a check-in changed elsewhere (e.g. wind-down) and saves words on it", async () => {
+    const user = userEvent.setup();
+    await renderWithApp(<TodayScreen />);
+    await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+    await waitFor(() => expect(getMoodState().logs).toHaveLength(1));
+    await act(async () => {
+      await changeMood(getMoodState().logs[0], "anxious");
+    });
+    expect(await screen.findByRole("radio", { name: "Anxious" })).toBeChecked();
+    await user.press(await screen.findByRole("button", { name: "worried" }));
+    await waitFor(async () => expect(await getStorage().moods.list()).toHaveLength(1));
+    await waitFor(async () => expect((await getStorage().moods.list())[0].feelings).toEqual(["worried"]));
+  });
+
+  it("two quick taps on feeling words keep both", async () => {
+    const user = userEvent.setup();
+    await renderWithApp(<TodayScreen />);
+    await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+    const lonely = await screen.findByRole("button", { name: "lonely" });
+    const sad = screen.getByRole("button", { name: "sad" });
+    await Promise.all([user.press(lonely), user.press(sad)]);
+    await waitFor(async () => expect([...((await getStorage().moods.list())[0].feelings ?? [])].sort()).toEqual(["lonely", "sad"]));
   });
 });

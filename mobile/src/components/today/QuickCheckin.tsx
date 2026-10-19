@@ -1,22 +1,27 @@
 import { dayKey, dayKeyFromISO } from "@mindcocoon/core/dates";
-import { addMood, changeMood, updateMoodDetails } from "@mindcocoon/core/mood/store";
+import { addMood, changeMood, getMoodState, updateMoodDetails } from "@mindcocoon/core/mood/store";
 import { DEFAULT_TAGS } from "@mindcocoon/core/moods";
 import type { MoodLog, MoodType } from "@mindcocoon/core/types";
 import { VaultLockedError, unlockWithPasscode } from "@mindcocoon/core/vault/session";
 import { Check } from "lucide-react-native";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { FeelingChips } from "@/components/mood/FeelingChips";
 import { MoodPicker } from "@/components/mood/MoodPicker";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { TextField } from "@/components/ui/TextField";
+import { useMoodLogs } from "@/hooks/use-mood-logs";
 import { useNow } from "@/hooks/use-now";
 import { openVault, useVault } from "@/hooks/use-vault";
 import { useI18n } from "@/i18n/i18n";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
+
+function latestToday(logs: MoodLog[], now: Date): MoodLog | null {
+  return logs.find((l) => dayKeyFromISO(l.createdAt) === dayKey(now)) ?? null;
+}
 
 /** One tap saves the mood; tags and a note can be added afterwards to the same check-in. */
 export function QuickCheckin() {
@@ -25,14 +30,18 @@ export function QuickCheckin() {
   const vault = useVault();
   const now = useNow();
   const locked = vault.status === "locked";
-  const [saved, setSaved] = useState<MoodLog | null>(null);
+  const { logs } = useMoodLogs();
   const [open, setOpen] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [note, setNote] = useState("");
   const [passcode, setPasscode] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  // Today's check-in comes from the store, so a change made elsewhere (Mood tab, wind-down) shows here.
   // The tab can stay mounted for days: yesterday's check-in is never today's to change.
-  const today = saved && dayKeyFromISO(saved.createdAt) === dayKey(now) ? saved : null;
+  const today = latestToday(logs, now);
+  // Writes go one after another, each on the check-in as it is by then (no lost words, no duplicates).
+  const queue = useRef<Promise<unknown>>(Promise.resolve());
+  const [pendingFeelings, setPendingFeelings] = useState<string[] | null>(null);
 
   function resetDetails() {
     setOpen(false);
@@ -41,16 +50,27 @@ export function QuickCheckin() {
     setPasscode("");
   }
 
-  async function pick(mood: MoodType) {
-    if (!today) resetDetails();
-    const log = today ? await changeMood(today, mood) : await addMood({ mood, tags: [] });
-    setSaved(log);
-    setMessage(t.today.saved);
+  function enqueue(work: () => Promise<unknown>) {
+    queue.current = queue.current.then(work).catch(() => setMessage(t.vault.unavailable));
+    return queue.current;
   }
 
-  async function pickFeelings(feelings: string[]) {
-    if (!today) return;
-    setSaved(await updateMoodDetails(today, { tags: today.tags, feelings }));
+  function pick(mood: MoodType) {
+    if (!today) resetDetails();
+    setPendingFeelings(null);
+    void enqueue(async () => {
+      const current = latestToday(getMoodState().logs, new Date());
+      await (current ? changeMood(current, mood) : addMood({ mood, tags: [] }));
+      setMessage(t.today.saved);
+    });
+  }
+
+  function pickFeelings(feelings: string[]) {
+    setPendingFeelings(feelings);
+    void enqueue(async () => {
+      const current = latestToday(getMoodState().logs, new Date());
+      if (current) await updateMoodDetails(current, { tags: current.tags, feelings });
+    }).finally(() => setPendingFeelings((p) => (p === feelings ? null : p)));
   }
 
   async function saveDetails() {
@@ -61,7 +81,7 @@ export function QuickCheckin() {
         setMessage(t.vault.wrongPasscode);
         return;
       }
-      setSaved(await updateMoodDetails(today, { tags, note }));
+      await enqueue(() => updateMoodDetails(latestToday(getMoodState().logs, new Date()) ?? today, { tags, note }));
       // The plaintext note isn't kept in the form once it is encrypted and saved.
       setNote("");
       setPasscode("");
@@ -84,7 +104,7 @@ export function QuickCheckin() {
           </>
         )}
       </View>
-      {today && <FeelingChips mood={today.mood} value={today.feelings ?? []} onChange={(f) => void pickFeelings(f)} />}
+      {today && <FeelingChips mood={today.mood} value={pendingFeelings ?? today.feelings ?? []} onChange={pickFeelings} />}
       {today && !open && (
         <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setOpen(true)} style={styles.link}>
           <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground, textDecorationLine: "underline" }}>

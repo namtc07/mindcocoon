@@ -10,7 +10,8 @@ import { renderWithApp } from "@/test-utils/render";
 import { planDissolve } from "@/components/vent/Dissolve";
 import { getPref, setPref } from "@/lib/prefs";
 import * as Reanimated from "react-native-reanimated";
-import { createAudioPlayer } from "expo-audio";
+import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
+import { audio } from "@/lib/audio";
 import { SFX_SOURCES } from "@/lib/release-sound";
 import { captureFocusEffects } from "@/test-utils/focus";
 import { createMemoryDriver } from "@mindcocoon/core/storage/driver";
@@ -200,10 +201,35 @@ describe("Vent", () => {
       const user = await setup();
       await user.type(screen.getByLabelText("Write what's on your mind"), SECRET);
       await user.press(screen.getByRole("button", { name: "Release into the void" }));
-      expect(createAudioPlayer).toHaveBeenCalledWith(SFX_SOURCES.float);
+      await waitFor(() => expect(createAudioPlayer).toHaveBeenCalledWith(SFX_SOURCES.float));
       expect(sfxPlayer("float")?.calls.filter((c) => c === "play")).toHaveLength(1);
       await act(async () => jest.advanceTimersByTime(4_500));
       expect((createAudioPlayer as jest.Mock).mock.calls.filter(([src]) => src === SFX_SOURCES.float)).toHaveLength(1);
+    });
+
+    it("with nothing playing, the sound mixes with other apps and respects the silent switch", async () => {
+      await act(async () => audio.reset());
+      const user = await setup();
+      await user.type(screen.getByLabelText("Write what's on your mind"), SECRET);
+      await user.press(screen.getByRole("button", { name: "Release into the void" }));
+      await waitFor(() => expect(createAudioPlayer).toHaveBeenCalledWith(SFX_SOURCES.burn));
+      expect(setAudioModeAsync).toHaveBeenCalledWith({ playsInSilentMode: false, shouldPlayInBackground: false, interruptionMode: "mixWithOthers" });
+      // The mixer re-applies its own session (lock-screen controls) on its next sound.
+      (setAudioModeAsync as jest.Mock).mockClear();
+      await act(() => audio.play("rain"));
+      expect(setAudioModeAsync).toHaveBeenCalledWith({ playsInSilentMode: true, shouldPlayInBackground: true, interruptionMode: "doNotMix" });
+      await act(async () => audio.reset());
+    });
+
+    it("while the mixer plays, the sound joins its session unchanged", async () => {
+      await act(() => audio.play("rain"));
+      (setAudioModeAsync as jest.Mock).mockClear();
+      const user = await setup();
+      await user.type(screen.getByLabelText("Write what's on your mind"), SECRET);
+      await user.press(screen.getByRole("button", { name: "Release into the void" }));
+      await waitFor(() => expect(createAudioPlayer).toHaveBeenCalledWith(SFX_SOURCES.burn));
+      expect(setAudioModeAsync).not.toHaveBeenCalled();
+      await act(async () => audio.reset());
     });
 
     it("the setting turns release sounds off", async () => {
@@ -220,6 +246,7 @@ describe("Vent", () => {
         const user = await setup();
         await user.type(screen.getByLabelText("Write what's on your mind"), SECRET);
         await user.press(screen.getByRole("button", { name: "Release into the void" }));
+        await waitFor(() => expect(createAudioPlayer).toHaveBeenCalledWith(SFX_SOURCES.burn));
         await act(async () => focus.blur());
         expect(sfxPlayer("burn")?.calls).toContain("remove");
       } finally {

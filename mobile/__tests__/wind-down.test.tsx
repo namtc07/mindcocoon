@@ -1,6 +1,7 @@
 import { addMood } from "@mindcocoon/core/mood/store";
 import { getStorage } from "@mindcocoon/core/storage/index";
-import { act, screen, userEvent, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, screen, userEvent, waitFor } from "@testing-library/react-native";
+import { setAudioModeAsync } from "expo-audio";
 import WindDownScreen from "@/app/wind-down";
 import { audio } from "@/lib/audio";
 import { setPref } from "@/lib/prefs";
@@ -65,5 +66,28 @@ describe("Wind down", () => {
     await view.unmount();
     expect(audio.getState().playing).toEqual([]);
     expect(audio.getState().sleepEndsAt).toBeNull();
+  });
+
+  it("two quick mood taps make one check-in with the last mood", async () => {
+    await open();
+    const heavy = await screen.findByRole("radio", { name: "Heavy" });
+    const anxious = screen.getByRole("radio", { name: "Anxious" });
+    await act(async () => {
+      fireEvent.press(heavy);
+      fireEvent.press(anxious);
+    });
+    await waitFor(async () => expect((await getStorage().moods.list()).map((l) => l.mood)).toEqual(["anxious"]));
+  });
+
+  it("the night screen shows what's playing and can stop it", async () => {
+    const { user } = await open();
+    await user.press(await screen.findByRole("button", { name: "Skip" }));
+    await user.press(screen.getByRole("button", { name: "Skip" }));
+    await user.press(screen.getByRole("button", { name: "Goodnight" }));
+    expect(await screen.findByLabelText("Now playing")).toBeOnTheScreen();
+    expect(screen.getByLabelText("Sleep timer: 30 min")).toBeOnTheScreen();
+    await user.press(screen.getByRole("button", { name: "Stop all" }));
+    expect(audio.getState().playing).toEqual([]);
+    expect(setAudioModeAsync).toBeDefined();
   });
 });

@@ -51,7 +51,7 @@ export const vi: Dictionary = {
     noteLocked: "Mở két để thêm ghi chú.",
     tiles: {
       windDownTitle: "Thư giãn trước khi ngủ",
-      windDownBody: "Ghé lại cảm xúc, thở, rồi ngủ cùng âm thanh dịu nhẹ.",
+      windDownBody: "Ghi lại cảm xúc, thở, rồi ngủ cùng âm thanh dịu nhẹ.",
       ventTitle: "Trút ra",
       ventBody: "Viết thoải mái, rồi thả đi hoặc cất lại.",
       breatheTitle: "Thở một phút",
@@ -253,7 +253,7 @@ export const vi: Dictionary = {
     words: {
       calm: "bình thản", content: "hài lòng", relieved: "nhẹ nhõm", grateful: "biết ơn", safe: "an toàn",
       excited: "háo hức", motivated: "có động lực", proud: "tự hào", loved: "được thương", curious: "tò mò",
-      empty: "trống trải", tired: "mệt mỏi", bored: "chán", disconnected: "lạc lõng", flat: "uể oải",
+      empty: "trống trải", tired: "mệt mỏi", bored: "chán", disconnected: "lạc lõng", flat: "vô cảm",
       exhausted: "kiệt sức", lonely: "cô đơn", sad: "buồn", hurt: "tổn thương", disappointed: "thất vọng",
       worried: "lo lắng", overwhelmed: "quá tải", restless: "bồn chồn", scared: "sợ hãi", irritated: "bực bội",
     },
@@ -268,14 +268,14 @@ export const vi: Dictionary = {
   },
   windDown: {
     title: "Thư giãn trước khi ngủ",
-    intro: "Một phút ghé lại cảm xúc, một phút để thở, rồi âm thanh sẽ tự nhỏ dần.",
+    intro: "Một phút ghi lại cảm xúc, một phút để thở, rồi âm thanh sẽ tự nhỏ dần.",
     howTonight: "Tối nay bạn thấy thế nào?",
     skip: "Bỏ qua",
     soundsTitle: "Âm thanh để ngủ",
     timerLabel: "Tắt dần sau",
     goodnight: "Chúc ngủ ngon",
     sleepWell: "Ngủ ngon nhé.",
-    sleepWellBody: "Âm thanh sẽ tự nhỏ dần rồi tắt. Bạn có thể đặt điện thoại xuống rồi.",
+    sleepWellBody: "Âm thanh sẽ tự nhỏ dần rồi tắt. Giờ bạn có thể đặt điện thoại xuống.",
     backToday: "Về Hôm nay",
   },
   sounds: {
@@ -296,7 +296,7 @@ export const vi: Dictionary = {
   },
   settings: {
     adPrivacy: "Lựa chọn quyền riêng tư quảng cáo",
-    releaseSound: "Âm thanh khi buông",
+    releaseSound: "Âm thanh khi thả đi",
     reminderOff: "Tắt",
     reminderTitle: "Nhắc nhở buổi tối",
     reminderHint: "Một lời nhắc nhẹ vào buổi tối. Chỉ bật khi bạn muốn.",
