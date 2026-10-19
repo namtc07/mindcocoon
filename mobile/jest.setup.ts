@@ -33,6 +33,7 @@ jest.mock("expo-router", () => {
   const React = require("react");
   const { Pressable, Text } = require("react-native");
   const router = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), navigate: jest.fn(), setParams: jest.fn() };
+  const navigation = { setOptions: jest.fn(), addListener: jest.fn(() => jest.fn()), setParams: jest.fn() };
   const Link = ({ href, children, ...rest }: { href: unknown; children: React.ReactNode }) =>
     React.createElement(Pressable, { accessibilityRole: "link", onPress: () => router.push(href), ...rest }, React.createElement(Text, null, children));
   return {
@@ -41,7 +42,8 @@ jest.mock("expo-router", () => {
     Link,
     useLocalSearchParams: jest.fn(() => ({})),
     usePathname: jest.fn(() => "/"),
-    useNavigation: () => ({ setOptions: jest.fn(), addListener: jest.fn(() => jest.fn()) }),
+    useNavigation: () => navigation,
+    __navigation: navigation,
     useFocusEffect: (cb: () => void | (() => void)) => React.useEffect(cb, [cb]),
     Stack: { Screen: () => null },
     Redirect: ({ href }: { href: unknown }) => {

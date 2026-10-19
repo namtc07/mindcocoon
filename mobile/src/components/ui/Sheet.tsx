@@ -1,3 +1,4 @@
+import { PrivacyCover } from "@/components/PrivacyCover";
 import { useEffect, useRef, type ReactNode } from "react";
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { fonts } from "@/theme/fonts";
@@ -45,6 +46,8 @@ export function Sheet({
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
+      {/* A Modal sits above the root view, so it needs its own cover for the app switcher. */}
+      <PrivacyCover />
     </Modal>
   );
 }

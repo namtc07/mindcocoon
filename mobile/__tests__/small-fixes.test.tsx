@@ -57,7 +57,10 @@ describe("Small fixes", () => {
     try {
       await renderWithApp(<VentScreen />);
       await act(async () => focus.blur());
-      expect(router.setParams).toHaveBeenCalledWith({ prompt: undefined, promptIndex: undefined });
+      // Vent's own route (not whatever screen is focused next).
+      const { __navigation } = jest.requireMock("expo-router") as { __navigation: { setParams: jest.Mock } };
+      expect(__navigation.setParams).toHaveBeenCalledWith({ prompt: undefined, promptIndex: undefined });
+      expect(router.setParams).not.toHaveBeenCalled();
     } finally {
       focus.restore();
     }

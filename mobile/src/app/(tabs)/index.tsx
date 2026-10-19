@@ -1,5 +1,6 @@
 import { formatDay, isEveningMode, partOfDay } from "@mindcocoon/core/dates";
 import { Link } from "expo-router";
+import { Fragment } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { Screen } from "@/components/Screen";
@@ -36,26 +37,18 @@ export default function TodayScreen() {
       <EntryLinks evening={evening} />
     </View>
   );
+  // Night: name the feeling, get something for it, wind down; writing prompts come last.
+  // The worry-box line shows at any time (it's the only way back to the box).
+  const blocks = { checkin, worry: <WorryReadyLine now={now} />, entries, prompt };
   return (
     <Screen title={t.today.greeting[partOfDay(now)]}>
       <Text style={{ fontFamily: fonts.sans, fontSize: 14, color: c.mutedForeground, marginTop: -space.sm }}>{formatDay(now, locale)}</Text>
       <View style={styles.sections}>
         <HeavyNudge now={now} />
-        {evening ? (
-          // Night: name the feeling, get something for it, wind down; writing prompts come last.
-          <>
-            {checkin}
-            {entries}
-            {prompt}
-          </>
-        ) : (
-          <>
-            <WorryReadyLine now={now} />
-            {prompt}
-            {checkin}
-            {entries}
-          </>
-        )}
+        {/* One keyed list, so blocks move (not remount) when 18:00 / 05:00 comes — a note being typed survives. */}
+        {(evening ? ["checkin", "worry", "entries", "prompt"] : ["worry", "prompt", "checkin", "entries"]).map((key) => (
+          <Fragment key={key}>{blocks[key as keyof typeof blocks]}</Fragment>
+        ))}
         {__DEV__ && (
           <Link href="/dev/spike" style={{ color: c.mutedForeground, fontFamily: fonts.sans, fontSize: 13 }}>
             Dev: crypto spike

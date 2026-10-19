@@ -1,6 +1,6 @@
 import { promptAt, promptForDay } from "@mindcocoon/core/prompts";
 import { checkText } from "@mindcocoon/core/safety/detect";
-import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { useCallback, useState, useSyncExternalStore } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
@@ -102,13 +102,15 @@ export default function VentScreen() {
   // Leaving Vent silences a release sound that is still playing.
   // …and forgets a prompt opened from the library, so Today's "Write about this" never shows a stale one.
   const hasPromptParam = params.prompt !== undefined || params.promptIndex !== undefined;
+  // Vent's own navigation object targets this route (router.setParams would hit whatever is focused next).
+  const navigation = useNavigation();
   useFocusEffect(
     useCallback(
       () => () => {
         stopReleaseSound();
-        if (hasPromptParam) router.setParams({ prompt: undefined, promptIndex: undefined });
+        if (hasPromptParam) navigation.setParams({ prompt: undefined, promptIndex: undefined } as never);
       },
-      [hasPromptParam],
+      [hasPromptParam, navigation],
     ),
   );
 

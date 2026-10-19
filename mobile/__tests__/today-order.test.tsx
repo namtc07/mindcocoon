@@ -1,4 +1,6 @@
-import { screen, within } from "@testing-library/react-native";
+import { act, screen, within } from "@testing-library/react-native";
+import { addWorry, __resetWorriesForTests } from "@/lib/worries";
+import { initVault } from "@mindcocoon/core/vault/session";
 import TodayScreen from "@/app/(tabs)/index";
 import { renderWithApp } from "@/test-utils/render";
 
@@ -35,4 +37,17 @@ describe("Today order", () => {
     await at(5);
     expect(order()[0]).toBe("today-prompt");
   });
+
+  it("a ready worry is reachable in the evening too", async () => {
+    await renderWithApp(<></>);
+    await act(async () => {
+      await __resetWorriesForTests();
+      await initVault();
+      await addWorry("x", new Date(2026, 9, 18, 23, 0));
+    });
+    jest.useFakeTimers({ advanceTimers: true, now: new Date(2026, 9, 19, 21, 0) });
+    await renderWithApp(<TodayScreen />, { keepState: true });
+    expect(await screen.findByText("Something you set down is ready to look at.")).toBeOnTheScreen();
+  });
+
 });
