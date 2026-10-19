@@ -1,3 +1,4 @@
+import { LOW_MOODS } from "../moods";
 import { addDays, dayKey, dayKeyFromISO, startOfDay, weekdayIndex } from "../dates";
 import type { MoodLog } from "../types";
 
@@ -46,7 +47,7 @@ export function monthGrid(logs: MoodLog[], year: number, month: number): (DayCel
   return [...leading, ...days];
 }
 
-/** True after seven local days in a row that each ended "heavy", at most once a week. */
+/** True after seven local days in a row that each ended low (LOW_MOODS), at most once a week. */
 /** A whole year as twelve rows of real days (no padding), each with that day's latest check-in. */
 export function yearGrid(logs: MoodLog[], year: number): DayCell[][] {
   const byDay = latestMoodByDay(logs);
@@ -68,7 +69,8 @@ export function shouldShowHeavyNudge(
   const byDay = latestMoodByDay(logs);
   const today = startOfDay(now);
   for (let i = 0; i < NUDGE_DAYS; i++) {
-    if (byDay.get(dayKey(addDays(today, -i)))?.mood !== "heavy") return false;
+    const mood = byDay.get(dayKey(addDays(today, -i)))?.mood;
+    if (!mood || !LOW_MOODS.includes(mood)) return false;
   }
   return true;
 }

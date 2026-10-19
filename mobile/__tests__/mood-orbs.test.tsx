@@ -6,7 +6,7 @@ import TodayScreen from "@/app/(tabs)/index";
 import { FeelingChips } from "@/components/mood/FeelingChips";
 import type { MoodType } from "@mindcocoon/core/types";
 import { useState } from "react";
-import { ARC_MIDDLE, MoodPicker } from "@/components/mood/MoodPicker";
+import { ARC_MIDDLE, middleOf, MoodPicker } from "@/components/mood/MoodPicker";
 import { renderWithApp } from "@/test-utils/render";
 import { readableFill } from "@/theme/contrast";
 import { tokens } from "@/theme/tokens";
@@ -83,6 +83,27 @@ describe("Mood orbs", () => {
     }
   });
 
+  it("a glide cut short (a finger takes over) neither chooses nor jumps", async () => {
+    const user = userEvent.setup();
+    const onChange = jest.fn();
+    const uiScroll = jest.spyOn(Reanimated, "scrollTo");
+    // The glide is interrupted: Reanimated reports finished = false.
+    const timing = jest.spyOn(Reanimated, "withTiming").mockImplementationOnce(((to: number, _c: unknown, cb?: (f: boolean) => void) => {
+      cb?.(false);
+      return to;
+    }) as never);
+    try {
+      await renderWithApp(<MoodPicker variant="orbs" value={null} onChange={onChange} label="How are you?" />);
+      const nextCopyAngry = screen.getAllByRole("radio", { name: "Angry", includeHiddenElements: true })[ARC_MIDDLE + 1];
+      await user.press(nextCopyAngry);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(uiScroll).not.toHaveBeenCalled();
+    } finally {
+      timing.mockRestore();
+      uiScroll.mockRestore();
+    }
+  });
+
   it("choosing gives a light tick you can feel", async () => {
     const user = userEvent.setup();
     (Haptics.selectionAsync as jest.Mock).mockClear();
@@ -108,14 +129,10 @@ describe("Mood orbs", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it("never runs out: after swiping far, it quietly returns to the same mood in the middle", async () => {
-    const scrollTo = ScrollView.prototype.scrollTo as unknown as jest.Mock;
-    await renderWithApp(<MoodPicker variant="orbs" value={null} onChange={() => {}} label="How are you?" />);
-    scrollTo.mockClear();
-    await act(async () =>
-      fireEvent(screen.getByTestId("feeling-arc"), "momentumScrollEnd", { nativeEvent: { contentOffset: { x: (ARC_MIDDLE * 10 + 22) * 76, y: 0 } } }),
-    );
-    expect(scrollTo).toHaveBeenLastCalledWith({ x: (ARC_MIDDLE * 10 + 2) * 76, animated: false });
+  it("never runs out: wherever a swipe stops, it rests on the same mood in the middle copy", () => {
+    expect(middleOf(ARC_MIDDLE * 10 + 22)).toBe(ARC_MIDDLE * 10 + 2);
+    expect(middleOf(3)).toBe(ARC_MIDDLE * 10 + 3);
+    expect(middleOf(ARC_MIDDLE * 10 + 7)).toBe(ARC_MIDDLE * 10 + 7);
   });
 
   it("labels are never cut off: the label does not grow with the orb", async () => {

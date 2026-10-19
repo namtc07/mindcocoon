@@ -89,6 +89,18 @@ describe("selectors", () => {
       expect(shouldShowHeavyNudge(logs, now, null)).toBe(false);
     });
 
+    it("counts a week of low days even when they are named differently (lonely, anxious, angry, heavy)", () => {
+      const moods = ["alone", "heavy", "alone", "anxious", "angry", "heavy", "alone"] as const;
+      const logs = moods.map((m, i) => log(m, new Date(now.getTime() - i * DAY)));
+      expect(shouldShowHeavyNudge(logs, now, null)).toBe(true);
+    });
+
+    it("a confused or numb day still breaks the run (only clearly low days count)", () => {
+      const logs = heavyDays(7);
+      logs.push(log("numb", new Date(now.getTime() - 2 * DAY + 60_000)));
+      expect(shouldShowHeavyNudge(logs, now, null)).toBe(false);
+    });
+
     it("waits a week after it was last shown", () => {
       expect(shouldShowHeavyNudge(heavyDays(7), now, now.getTime() - 3 * DAY)).toBe(false);
       expect(shouldShowHeavyNudge(heavyDays(7), now, now.getTime() - 7 * DAY)).toBe(true);

@@ -1,3 +1,4 @@
+import * as moodStore from "@mindcocoon/core/mood/store";
 import { changeMood, getMoodState, readNote } from "@mindcocoon/core/mood/store";
 import { getStorage } from "@mindcocoon/core/storage/index";
 import { initVault, lockVault, setVaultPasscode } from "@mindcocoon/core/vault/session";
@@ -68,6 +69,24 @@ describe("Today", () => {
     await user.press(screen.getByRole("button", { name: "Cancel" }));
     expect(screen.getByText("Today: Heavy")).toBeOnTheScreen();
     expect(await stored()).toEqual(["heavy"]);
+  });
+
+  it("if saving fails, says so and keeps the choice to try again", async () => {
+    const user = userEvent.setup();
+    const add = jest.spyOn(moodStore, "addMood").mockRejectedValueOnce(new Error("disk full"));
+    try {
+      await renderWithApp(<TodayScreen />);
+      await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+      await user.press(screen.getByRole("button", { name: "sad" }));
+      await user.press(screen.getByRole("button", { name: "Save" }));
+      expect(await screen.findByText(/can't open your vault right now/)).toBeOnTheScreen();
+      expect(screen.getByRole("radio", { name: "Heavy" })).toBeChecked();
+      expect(screen.getByRole("button", { name: "sad" })).toBeSelected();
+      await user.press(screen.getByRole("button", { name: "Save" }));
+      await screen.findByText("Today: Heavy");
+    } finally {
+      add.mockRestore();
+    }
   });
 
   it("encrypts a note added right after launch", async () => {
@@ -199,6 +218,19 @@ describe("Today", () => {
       await waitFor(async () => expect((await getStorage().moods.list())[0].feelings).toEqual(["sad", "hurt"]));
       expect(await getStorage().moods.list()).toHaveLength(1);
     });
+  });
+
+  it("going to another mood and back keeps today's saved words", async () => {
+    const user = userEvent.setup();
+    await renderWithApp(<TodayScreen />);
+    await user.press(await screen.findByRole("radio", { name: "Heavy" }));
+    await user.press(screen.getByRole("button", { name: "sad" }));
+    await user.press(screen.getByRole("button", { name: "Save" }));
+    await screen.findByText("Today: Heavy");
+    await user.press(screen.getByRole("button", { name: "Change" }));
+    await user.press(screen.getByRole("radio", { name: "Anxious" }));
+    await user.press(screen.getByRole("radio", { name: "Heavy" }));
+    expect(screen.getByRole("button", { name: "sad" })).toBeSelected();
   });
 
   it("follows a check-in changed elsewhere (e.g. wind-down)", async () => {

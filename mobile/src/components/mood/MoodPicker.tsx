@@ -162,8 +162,8 @@ type ArcItemProps = {
 };
 
 /**
- * One orb on the arc. Memoised: choosing a mood re-renders only the two orbs whose state changed,
- * not all fifty (each is an SVG), so the glide never stutters.
+ * One orb on the arc. Memoised: choosing a mood re-renders only the orbs whose state changed (that
+ * mood and the previous one, in each copy), not all fifty SVGs, so the glide never stutters.
  */
 const ArcItem = memo(function ArcItem({ slot, moodId, copy, checked, color, labelColor, scrollX, onPressSlot }: ArcItemProps) {
   const { t } = useI18n();
@@ -207,43 +207,63 @@ const ArcItem = memo(function ArcItem({ slot, moodId, copy, checked, color, labe
 const GLIDE_MS = 420;
 
 
+/** The same mood's slot in the middle copy (where the arc rests, so it never runs out either way). */
+export function middleOf(slot: number) {
+  "worklet";
+  return ARC_MIDDLE * N + (((slot % N) + N) % N);
+}
+
+const tick = () => void Haptics.selectionAsync().catch(() => {});
+
 function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
   const { t } = useI18n();
   const { c } = useTheme();
   const reduceMotion = useReducedMotion();
-  // Latest onChange without re-creating the (memoised) orbs' press handler.
+  // Latest props for the (stable, memoised) orbs' press handler.
   const onChangeRef = useRef(onChange);
+  const reduceMotionRef = useRef(reduceMotion);
   useEffect(() => {
     onChangeRef.current = onChange;
-  }, [onChange]);
-  // The animated ref drives the eased glide on the UI thread; the plain one settles exactly (and serves tests).
+    reduceMotionRef.current = reduceMotion;
+  }, [onChange, reduceMotion]);
+  // The animated ref drives the eased glide and copy swaps on the UI thread; the plain one is for
+  // instant moves from JS (first layout, Reduce Motion, outside changes).
   const animatedRef = useAnimatedRef<Animated.ScrollView>();
   const jsRef = useRef<ScrollViewInstance | null>(null);
+  const setRefs = useCallback(
+    (node: ScrollViewInstance | null) => {
+      jsRef.current = node;
+      if (typeof animatedRef === "function") (animatedRef as (n: unknown) => void)(node);
+    },
+    [animatedRef],
+  );
   const [width, setWidth] = useState(0);
   const startSlot = middleSlot(value ? MOODS.findIndex((m) => m.id === value) : Math.floor(N / 2));
   const scrollX = useSharedValue(startSlot * ARC_ITEM);
   const glideX = useSharedValue(0);
   const gliding = useSharedValue(false);
   const lastSlot = useSharedValue(startSlot);
-
-  const tick = () => void Haptics.selectionAsync().catch(() => {});
-  // The slot JS last put in the middle (updated on every jump and after each swipe settles).
+  // The slot in the middle as JS last knew it (kept in step from the UI thread).
   const centred = useRef(startSlot);
   const initialised = useRef(false);
-  const jump = (slot: number) => {
-    centred.current = slot;
-    jsRef.current?.scrollTo({ x: slot * ARC_ITEM, animated: false });
-  };
 
-  /** Swap to the same mood in the middle copy in one UI-thread frame (position and arc shape together). */
-  const toMiddle = (slot: number) => {
-    "worklet";
-    const same = ARC_MIDDLE * N + (((slot % N) + N) % N);
-    if (slot === same) return;
-    lastSlot.set(same);
-    scrollX.set(same * ARC_ITEM);
-    scrollTo(animatedRef, same * ARC_ITEM, 0, false);
-  };
+  const markCentred = useCallback((slot: number) => {
+    centred.current = slot;
+  }, []);
+  /** An instant move from JS; no tick (lastSlot is moved first). */
+  const jump = useCallback(
+    (slot: number) => {
+      centred.current = slot;
+      lastSlot.set(slot);
+      jsRef.current?.scrollTo({ x: slot * ARC_ITEM, animated: false });
+    },
+    [lastSlot],
+  );
+  /** Choose the mood once its orb has landed, so the rest of the screen changes after the glide, not during it. */
+  const land = useCallback((slot: number) => {
+    centred.current = slot;
+    onChangeRef.current(MOODS[slot % N].id);
+  }, []);
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (e) => {
@@ -255,10 +275,22 @@ function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
         if (!gliding.get()) runOnJS(tick)();
       }
     },
-    // Re-centring on the middle copy happens here, on the UI thread, in one frame: the scroll position
-    // and the arc's shape move together, so the swap is invisible (no tick, no flash).
+    // A finger takes over from any glide in progress (on the UI thread, so no frame fights it).
+    onBeginDrag: () => {
+      cancelAnimation(glideX);
+      gliding.set(false);
+    },
+    // Re-centring on the middle copy happens here in one UI-thread frame: position and arc shape
+    // move together, so the swap is invisible.
     onMomentumEnd: (e) => {
-      toMiddle(Math.round(e.contentOffset.x / ARC_ITEM));
+      const slot = Math.round(e.contentOffset.x / ARC_ITEM);
+      const same = middleOf(slot);
+      if (same !== slot) {
+        lastSlot.set(same);
+        scrollX.set(same * ARC_ITEM);
+        scrollTo(animatedRef, same * ARC_ITEM, 0, false);
+      }
+      runOnJS(markCentred)(same);
     },
   });
   // While gliding, follow the eased value frame by frame.
@@ -269,75 +301,57 @@ function MoodOrbs({ value, onChange, label, bleed = space.xl }: Props) {
     },
   );
 
-  /** Choose the mood once its orb has landed, so the rest of the screen changes after the glide, not during it. */
-  const land = (slot: number) => {
-    // The UI thread has already swapped repeats to the middle copy; JS only records what is shown.
-    centred.current = slot;
-    onChangeRef.current(MOODS[slot % N].id);
-  };
-
   /** Ease the orb at `slot` into the middle (or jump there under Reduce Motion), then choose it. */
   const pressSlot = useCallback(
     (slot: number) => {
       tick();
-      if (reduceMotion) {
-        jump(middleSlot(slot % N));
-        return land(middleSlot(slot % N));
+      if (reduceMotionRef.current) {
+        jump(middleOf(slot));
+        return land(middleOf(slot));
       }
       cancelAnimation(glideX);
       glideX.set(scrollX.get());
       gliding.set(true);
       glideX.set(
-        withTiming(slot * ARC_ITEM, { duration: GLIDE_MS, easing: Easing.out(Easing.cubic) }, () => {
+        withTiming(slot * ARC_ITEM, { duration: GLIDE_MS, easing: Easing.out(Easing.cubic) }, (finished) => {
           gliding.set(false);
+          // Interrupted (a drag or another tap took over): nothing is chosen, nothing jumps.
+          if (!finished) return;
           // Landed on a repeat (e.g. Angry just after Joyful): swap to the middle copy invisibly.
-          toMiddle(slot);
-          runOnJS(land)(slot);
+          const same = middleOf(slot);
+          if (same !== slot) {
+            lastSlot.set(same);
+            scrollX.set(same * ARC_ITEM);
+            scrollTo(animatedRef, same * ARC_ITEM, 0, false);
+          }
+          runOnJS(land)(same);
         }),
       );
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [reduceMotion],
+    [animatedRef, glideX, gliding, jump, land, lastSlot, scrollX],
   );
 
   // Centre on first layout, and when the mood is changed from outside (another screen). A choice made
-  // here is already in the middle — even if that is a repeat copy — so it is never jumped away from.
+  // here is already in the middle, so it is never jumped away from.
   useEffect(() => {
     if (width === 0) return;
     const shown = MOODS[((centred.current % N) + N) % N].id;
     if (!initialised.current || (value && shown !== value)) jump(startSlot);
     initialised.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [width, startSlot]);
-  /** After a swipe settles, jump (invisibly) to the same mood in the middle copy, so there is always more. */
-  function recentre(x: number) {
-    const slot = Math.round(x / ARC_ITEM);
-    const same = middleSlot(((slot % N) + N) % N);
-    // The UI thread has already moved there (onMomentumEnd); this keeps JS in step.
-    if (slot !== same) jump(same);
-    else centred.current = slot;
-  }
+  }, [width, startSlot, value, jump]);
   const side = Math.max(0, (width - ARC_ITEM) / 2);
   return (
     <View testID="feeling-orbs" style={[styles.orbs, { marginHorizontal: -bleed }]} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
       <Animated.ScrollView
         testID="feeling-arc"
-        ref={(node: ScrollViewInstance | null) => {
-          jsRef.current = node;
-          if (typeof animatedRef === "function") (animatedRef as (n: unknown) => void)(node);
-        }}
+        ref={setRefs}
         horizontal
         showsHorizontalScrollIndicator={false}
         snapToInterval={ARC_ITEM}
         decelerationRate="fast"
+        contentOffset={{ x: startSlot * ARC_ITEM, y: 0 }}
         onScroll={onScroll}
         scrollEventThrottle={16}
-        onScrollBeginDrag={() => {
-          // A finger takes over from any glide in progress.
-          cancelAnimation(glideX);
-          gliding.set(false);
-        }}
-        onMomentumScrollEnd={(e) => recentre(e.nativeEvent.contentOffset.x)}
         contentContainerStyle={{ paddingHorizontal: side, paddingTop: RISE, paddingBottom: BELOW }}
       >
         <View accessibilityRole="radiogroup" accessibilityLabel={label} style={styles.arc}>

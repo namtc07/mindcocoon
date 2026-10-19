@@ -36,7 +36,7 @@ export const tokens: Record<ThemeName, ThemeColors> = {
     destructive: "#e08a7e",
     mood: {
       peaceful: "#37a88a", hopeful: "#b88c2e", numb: "#9c83c9", heavy: "#3568b2", anxious: "#b14648",
-      angry: "#d0663a", confused: "#2ea3c7", alone: "#8d3cc9", thankful: "#cc7097", joyful: "#7f9f30",
+      angry: "#c4581c", confused: "#62e3f8", alone: "#b9a6ee", thankful: "#eb8fbb", joyful: "#f0d36e",
     },
   },
   mist: {
@@ -53,7 +53,7 @@ export const tokens: Record<ThemeName, ThemeColors> = {
     destructive: "#b4534a",
     mood: {
       peaceful: "#269b7e", hopeful: "#b07a00", numb: "#9077bc", heavy: "#21539c", anxious: "#a43a3d",
-      angry: "#bb5c34", confused: "#2993b3", alone: "#7f36b5", thankful: "#b86588", joyful: "#728f2b",
+      angry: "#671e10", confused: "#0f7d8a", alone: "#7c60bb", thankful: "#742b67", joyful: "#966706",
     },
   },
 };
@@ -76,7 +76,7 @@ export const MIDNIGHT: ThemeColors = {
   destructive: "#c97d72",
   mood: {
     peaceful: "#2f9178", hopeful: "#a07a28", numb: "#8a74b3", heavy: "#2f5b9c", anxious: "#9c3f41",
-    angry: "#b35832", confused: "#288cab", alone: "#8a3cc4", thankful: "#af6082", joyful: "#6d8929",
+    angry: "#a94c18", confused: "#54c3d5", alone: "#9f8fcd", thankful: "#ca7ba1", joyful: "#ceb55f",
   },
 };
 

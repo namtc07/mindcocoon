@@ -91,6 +91,15 @@ describe("Wind down", () => {
     expect(await getStorage().moods.list()).toEqual([]);
   });
 
+  it("with today's check-in already there, Cancel clears it from the picker so Skip is offered", async () => {
+    const { user } = await open("heavy");
+    expect(await screen.findByRole("radio", { name: "Heavy" })).toBeChecked();
+    await user.press(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.getByRole("radio", { name: "Heavy" })).not.toBeChecked();
+    expect(screen.getByRole("button", { name: "Skip" })).toBeOnTheScreen();
+    expect(await getStorage().moods.list()).toHaveLength(1);
+  });
+
   it("feeling words chosen here are saved with the check-in", async () => {
     const { user } = await open();
     await user.press(await screen.findByRole("radio", { name: "Lonely" }));

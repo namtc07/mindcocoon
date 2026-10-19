@@ -47,6 +47,8 @@ export function QuickCheckin() {
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   // The picker's draft: open while there is no check-in today, or after "Change".
   const [changing, setChanging] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [draftMood, setDraftMood] = useState<MoodType | null>(null);
   const [draftFeelings, setDraftFeelings] = useState<string[]>([]);
   const picking = !today || changing;
@@ -65,7 +67,9 @@ export function QuickCheckin() {
   }
 
   function choose(mood: MoodType) {
-    if (mood !== draftMood) setDraftFeelings([]);
+    setSaveError(null);
+    // Back to today's saved mood: its saved words come back too.
+    if (mood !== draftMood) setDraftFeelings(today && mood === today.mood ? (today.feelings ?? []) : []);
     setDraftMood(mood);
   }
 
@@ -78,30 +82,39 @@ export function QuickCheckin() {
 
   /** Lets the choice go: back to the saved line when changing, or an empty picker on a first check-in. */
   function cancelChange() {
+    setSaveError(null);
     setChanging(false);
     setDraftMood(null);
     setDraftFeelings([]);
   }
 
+  /** Keeps the choice until it is really saved: on failure it stays (with a message) to try again. */
   function save() {
     const mood = draftMood;
-    if (!mood) return;
+    if (!mood || saving) return;
     const feelings = draftFeelings;
-    if (!today) resetDetails();
-    setChanging(false);
-    setDraftMood(null);
-    setDraftFeelings([]);
-    void enqueue(async () => {
+    setSaving(true);
+    setSaveError(null);
+    const work = queue.current.then(async () => {
       const current = latestToday(getMoodState().logs, new Date());
-      if (!current) {
-        await addMood({ mood, tags: [], feelings });
-      } else {
-        // Same mood: keep the check-in (id, time); a new mood is a fresh moment.
-        const base = current.mood === mood ? current : await changeMood(current, mood);
-        await updateMoodDetails(base, { tags: base.tags, feelings });
-      }
-      setMessage(t.today.saved);
+      if (!current) return void (await addMood({ mood, tags: [], feelings }));
+      const unchanged = current.mood === mood && (current.feelings ?? []).join() === feelings.join();
+      if (unchanged) return;
+      // Same mood: keep the check-in (id, time); a new mood is a fresh moment.
+      const base = current.mood === mood ? current : await changeMood(current, mood);
+      await updateMoodDetails(base, { tags: base.tags, feelings });
     });
+    queue.current = work.catch(() => {});
+    work
+      .then(() => {
+        if (!today) resetDetails();
+        setChanging(false);
+        setDraftMood(null);
+        setDraftFeelings([]);
+        setMessage(t.today.saved);
+      })
+      .catch(() => setSaveError(t.vault.unavailable))
+      .finally(() => setSaving(false));
   }
 
   async function saveDetails() {
@@ -132,11 +145,18 @@ export function QuickCheckin() {
           {draftMood && <FeelingChips mood={draftMood} value={draftFeelings} onChange={setDraftFeelings} />}
           {draftMood && (
             <Animated.View entering={FadeIn.duration(240)} style={styles.row}>
-              <Button onPress={save}>{t.today.saveMood}</Button>
+              <Button disabled={saving} onPress={save}>
+                {t.today.saveMood}
+              </Button>
               <Button variant="ghost" onPress={cancelChange}>
                 {t.common.cancel}
               </Button>
             </Animated.View>
+          )}
+          {saveError && (
+            <Text accessibilityLiveRegion="polite" style={{ fontFamily: fonts.sans, fontSize: 15, color: c.destructive }}>
+              {saveError}
+            </Text>
           )}
         </>
       ) : (

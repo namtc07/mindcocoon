@@ -51,7 +51,9 @@ export default function WindDownScreen() {
   // Saves go one after another on today's check-in as it is by then (never duplicated).
   const queue = useRef<Promise<unknown>>(Promise.resolve());
 
-  const currentMood = mood ?? todayLog?.mood ?? null;
+  // Cancel clears even today's saved mood from the picker (it stays saved), so Skip is offered.
+  const [cleared, setCleared] = useState(false);
+  const currentMood = mood ?? (cleared ? null : (todayLog?.mood ?? null));
   const suggestion = currentMood ? suggestionFor(currentMood) : null;
   // If something is already playing, the default is to keep it (Goodnight then only sets the timer).
   // The goodnight picture shows the ready-made mix that is actually on (paused counts), if any.
@@ -64,14 +66,17 @@ export default function WindDownScreen() {
 
   /** Choosing only changes the draft; "Save and continue" keeps it. */
   function pickMood(next: MoodType) {
-    if (next !== currentMood) setFeelings([]);
+    // Back to today's saved mood: its saved words come back too.
+    if (next !== currentMood) setFeelings(next === todayLog?.mood ? (todayLog.feelings ?? []) : []);
     setMood(next);
+    setCleared(false);
   }
 
-  /** Lets the choice go (back to today's saved check-in, if there is one). */
+  /** Lets the choice go (nothing is saved or removed). */
   function cancelMood() {
     setMood(null);
     setFeelings(null);
+    setCleared(true);
   }
 
   function saveAndContinue() {

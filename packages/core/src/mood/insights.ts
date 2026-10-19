@@ -1,3 +1,4 @@
+import { LOW_MOODS } from "../moods";
 import { dayKeyFromISO } from "../dates";
 import type { MoodLog, MoodType } from "../types";
 
@@ -19,7 +20,7 @@ const TAG_SHARE = 0.6;
 const MIN_FEELING_LOGS = 3;
 const MIN_LATE_LOGS = 4;
 const LATE_SHARE = 0.7;
-const HEAVY_MOODS: MoodType[] = ["anxious", "heavy", "angry", "alone"];
+const HEAVY_MOODS = LOW_MOODS;
 
 const isLate = (d: Date) => d.getHours() >= 22 || d.getHours() < 4;
 const days = (logs: MoodLog[]) => new Set(logs.map((l) => dayKeyFromISO(l.createdAt))).size;

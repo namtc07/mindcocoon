@@ -17,6 +17,12 @@ export const MOODS: { id: MoodType; color: string }[] = [
   { id: "joyful", color: "var(--mood-joyful)" },
 ];
 
+/**
+ * Clearly low moods: a run of these is what the gentle "heavy week" nudge and the late-night
+ * observation look for. Confused and numb are not counted (they are not clearly low).
+ */
+export const LOW_MOODS: readonly MoodType[] = ["heavy", "alone", "anxious", "angry"];
+
 export const MOOD_COLOR = Object.fromEntries(MOODS.map((m) => [m.id, m.color])) as Record<
   MoodType,
   string
