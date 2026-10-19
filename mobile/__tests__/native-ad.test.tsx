@@ -68,7 +68,7 @@ describe("Native ad card on Today", () => {
   it("nothing when ads are off", async () => {
     await withFlags({ ...ON, adsEnabled: false });
     await renderWithApp(<TodayScreen />, { keepState: true });
-    await screen.findByText(/Good/);
+    await screen.findByTestId("feeling-orbs");
     expect(NativeAd.createForAdRequest).not.toHaveBeenCalled();
     expect(screen.queryByTestId("native-ad")).not.toBeOnTheScreen();
   });

@@ -7,6 +7,7 @@ import { FeelingChips } from "@/components/mood/FeelingChips";
 import type { MoodType } from "@mindcocoon/core/types";
 import { useState } from "react";
 import { ARC_MIDDLE, middleOf, MoodPicker } from "@/components/mood/MoodPicker";
+import { setPref } from "@/lib/prefs";
 import { renderWithApp } from "@/test-utils/render";
 import { readableFill } from "@/theme/contrast";
 import { tokens } from "@/theme/tokens";
@@ -155,7 +156,11 @@ describe("Mood orbs", () => {
   it("feeling tiles are tinted with the mood and still capped at three", async () => {
     const user = userEvent.setup();
     let value: string[] = [];
-    const { rerender } = await renderWithApp(<FeelingChips mood="heavy" value={value} onChange={(v) => (value = v)} />);
+    // The Dusk palette, not the Midnight one used after 10 pm.
+    await act(async () => {
+      await setPref("nightDim", false);
+    });
+    const { rerender } = await renderWithApp(<FeelingChips mood="heavy" value={value} onChange={(v) => (value = v)} />, { keepState: true });
     expect(screen.getAllByRole("button")).toHaveLength(8);
     for (const name of ["lonely", "sad", "homesick"]) {
       await user.press(screen.getByRole("button", { name }));

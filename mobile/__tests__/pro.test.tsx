@@ -55,7 +55,7 @@ describe("MindCocoon Pro (test store in development)", () => {
       await setPref("pro", { plan: "yearly", since: Date.now() });
     });
     await renderWithApp(<TodayScreen />, { keepState: true });
-    await screen.findByText(/Good/);
+    await screen.findByTestId("feeling-orbs");
     expect(screen.queryByTestId("ad-banner")).not.toBeOnTheScreen();
     expect(screen.queryByTestId("native-ad")).not.toBeOnTheScreen();
     await act(async () => {
