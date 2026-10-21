@@ -2,7 +2,10 @@
   "expo": {
     "name": "MindCocoon",
     "slug": "mindcocoon",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -83,7 +86,8 @@
           "faceIDPermission": "Allow MindCocoon to use Face ID to open your private vault."
         }
       ],
-      "./plugins/with-tonight-widget"
+      "./plugins/with-tonight-widget",
+      "expo-status-bar"
     ],
     "scheme": "mindcocoon",
     "backgroundColor": "#0F172A",
