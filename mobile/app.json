@@ -69,7 +69,8 @@
         {
           "faceIDPermission": "Allow MindCocoon to use Face ID to open your private vault."
         }
-      ]
+      ],
+      "./plugins/with-tonight-widget"
     ],
     "scheme": "mindcocoon",
     "backgroundColor": "#0F172A",

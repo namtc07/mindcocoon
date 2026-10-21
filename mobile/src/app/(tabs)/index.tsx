@@ -6,12 +6,13 @@ import { Fragment, useSyncExternalStore } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { NativeAdCard } from "@/components/ads/NativeAdCard";
-import { Ken } from "@/components/art/Ken";
+import { Ken, type KenAccessory } from "@/components/art/Ken";
 import { Sky } from "@/components/art/Sky";
 import { Screen } from "@/components/Screen";
 import { HeavyNudge } from "@/components/safety/HeavyNudge";
 import { EntryLinks } from "@/components/today/EntryLinks";
 import { LetterCard } from "@/components/today/LetterCard";
+import { MonthPixels } from "@/components/today/MonthPixels";
 import { FutureLetterLine } from "@/components/today/FutureLetterLine";
 import { MomentReturn } from "@/components/today/MomentReturn";
 import { MorningQuestion } from "@/components/today/MorningQuestion";
@@ -19,6 +20,7 @@ import { QuickCheckin } from "@/components/today/QuickCheckin";
 import { SuggestionCard } from "@/components/today/SuggestionCard";
 import { WorryReadyLine } from "@/components/today/WorryReadyLine";
 import { ReflectionPrompt } from "@/components/today/ReflectionPrompt";
+import { useKenGrowth } from "@/hooks/use-ken-growth";
 import { useMoodLogs } from "@/hooks/use-mood-logs";
 import { useNow } from "@/hooks/use-now";
 import { useI18n } from "@/i18n/i18n";
@@ -45,7 +47,11 @@ export default function TodayScreen() {
   const ideas = useSyncExternalStore(subscribePrefs, readIdeas, readIdeas);
   const part = partOfDay(now);
   const occasion = occasionFor(now);
-  const accessory = occasion === "tet" || occasion === "mid-autumn" ? "lantern" : occasion === "christmas" || occasion === "new-year" ? "scarf" : null;
+  const { state: kenState, changed: kenChanged } = useKenGrowth(now, logs);
+  const seasonal: KenAccessory | null =
+    occasion === "tet" || occasion === "mid-autumn" ? "lantern" : occasion === "christmas" || occasion === "new-year" ? "scarf" : null;
+  // A seasonal touch wins while it lasts; otherwise Kén wears its quiet growth.
+  const accessory: KenAccessory | null = seasonal ?? kenState.ornament;
   const greeting = name ? t.today.greetingNamed[part].split("{name}").join(name) : t.today.greeting[part];
   const prompt = (
     <View testID="today-prompt">
@@ -80,11 +86,17 @@ export default function TodayScreen() {
       }>
       <Text style={{ fontFamily: fonts.sans, fontSize: 14, color: c.mutedForeground, marginTop: -space.sm }}>{formatDay(now, locale)}</Text>
       {occasion && <Text style={{ fontFamily: fonts.serifItalic, fontSize: 15, color: c.ember }}>{t.occasions[occasion]}</Text>}
+      {kenChanged && (
+        <Text testID="ken-changed" style={{ fontFamily: fonts.serifItalic, fontSize: 15, color: c.ember }}>
+          {t.ken.changed}
+        </Text>
+      )}
       <View style={styles.sections}>
         <HeavyNudge now={now} />
         <LetterCard now={now} />
         <FutureLetterLine now={now} />
         <MorningQuestion now={now} />
+        <MonthPixels logs={logs} now={now} />
         {/* One keyed list, so blocks move (not remount) when 18:00 / 05:00 comes — a note being typed survives. */}
         {todayOrder(evening, intents)
           .filter((key) => ideas || key !== "prompt")

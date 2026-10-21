@@ -18,6 +18,8 @@ beforeEach(async () => {
     await setPref("pro", undefined);
     await setPref("testPurchases", undefined);
     await setPref("mixes", undefined);
+    await setPref("proMoments", undefined);
+    await setPref("firstRunSeen", undefined);
   });
 });
 
@@ -75,12 +77,26 @@ describe("MindCocoon Pro (test store in development)", () => {
     expect(screen.getByRole("button", { name: "Save this mix" })).toBeEnabled();
   });
 
-  it("Settings leads to Pro, and says when it is on", async () => {
+  it("Settings leads to Pro once a moment of value has happened, and says when it is on", async () => {
     const user = userEvent.setup();
+    await act(async () => {
+      await setPref("firstRunSeen", true);
+      await setPref("proMoments", ["sleep-fade"]);
+    });
     await renderWithApp(<SettingsScreen />, { keepState: true });
     await user.press(screen.getByRole("link", { name: "MindCocoon Pro" }));
     expect(router.push).toHaveBeenCalledWith("/pro");
     await act(() => setPref("pro", { plan: "yearly", since: Date.now() }));
     expect(await screen.findByRole("link", { name: "MindCocoon Pro · On" })).toBeOnTheScreen();
+  });
+
+  it("Settings does not offer Pro before any moment of value", async () => {
+    await act(async () => {
+      await setPref("firstRunSeen", true);
+      await setPref("proMoments", undefined);
+    });
+    await renderWithApp(<SettingsScreen />, { keepState: true });
+    await screen.findByText("Settings");
+    expect(screen.queryByRole("link", { name: "MindCocoon Pro" })).not.toBeOnTheScreen();
   });
 });

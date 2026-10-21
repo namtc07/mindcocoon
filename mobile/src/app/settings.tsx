@@ -1,6 +1,6 @@
 import { LOCALES, type Locale } from "@mindcocoon/core/i18n/config";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Screen } from "@/components/Screen";
 import { Button } from "@/components/ui/Button";
@@ -10,6 +10,7 @@ import { NightDimSetting, ReleaseSoundSetting, VoiceGuideSetting, WeeklyLetterSe
 import Constants from "expo-constants";
 import appConfig from "../../app.json";
 import { Download, LifeBuoy, Lock, RotateCcw, ShieldCheck, Sparkles, Trash2 } from "lucide-react-native";
+import { proOfferVisible, type ValueMoment } from "@/lib/purchases/placement";
 import { useIsPro } from "@/lib/purchases/pro";
 import { activeStore } from "@/lib/purchases/store";
 import { Ken } from "@/components/art/Ken";
@@ -18,7 +19,7 @@ import { SettingsGroup, SettingsRow } from "@/components/settings/SettingsGroup"
 import { useNow } from "@/hooks/use-now";
 import { useRewardedUnlock } from "@/hooks/use-rewarded-unlock";
 import { useAdFreeUntil } from "@/lib/ads/ad-free";
-import { setPref } from "@/lib/prefs";
+import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
 import { NameSetting } from "@/components/settings/NameSetting";
 import { ReminderSettings } from "@/components/settings/ReminderSettings";
 import { StackHeader } from "@/components/StackHeader";
@@ -103,6 +104,9 @@ function EraseSheet({ visible, onClose }: { visible: boolean; onClose: () => voi
   );
 }
 
+const NO_MOMENTS: ValueMoment[] = [];
+const readProMoments = () => getPref("proMoments") ?? NO_MOMENTS;
+
 /** Grouped like a phone's own settings: you, appearance, reminder, while using, vault, ads, data, about. */
 export default function SettingsScreen() {
   const { t, locale, setLocale } = useI18n();
@@ -111,8 +115,15 @@ export default function SettingsScreen() {
   const [exporting, setExporting] = useState(false);
   const adPrivacy = useAdPrivacyRequired();
   const pro = useIsPro();
-  // Pro is offered only where a store can sell it (today: the test store in development builds).
-  const proOffered = pro || activeStore() !== null;
+  const moments = useSyncExternalStore(subscribePrefs, readProMoments, readProMoments);
+  // Pro is offered only where a store can sell it (today: the test store in development
+  // builds) — and, softly and late, only after a first moment of value (see placement).
+  const proOffered = proOfferVisible({
+    isPro: pro,
+    storeAvailable: activeStore() !== null,
+    moments,
+    firstRunSeen: getPref("firstRunSeen") === true,
+  });
   const { adFreeOffer } = useRewardedUnlock();
   const adFreeUntil = useAdFreeUntil();
   const now = useNow();

@@ -5,6 +5,8 @@ import type { OnboardingIntent } from "@mindcocoon/core/onboarding";
 import type { AudioPrefs } from "./audio/engine";
 import { createKvDriver } from "./kv-driver";
 import type { PlanId } from "./purchases/plan";
+import type { ValueMoment } from "./purchases/placement";
+import type { TonightWidgetState } from "./widget-state-core";
 import type { CachedFlags } from "./remote-config-core";
 import type { CachedContent } from "./remote-content-core";
 import type { SleepNight } from "./sleep-log-core";
@@ -69,6 +71,16 @@ export interface Prefs {
   sanctuaryTab?: "sounds" | "breathe" | "practices";
   /** Optional name for the greeting (device only). */
   name?: string;
+  /** Kén's growth as last seen on Today: the day and stage, so an overnight change can wait to be noticed. */
+  kenSeen?: { on: string; stage: number };
+  /** Per-person seed for tonight's rotating plan (created once, on this device only). */
+  tonightSeed?: string;
+  /** The latest tonight-widget contract, refreshed on Today (read by a future native widget). */
+  widgetState?: TonightWidgetState;
+  /** Moments of value after which Pro may be offered (see purchases/placement). */
+  proMoments?: ValueMoment[];
+  /** Month (yyyy-mm) whose end-of-month Journey invitation was last shown. */
+  journeyInviteMonth?: string;
 }
 
 const KEY = "prefs:v1";

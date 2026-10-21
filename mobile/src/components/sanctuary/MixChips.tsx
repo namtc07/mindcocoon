@@ -1,7 +1,7 @@
 import { MAX_SAVED_MIXES, mixMatches, PRESET_MIXES, type Mix, type SavedMix } from "@mindcocoon/core/audio/mixes";
 import { SOUND_TRACKS } from "@mindcocoon/core/sounds";
 import { X } from "lucide-react-native";
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Chip } from "@/components/ui/Chip";
 import { toast } from "@/components/ui/Toast";
@@ -14,6 +14,7 @@ import { getPref, setPref, subscribePrefs } from "@/lib/prefs";
 import { isUnlockedIn } from "@/lib/unlocks-core";
 import { useUnlocks } from "@/lib/unlocks";
 import { useFlags } from "@/lib/remote-config";
+import { noteProMoment } from "@/lib/purchases/moments";
 import { PRO_MIX_LIMIT, useIsPro } from "@/lib/purchases/pro";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
@@ -43,6 +44,10 @@ export function MixChips() {
   const { offer, busy, earnMixSlot } = useRewardedUnlock();
   // Full, and room can still grow (up to ten): a short ad, only if the person taps it.
   const canGrow = !pro && full && offer && extra < MAX_EXTRA_MIX_SLOTS;
+  // Reaching the free limit is a moment of value: it quietly unlocks the Pro offer.
+  useEffect(() => {
+    if (full && !pro) void noteProMoment("mix-limit");
+  }, [full, pro]);
 
   function play(mix: Mix) {
     audio

@@ -1,9 +1,10 @@
-import { promptForDay } from "@mindcocoon/core/prompts";
+import { promptAt } from "@mindcocoon/core/prompts";
 import { router } from "expo-router";
 import { PenLine, RefreshCw } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useI18n } from "@/i18n/i18n";
+import { planForTonight } from "@/lib/tonight-plan";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
@@ -14,11 +15,13 @@ export function ReflectionPrompt({ now }: { now: Date }) {
   const { c } = useTheme();
   const [offset, setOffset] = useState(0);
   const link = { fontFamily: fonts.sans, fontSize: 14, color: c.mutedForeground };
+  // Tonight's seeded plan picks the idea, so the combination never repeats within 14 days.
+  const plan = planForTonight(now);
   return (
     <View accessibilityLabel={t.today.promptLabel} style={[styles.card, { backgroundColor: c.surface }]}>
       <Text style={[styles.intro, { color: c.mutedForeground }]}>{t.today.promptIntro}</Text>
       <Text testID="prompt-text" style={[styles.prompt, { color: c.foreground }]}>
-        {promptForDay(now, locale, offset)}
+        {promptAt(locale, plan.promptIndex + offset)}
       </Text>
       <View style={styles.actions}>
         <Pressable

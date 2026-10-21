@@ -5,8 +5,13 @@ import { useAnimationsActive, useSvgId } from "./activity";
 import { decorative } from "./seeded";
 
 export type KenMood = "calm" | "sleepy" | "glad";
-/** Seasonal touches only (Tết / Mid-autumn: a lantern; Christmas: a scarf). Never earned or collected. */
-export type KenAccessory = "lantern" | "scarf";
+/**
+ * Seasonal touches (Tết / Mid-autumn: a lantern; Christmas: a scarf) and quiet growth
+ * ornaments (a sprout, later a star) that reflect how many evenings the person has
+ * shown up — see @mindcocoon/core/companion. Growth only ever grows; nothing here is
+ * earned, bought or collected, and it is never shown as a number.
+ */
+export type KenAccessory = "lantern" | "scarf" | "sprout" | "star";
 
 /** Same tapered cocoon as the app icon, in a 100 × 120 box. */
 const BODY = "M50 14 C68 14 88 40 88 70 C88 100 70 116 50 116 C30 116 12 100 12 70 C12 40 32 14 50 14 Z";
@@ -41,7 +46,8 @@ function Face({ mood }: { mood: KenMood }) {
 }
 
 /**
- * Kén, a small cocoon who keeps you company. Only a face — no needs, no levels, nothing to feed.
+ * Kén, a small cocoon who keeps you company. No needs, nothing to feed, nothing to lose —
+ * over many evenings it may quietly sprout, and much later carry a star.
  * Floats gently unless Reduce Motion is on.
  */
 export function Ken({ mood = "calm", size = 72, accessory = null }: { mood?: KenMood; size?: number; accessory?: KenAccessory | null }) {
@@ -80,6 +86,18 @@ export function Ken({ mood = "calm", size = 72, accessory = null }: { mood?: Ken
           <G testID="ken-scarf">
             <Path d="M18 86 C36 94 64 94 82 86 L82 92 C64 100 36 100 18 92 Z" fill="#c0392b" />
             <Rect x={62} y={90} width={8} height={18} rx={3} fill="#a93226" />
+          </G>
+        )}
+        {accessory === "sprout" && (
+          <G testID="ken-sprout">
+            <Path d="M50 14 C50 9 50 6 50 3" stroke="#5d8f83" strokeWidth={2.2} strokeLinecap="round" fill="none" />
+            <Path d="M50 7 C45 7 42 4 41 0 C46 0 49 3 50 7 Z" fill="#7fb5a8" />
+            <Path d="M50 7 C55 7 58 4 59 0 C54 0 51 3 50 7 Z" fill="#8cc0b3" />
+          </G>
+        )}
+        {accessory === "star" && (
+          <G testID="ken-star">
+            <Path d="M90 18 L92.3 23.7 L98 26 L92.3 28.3 L90 34 L87.7 28.3 L82 26 L87.7 23.7 Z" fill="#d9a86c" />
           </G>
         )}
         {accessory === "lantern" && (

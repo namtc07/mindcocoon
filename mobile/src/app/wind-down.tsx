@@ -1,7 +1,7 @@
 import { mixMatches, PRESET_MIXES, type PresetMixId } from "@mindcocoon/core/audio/mixes";
 import { dayKey, dayKeyFromISO } from "@mindcocoon/core/dates";
 import { suggestionFor } from "@mindcocoon/core/feelings";
-import { addMood, changeMood, getMoodState, updateMoodDetails } from "@mindcocoon/core/mood/store";
+import { addMood, getMoodState, updateMoodDetails } from "@mindcocoon/core/mood/store";
 import type { MoodType } from "@mindcocoon/core/types";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
@@ -23,7 +23,9 @@ import { useMoodLogs } from "@/hooks/use-mood-logs";
 import { useNow } from "@/hooks/use-now";
 import { useI18n } from "@/i18n/i18n";
 import { audio, useAudio } from "@/lib/audio";
+import { noteProMoment } from "@/lib/purchases/moments";
 import { markSleepNight } from "@/lib/sleep-log";
+import { planForTonight } from "@/lib/tonight-plan";
 import type { SleepMinutes } from "@/lib/audio/engine";
 import { fonts } from "@/theme/fonts";
 import { radius, space } from "@/theme/tokens";
@@ -60,7 +62,8 @@ export default function WindDownScreen() {
   // The goodnight picture shows the ready-made mix that is actually on (paused counts), if any.
   const sounding = playing.length > 0 ? playing : held;
   const nightPreset = PRESET_MIXES.find((p) => mixMatches(p.mix, sounding, volumes))?.id;
-  const mix = mixChoice ?? (playing.length > 0 ? "keep" : (suggestion?.mix ?? "rainy-night"));
+  // With no mood chosen yet, tonight's seeded plan picks the mix, so evenings vary.
+  const mix = mixChoice ?? (playing.length > 0 ? "keep" : (suggestion?.mix ?? planForTonight(now).mix));
 
   // Words for the mood being chosen: today's own words while it is today's mood, else the new picks.
   const currentFeelings = feelings ?? (currentMood && currentMood === todayLog?.mood ? (todayLog.feelings ?? []) : []);
@@ -90,9 +93,10 @@ export default function WindDownScreen() {
           if (!current) return void (await addMood({ mood: next, tags: [], feelings: words }));
           const unchanged = current.mood === next && (current.feelings ?? []).join() === words.join();
           if (unchanged) return;
-          // Same mood keeps the check-in (id, time); a new mood is a fresh moment.
-          const base = current.mood === next ? current : await changeMood(current, next);
-          await updateMoodDetails(base, { tags: base.tags, feelings: words });
+          // The evening re-states the day's latest moment when the mood is the same (its words
+          // are updated); a different mood tonight is a new moment — the earlier one stays.
+          if (current.mood === next) return void (await updateMoodDetails(current, { tags: current.tags, feelings: words }));
+          return void (await addMood({ mood: next, tags: [], feelings: words }));
         })
         .catch(() => toast.show(t.vault.unavailable));
     }
@@ -110,6 +114,7 @@ export default function WindDownScreen() {
       }
       audio.setSleepTimer(minutes);
       void markSleepNight(new Date(), true);
+      void noteProMoment("sleep-fade");
       // Pin the choice: once sounds play, the default would otherwise become "keep".
       setMixChoice(mix);
       setStep("night");

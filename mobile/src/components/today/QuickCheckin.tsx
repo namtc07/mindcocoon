@@ -1,4 +1,5 @@
 import { dayKey, dayKeyFromISO } from "@mindcocoon/core/dates";
+import { feelingsFor } from "@mindcocoon/core/feelings";
 import { addMood, changeMood, getMoodState, updateMoodDetails } from "@mindcocoon/core/mood/store";
 import { DEFAULT_TAGS } from "@mindcocoon/core/moods";
 import type { MoodLog, MoodType } from "@mindcocoon/core/types";
@@ -25,8 +26,10 @@ function latestToday(logs: MoodLog[], now: Date): MoodLog | null {
 }
 
 /**
- * Choose a mood (and, if you like, a few words), then Save; nothing is kept before that. Once saved,
- * the picker folds into one line ("Today: Heavy · Change"); tags and a note go on the same check-in.
+ * Choose a mood (and, if you like, a few words), then Save; nothing is kept before that. Every Save
+ * is a moment of its own — a day can hold several, and the day is spoken for by its latest. Once
+ * saved, the picker folds into one line ("Today: Heavy · Change") showing that latest moment:
+ * "Change" corrects it, "Add another moment" starts a new one, and tags and a note go on it.
  */
 export function QuickCheckin() {
   const { t } = useI18n();
@@ -40,18 +43,21 @@ export function QuickCheckin() {
   const [note, setNote] = useState("");
   const [passcode, setPasscode] = useState("");
   const [message, setMessage] = useState<string | null>(null);
-  // Today's check-in comes from the store, so a change made elsewhere (Mood tab, wind-down) shows here.
-  // The tab can stay mounted for days: yesterday's check-in is never today's to change.
+  // Today's latest moment comes from the store, so a moment added elsewhere (Mood tab,
+  // wind-down) shows here. The tab can stay mounted for days: yesterday's moments are
+  // never today's to change.
   const today = latestToday(logs, now);
   // Writes go one after another, each on the check-in as it is by then (no lost words, no duplicates).
   const queue = useRef<Promise<unknown>>(Promise.resolve());
-  // The picker's draft: open while there is no check-in today, or after "Change".
+  // The picker's draft: open while there is no moment today, after "Change" (correcting the
+  // latest moment), or after "Add another moment" (a fresh moment alongside the saved ones).
   const [changing, setChanging] = useState(false);
+  const [adding, setAdding] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [draftMood, setDraftMood] = useState<MoodType | null>(null);
   const [draftFeelings, setDraftFeelings] = useState<string[]>([]);
-  const picking = !today || changing;
+  const picking = !today || changing || adding;
   const feelingLabels = useFeelingLabels();
 
   function resetDetails() {
@@ -68,8 +74,10 @@ export function QuickCheckin() {
 
   function choose(mood: MoodType) {
     setSaveError(null);
-    // Back to today's saved mood: its saved words come back too.
-    if (mood !== draftMood) setDraftFeelings(today && mood === today.mood ? (today.feelings ?? []) : []);
+    if (mood === draftMood) return;
+    // Correcting the latest moment and coming back to its mood brings its saved words back;
+    // otherwise only the words that belong to the newly picked mood are kept.
+    setDraftFeelings(changing && today && mood === today.mood ? (today.feelings ?? []) : feelingsFor(mood, draftFeelings));
     setDraftMood(mood);
   }
 
@@ -80,10 +88,19 @@ export function QuickCheckin() {
     setChanging(true);
   }
 
+  /** A new moment alongside today's saved ones: the picker starts empty. */
+  function startAdd() {
+    setSaveError(null);
+    setDraftMood(null);
+    setDraftFeelings([]);
+    setAdding(true);
+  }
+
   /** Lets the choice go: back to the saved line when changing, or an empty picker on a first check-in. */
   function cancelChange() {
     setSaveError(null);
     setChanging(false);
+    setAdding(false);
     setDraftMood(null);
     setDraftFeelings([]);
   }
@@ -96,11 +113,13 @@ export function QuickCheckin() {
     setSaving(true);
     setSaveError(null);
     const work = queue.current.then(async () => {
+      // Not correcting: this Save is a new moment, kept alongside today's earlier ones.
+      if (!changing) return void (await addMood({ mood, tags: [], feelings }));
       const current = latestToday(getMoodState().logs, new Date());
       if (!current) return void (await addMood({ mood, tags: [], feelings }));
       const unchanged = current.mood === mood && (current.feelings ?? []).join() === feelings.join();
       if (unchanged) return;
-      // Same mood: keep the check-in (id, time); a new mood is a fresh moment.
+      // Same mood: keep the moment (id, time); a new mood replaces it (it is a correction).
       const base = current.mood === mood ? current : await changeMood(current, mood);
       await updateMoodDetails(base, { tags: base.tags, feelings });
     });
@@ -109,6 +128,7 @@ export function QuickCheckin() {
       .then(() => {
         if (!today) resetDetails();
         setChanging(false);
+        setAdding(false);
         setDraftMood(null);
         setDraftFeelings([]);
         setMessage(t.today.saved);
@@ -182,6 +202,13 @@ export function QuickCheckin() {
           <Check size={16} color={c.primary} />
           <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.primary }}>{message}</Text>
         </View>
+      )}
+      {today && !picking && !open && (
+        <Pressable accessibilityRole="button" hitSlop={8} onPress={startAdd} style={styles.link}>
+          <Text style={{ fontFamily: fonts.sans, fontSize: 15, color: c.mutedForeground, textDecorationLine: "underline" }}>
+            {t.today.addMoment}
+          </Text>
+        </Pressable>
       )}
       {today && !picking && !open && (
         <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setOpen(true)} style={styles.link}>

@@ -1,4 +1,5 @@
 import { dayKey } from "@mindcocoon/core/dates";
+import { LOCALE_TAGS } from "@mindcocoon/core/i18n/config";
 import { letterWeek, weeklyLetter, type LetterLine } from "@mindcocoon/core/mood/letter";
 import { useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -9,6 +10,7 @@ import { useMoodLogs } from "@/hooks/use-mood-logs";
 import { useNow } from "@/hooks/use-now";
 import { useI18n } from "@/i18n/i18n";
 import { getPref, setPref } from "@/lib/prefs";
+import { noteProMoment } from "@/lib/purchases/moments";
 import { fonts } from "@/theme/fonts";
 import { space } from "@/theme/tokens";
 import { useTheme } from "@/theme/theme";
@@ -22,16 +24,17 @@ function weekOf(now: Date) {
 
 /** Kén's weekly letter: a few lines in words only. Reading it is all; nothing to answer. */
 export default function LetterScreen() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { c } = useTheme();
   const now = useNow();
   const { logs } = useMoodLogs();
   const name = getPref("name");
-  const { lines } = weeklyLetter(logs, now);
+  const { lines } = weeklyLetter(logs, now, getPref("sleepLog") ?? []);
   const week = weekOf(now);
 
   useEffect(() => {
     void setPref("letterReadOn", week);
+    void noteProMoment("letter");
   }, [week]);
 
   const text = (line: LetterLine) => {
@@ -44,6 +47,13 @@ export default function LetterScreen() {
         return line.family === "low" ? t.letter.mostlyLow : line.family === "light" ? t.letter.mostlyLight : t.letter.mostlyMixed;
       case "lighter-on":
         return line.when === "weekend" ? t.letter.lighterWeekend : t.letter.lighterWeekdays;
+      case "slept-better":
+        return t.letter.sleptBetter;
+      case "lighter-weekday": {
+        const back = (now.getDay() - line.weekday + 7) % 7;
+        const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() - back);
+        return t.letter.lighterWeekday.replace("{day}", day.toLocaleDateString(LOCALE_TAGS[locale], { weekday: "long" }));
+      }
       case "word":
         return t.letter.word.replace("{word}", t.feelings.words[line.word as keyof typeof t.feelings.words] ?? line.word);
     }

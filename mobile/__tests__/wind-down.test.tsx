@@ -1,5 +1,6 @@
 import { addMood } from "@mindcocoon/core/mood/store";
 import { getStorage } from "@mindcocoon/core/storage/index";
+import { tonightPlan } from "@mindcocoon/core/tonight-plan";
 import { act, fireEvent, screen, userEvent, waitFor } from "@testing-library/react-native";
 import { setAudioModeAsync } from "expo-audio";
 import WindDownScreen from "@/app/wind-down";
@@ -12,6 +13,7 @@ async function open(existing?: "heavy") {
   await act(async () => {
     audio.reset();
     await setPref("breathing", undefined);
+    await setPref("tonightSeed", "wind-down-test");
     if (existing) await addMood({ mood: existing, tags: [] });
   });
   const user = userEvent.setup();
@@ -44,11 +46,13 @@ describe("Wind down", () => {
     expect((await getStorage().moods.list()).map((l) => l.mood)).toEqual(["anxious"]);
   });
 
-  it("skipping the check-in uses Rainy night", async () => {
+  it("skipping the check-in uses tonight's planned mix", async () => {
     const { user } = await open();
+    const presetNames = { "rainy-night": "Rainy night", "by-the-fire": "By the fire", "sea-breeze": "Sea breeze", "rain-at-sea": "Rain at sea" } as const;
+    const expected = presetNames[tonightPlan("wind-down-test", new Date()).mix];
     await user.press(await screen.findByRole("button", { name: "Skip" }));
     await user.press(screen.getByRole("button", { name: "Next" }));
-    expect(screen.getByRole("button", { name: "Rainy night" })).toBeSelected();
+    expect(screen.getByRole("button", { name: expected })).toBeSelected();
     expect(await getStorage().moods.list()).toEqual([]);
   });
 
@@ -59,6 +63,15 @@ describe("Wind down", () => {
     await user.press(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByRole("button", { name: "Rainy night" })).toBeSelected();
     expect(await getStorage().moods.list()).toHaveLength(1);
+  });
+
+  it("choosing a different mood in the evening adds a new moment, keeping the earlier one", async () => {
+    const { user } = await open("heavy");
+    await user.press(await screen.findByRole("radio", { name: "Anxious" }));
+    await user.press(screen.getByRole("button", { name: "Save and continue" }));
+    await waitFor(async () =>
+      expect((await getStorage().moods.list()).map((l) => l.mood).sort()).toEqual(["anxious", "heavy"]),
+    );
   });
 
   it("leaving before Goodnight plays nothing", async () => {

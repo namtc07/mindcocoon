@@ -1,3 +1,4 @@
+import { feelingsFor } from "@mindcocoon/core/feelings";
 import { addMood } from "@mindcocoon/core/mood/store";
 import { DEFAULT_TAGS, isDefaultTag } from "@mindcocoon/core/moods";
 import type { MoodType } from "@mindcocoon/core/types";
@@ -80,7 +81,8 @@ export function CheckinForm() {
         value={mood}
         onChange={(m) => {
           setMood(m);
-          setFeelings([]);
+          // Words that also belong to the new mood stay picked; the rest fall away.
+          setFeelings((cur) => feelingsFor(m, cur));
         }}
         label={t.today.checkinQuestion}
         variant="orbs"
