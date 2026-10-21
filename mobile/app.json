@@ -2,6 +2,7 @@
   "expo": {
     "name": "MindCocoon",
     "slug": "mindcocoon",
+    "platforms": ["ios", "android"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
