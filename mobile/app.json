@@ -36,9 +36,6 @@
         "android.permission.USE_FINGERPRINT"
       ]
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
     "plugins": [
       "react-native-quick-crypto",
       "expo-router",
@@ -109,11 +106,7 @@
           "native-mood": ""
         }
       },
-      "router": {
-        "asyncRoutes": {
-          "web": true
-        }
-      },
+      "router": {},
       "eas": {
         "projectId": "eed30bf5-6e50-4529-b62c-f6442f8df1aa"
       }
