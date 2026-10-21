@@ -28,6 +28,11 @@
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
         "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.USE_BIOMETRIC",
         "android.permission.USE_FINGERPRINT"
       ]
     },
@@ -113,7 +118,13 @@
         "projectId": "eed30bf5-6e50-4529-b62c-f6442f8df1aa"
       }
     },
-    "owner": "namtc07"
+    "owner": "namtc07",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/eed30bf5-6e50-4529-b62c-f6442f8df1aa"
+    }
   },
   "react-native-google-mobile-ads": {
     "android_app_id": "ca-app-pub-3940256099942544~3347511713",
